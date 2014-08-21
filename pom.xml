@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.geso</groupId>
 	<artifactId>avans</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>avans</name>
 	<description>avans</description>
 
@@ -19,6 +19,23 @@
 			<url>https://tokuhirom.github.io/maven/releases/</url>
 		</repository>
 	</repositories>
+
+	<scm>
+		<url>https://github.com/tokuhirom/avans/</url>
+		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
+		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>repo</id>
+			<url>https://github.com/tokuhirom/maven/raw/master/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshot-repo</id>
+			<url>https://github.com/tokuhirom/maven/raw/master/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
 		<dependency>

@@ -76,11 +76,15 @@ public abstract class AvansWebApplication implements Closeable {
 	}
 
 	public AvansResponse errorMethodNotAllowed() {
-		return this.renderError(405, "Method not allowed");
+		return this.renderError(405, "Method Not Allowed");
 	}
 
 	public AvansResponse errorForbidden() {
 		return this.renderError(403, "Forbidden");
+	}
+
+	public AvansResponse errorNotFound() {
+		return this.renderError(404, "Not Found");
 	}
 
 	private AvansResponse renderError(int code, String message) {
