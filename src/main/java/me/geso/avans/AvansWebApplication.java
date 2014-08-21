@@ -1,21 +1,23 @@
 package me.geso.avans;
 
+import java.io.File;
 import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import java.util.Arrays;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.SneakyThrows;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
 
 /**
  * You should create this object per HTTP request.
@@ -98,6 +100,31 @@ public abstract class AvansWebApplication {
 		res.setContentLength(json.length);
 		res.setBody(json);
 		return res;
+	}
+	
+	@SneakyThrows
+	public AvansBytesResponse renderMustache(String template, Object context) {
+		File tmplDir = this.getTemplateDirectory();
+		DefaultMustacheFactory factory = new DefaultMustacheFactory(tmplDir);
+		Mustache mustache = factory.compile(template);
+		StringWriter writer = new StringWriter();
+		mustache.execute(writer, context).flush();
+		String bodyString = writer.toString();
+		byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
+		
+		AvansBytesResponse res = new AvansBytesResponse();
+		res.setContentType("text/html; charset=utf-8");
+		res.setContentLength(body.length);
+		res.setBody(body);
+		return res;
+	}
+
+	public File getTemplateDirectory() {
+		return new File(getBaseDirectory() + "/tmpl/");
+	}
+	
+	public String getBaseDirectory() {
+		return System.getProperty("user.dir");
 	}
 
 	public abstract WebRouter<AvansAction> getRouter();

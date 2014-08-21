@@ -78,6 +78,11 @@
 			<artifactId>fluent-hc</artifactId>
 			<version>4.3.5</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.spullara.mustache.java</groupId>
+			<artifactId>compiler</artifactId>
+			<version>0.8.16</version>
+		</dependency>
 	</dependencies>
 
 	<build>
