@@ -3,8 +3,11 @@ package me.geso.servletmech;
 import java.nio.charset.Charset;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ServletMechResponse {
 
@@ -33,5 +36,11 @@ public class ServletMechResponse {
 
 	public String getBodyString() {
 		return new String(body, Charset.forName("UTF-8"));
+	}
+	
+	@SneakyThrows
+	public <T> T readJSON(Class<T> valueType) {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(body, valueType);
 	}
 }

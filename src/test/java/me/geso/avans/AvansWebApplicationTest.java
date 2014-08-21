@@ -172,5 +172,16 @@ public class AvansWebApplicationTest {
 			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}",
 					res.getBodyString());
 		}
+
+		{
+			MyController.Foo foo = new MyController.Foo();
+			foo.setName("iyan");
+			ServletMechResponse res = mech.postJSON("/json", foo).execute();
+			assertEquals(200, res.getStatus());
+			assertEquals("application/json; charset=utf-8", res.getContentType());
+			AvansAPIResponse<String> data = res.readJSON(AvansAPIResponse.class);
+			assertEquals(data.code, 200);
+			assertEquals(data.data, "name:iyan");
+		}
 	}
 }

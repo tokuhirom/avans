@@ -16,6 +16,12 @@ public class AvansAPIResponse<T extends Object> {
 	@Getter
 	@Setter
 	T data;
+	
+	public AvansAPIResponse() {
+		this.code = 200;
+		this.messages = new ArrayList<>();
+		this.data = null;
+	}
 
 	public AvansAPIResponse(T data) {
 		this.code = 200;
