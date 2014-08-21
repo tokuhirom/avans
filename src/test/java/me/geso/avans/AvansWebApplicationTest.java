@@ -130,7 +130,7 @@ public class AvansWebApplicationTest {
 	public void test() throws Exception {
 		ServletMech mech = new ServletMech(MyServlet.class);
 		{
-			ServletMechResponse res = mech.get("/");
+			ServletMechResponse res = mech.get("/").execute();
 			assertEquals(200, res.getStatus());
 			assertEquals("application/json; charset=utf-8",
 					res.getContentType());
@@ -139,7 +139,7 @@ public class AvansWebApplicationTest {
 		}
 
 		{
-			ServletMechResponse res = mech.get("/intarg/5963");
+			ServletMechResponse res = mech.get("/intarg/5963").execute();
 			assertEquals(200, res.getStatus());
 			assertEquals("application/json; charset=utf-8",
 					res.getContentType());
@@ -148,7 +148,7 @@ public class AvansWebApplicationTest {
 		}
 
 		{
-			ServletMechResponse res = mech.get("/longarg/5963");
+			ServletMechResponse res = mech.get("/longarg/5963").execute();
 			assertEquals(200, res.getStatus());
 			assertEquals("application/json; charset=utf-8",
 					res.getContentType());
@@ -157,7 +157,7 @@ public class AvansWebApplicationTest {
 		}
 
 		{
-			ServletMechResponse res = mech.get("/mustache");
+			ServletMechResponse res = mech.get("/mustache").execute();
 			assertEquals(200, res.getStatus());
 			assertEquals("text/html; charset=UTF-8", res.getContentType());
 			assertEquals("Hi, John!\n", res.getBodyString());
@@ -166,7 +166,7 @@ public class AvansWebApplicationTest {
 		{
 			MyController.Foo foo = new MyController.Foo();
 			foo.setName("iyan");
-			ServletMechResponse res = mech.postJSON("/json", foo);
+			ServletMechResponse res = mech.postJSON("/json", foo).execute();
 			assertEquals(200, res.getStatus());
 			assertEquals("application/json; charset=utf-8", res.getContentType());
 			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}",

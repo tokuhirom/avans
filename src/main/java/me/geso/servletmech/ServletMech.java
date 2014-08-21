@@ -11,6 +11,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -23,7 +24,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Alpha quaility... I will change API without notice. And so, I want to split the distribution if it's okay.
+ * Alpha quaility... I will change API without notice. And so, I want to split
+ * the distribution if it's okay.
  * 
  * @author tokuhirom
  *
@@ -43,27 +45,19 @@ public class ServletMech {
 		this.baseURL = "http://127.0.0.1:" + port;
 	}
 
-	@SneakyThrows
-	public ServletMechResponse get(String path) {
-		URI url = new URIBuilder(baseURL).setPath(path).build();
-		{
-			try (CloseableHttpClient httpclient = HttpClients.custom()
-					.setDefaultCookieStore(cookieStore)
-					.build()) {
-				HttpGet get = new HttpGet(url);
-				try (CloseableHttpResponse response = httpclient
-						.execute(get)) {
-					ByteArrayOutputStream stream = new ByteArrayOutputStream();
-					response.getEntity().writeTo(stream);
-					byte[] byteArray = stream.toByteArray();
-					return new ServletMechResponse(response, byteArray);
-				}
-			}
-		}
+	public void addCookie(Cookie cookie) {
+		this.cookieStore.addCookie(cookie);
 	}
 
 	@SneakyThrows
-	public <T> ServletMechResponse postJSON(String path, T params) {
+	public ServletMechRequest get(String path) {
+		URI url = new URIBuilder(baseURL).setPath(path).build();
+		HttpGet get = new HttpGet(url);
+		return new ServletMechRequest(cookieStore, get);
+	}
+
+	@SneakyThrows
+	public <T> ServletMechRequest postJSON(String path, T params) {
 		if (params == null) {
 			throw new RuntimeException("Params should not be null");
 		}
@@ -72,22 +66,11 @@ public class ServletMech {
 		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
 		byte[] json = mapper.writeValueAsBytes(params);
 		URI url = new URIBuilder(baseURL).setPath(path).build();
-		{
-			try (CloseableHttpClient httpclient = HttpClients.custom()
-					.setDefaultCookieStore(cookieStore)
-					.build()) {
-				HttpPost post = new HttpPost(url);
-				post.setHeader("Content-Type", "application/json; charset=utf-8");
-				post.setEntity(new ByteArrayEntity(json));
-				try (CloseableHttpResponse response = httpclient
-						.execute(post)) {
-					ByteArrayOutputStream stream = new ByteArrayOutputStream();
-					response.getEntity().writeTo(stream);
-					byte[] byteArray = stream.toByteArray();
-					return new ServletMechResponse(response, byteArray);
-				}
-			}
-		}
+		HttpPost post = new HttpPost(url);
+		post.setHeader("Content-Type",
+				"application/json; charset=utf-8");
+		post.setEntity(new ByteArrayEntity(json));
+		return new ServletMechRequest(cookieStore, post);
 	}
 
 	private Server createServer(Class<? extends Servlet> servlet) {
