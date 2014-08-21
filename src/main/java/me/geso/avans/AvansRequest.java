@@ -4,11 +4,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import lombok.SneakyThrows;
 
@@ -60,6 +66,7 @@ public class AvansRequest {
 
 	/**
 	 * Read JSON from content-body. And parse it.
+	 * This method runs hibernate validator. If the validation was failed, it throws runtime exception.
 	 * 
 	 * @param klass
 	 * @return
@@ -70,7 +77,21 @@ public class AvansRequest {
 
 		ObjectMapper mapper = new ObjectMapper();
 		T instance = mapper.readValue(inputStream, klass);
+		this.validate(instance);
 		return instance;
+	}
+
+	public <T> void validate(T o) {
+		ValidatorFactory validatorFactory = Validation
+				.buildDefaultValidatorFactory();
+		Validator validator = validatorFactory.getValidator();
+		Set<ConstraintViolation<T>> violations = validator.validate(o);
+		if (!violations.isEmpty()) {
+			String message = violations.stream().map(e -> {
+				return e.getPropertyPath() + " " + e.getMessage();
+			}).collect(Collectors.joining(","));
+			throw new AvansValidationException(message);
+		}
 	}
 
 	/**
