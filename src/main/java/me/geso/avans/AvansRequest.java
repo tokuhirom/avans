@@ -65,8 +65,8 @@ public class AvansRequest {
 	}
 
 	/**
-	 * Read JSON from content-body. And parse it.
-	 * This method runs hibernate validator. If the validation was failed, it throws runtime exception.
+	 * Read JSON from content-body. And parse it. This method runs hibernate
+	 * validator. If the validation was failed, it throws runtime exception.
 	 * 
 	 * @param klass
 	 * @return
@@ -77,8 +77,12 @@ public class AvansRequest {
 
 		ObjectMapper mapper = new ObjectMapper();
 		T instance = mapper.readValue(inputStream, klass);
-		this.validate(instance);
-		return instance;
+		if (instance != null) {
+			this.validate(instance);
+			return instance;
+		} else {
+			throw new RuntimeException("null found... in content body");
+		}
 	}
 
 	public <T> void validate(T o) {
