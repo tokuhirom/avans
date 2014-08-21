@@ -33,5 +33,12 @@ public class AvansAPIResponse<T extends Object> {
 		this.messages = new ArrayList<>();
 		this.messages.add(message);
 	}
+	
+	/**
+	 * Create empty response
+	 */
+	public static <X> AvansAPIResponse<String> empty() {
+		return new AvansAPIResponse<String>(null);
+	}
 
 }
