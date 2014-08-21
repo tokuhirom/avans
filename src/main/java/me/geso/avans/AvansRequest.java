@@ -3,6 +3,7 @@ package me.geso.avans;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -16,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 // TODO port all methods from Plack::Request
 public class AvansRequest {
 	private HttpServletRequest request;
-	
+
 	public AvansRequest(HttpServletRequest request) {
 		this.request = request;
 	}
@@ -71,7 +72,7 @@ public class AvansRequest {
 		T instance = mapper.readValue(inputStream, klass);
 		return instance;
 	}
-	
+
 	/**
 	 * Read parameters from query string/content-body
 	 * 
@@ -84,6 +85,15 @@ public class AvansRequest {
 
 	public Map<String, String[]> getParameterMap(String name) {
 		return this.request.getParameterMap();
+	}
+
+	public OptionalInt getIntParam(String name) {
+		String parameter = this.request.getParameter(name);
+		if (parameter != null) {
+			return OptionalInt.of(Integer.parseInt(parameter));
+		} else {
+			return OptionalInt.empty();
+		}
 	}
 
 	// TODO: support ServletFileUpload

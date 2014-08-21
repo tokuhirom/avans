@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
 
 import org.apache.http.HttpResponse;
@@ -41,29 +42,64 @@ public class AvansWebApplicationTest {
 
 		public void service(ServletRequest req, ServletResponse res)
 				throws ServletException, IOException {
-			MyApplication app = new MyApplication((HttpServletRequest) req,
-					(HttpServletResponse) res);
-			app.run();
+			try (MyApplication app = new MyApplication(
+					(HttpServletRequest) req,
+					(HttpServletResponse) res)) {
+				app.run();
+			}
 		}
 	}
 
+	@FunctionalInterface
+	public interface BasicAction {
+		public AvansResponse run(AvansWebApplication web);
+	}
+
 	public static class MyApplication extends AvansWebApplication {
+		static WebRouter<BasicAction> router;
+		static {
+			router = new WebRouter<>();
+			router.get("/", MyController::root);
+			router.get("/mustache", MyController::mustache);
+		}
+
 		public MyApplication(HttpServletRequest servletRequest,
 				HttpServletResponse servletResponse) throws IOException {
 			super(servletRequest, servletResponse);
 		}
 
 		@Override
-		public WebRouter<AvansAction> getRouter() {
-			WebRouter<AvansAction> routes = new WebRouter<>();
-			routes.get("/", MyController::root);
-			routes.get("/mustache", MyController::mustache);
-			return routes;
+		public AvansResponse dispatch() {
+			AvansRequest request = this.getRequest();
+			String method = getRequest().getMethod();
+			String path = getRequest().getPathInfo();
+			RoutingResult<BasicAction> match = router.match(
+					method, path);
+			if (!match.methodAllowed()) {
+				return this.errorMethodNotAllowed();
+			}
+
+			Map<String, String> captured = match.getCaptured();
+			this.setArgs(captured);
+			BasicAction destination = match.getDestination();
+			AvansResponse response = destination.run(this);
+			if (response == null) {
+				throw new RuntimeException(String.format(
+						"Response must not be null: %s, %s, %s",
+						request.getMethod(), request.getPathInfo(),
+						destination.toString()
+						));
+			}
+			return response;
 		}
 
 		@Override
 		public String getBaseDirectory() {
 			return System.getProperty("user.dir") + "/src/test/resources/";
+		}
+
+		@Override
+		public void close() throws IOException {
 		}
 	}
 
@@ -88,8 +124,10 @@ public class AvansWebApplicationTest {
 		{
 			ServletMechResponse res = mech.get("/");
 			assertEquals(200, res.getStatus());
-			assertEquals("application/json; charset=utf-8", res.getContentType());
-			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}", res.getBodyString());
+			assertEquals("application/json; charset=utf-8",
+					res.getContentType());
+			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}",
+					res.getBodyString());
 		}
 
 		{
@@ -159,16 +197,16 @@ public class AvansWebApplicationTest {
 				byte[] body) {
 			this.response = response;
 			this.body = body;
-		} 
-		
+		}
+
 		public int getStatus() {
 			return response.getStatusLine().getStatusCode();
 		}
-		
+
 		public String getContentType() {
 			return response.getFirstHeader("Content-Type").getValue();
 		}
-		
+
 		public String getBodyString() {
 			return new String(body, Charset.forName("UTF-8"));
 		}

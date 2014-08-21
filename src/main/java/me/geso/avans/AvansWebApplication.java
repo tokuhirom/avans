@@ -1,5 +1,6 @@
 package me.geso.avans;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -25,7 +26,7 @@ import com.github.mustachejava.Mustache;
  * @author tokuhirom
  *
  */
-public abstract class AvansWebApplication {
+public abstract class AvansWebApplication implements Closeable {
 	private AvansRequest request;
 	private HttpServletResponse servletResponse;
 	private Map<String, String> args;
@@ -55,31 +56,9 @@ public abstract class AvansWebApplication {
 		return this.request;
 	}
 
-	public AvansResponse dispatch() {
-		WebRouter<AvansAction> router = this.getRouter();
-		String method = this.request.getMethod();
-		String path = this.request.getPathInfo();
-		RoutingResult<AvansAction> match = router.match(
-				method, path);
-		if (!match.methodAllowed()) {
-			return this.renderMethodNotAllowed();
-		}
+	public abstract AvansResponse dispatch();
 
-		Map<String, String> captured = match.getCaptured();
-		this.setArgs(captured);
-		AvansAction destination = match.getDestination();
-		AvansResponse response = destination.run(this);
-		if (response == null) {
-			throw new RuntimeException(String.format(
-					"Response must not be null: %s, %s, %s",
-					request.getMethod(), request.getPathInfo(),
-					destination.toString()
-					));
-		}
-		return response;
-	}
-
-	private void setArgs(Map<String, String> captured) {
+	protected void setArgs(Map<String, String> captured) {
 		this.args = captured;
 	}
 	
@@ -96,8 +75,12 @@ public abstract class AvansWebApplication {
 		return Optional.ofNullable(arg);
 	}
 
-	private AvansResponse renderMethodNotAllowed() {
+	public AvansResponse errorMethodNotAllowed() {
 		return this.renderError(405, "Method not allowed");
+	}
+
+	public AvansResponse errorForbidden() {
+		return this.renderError(403, "Forbidden");
 	}
 
 	private AvansResponse renderError(int code, String message) {
@@ -145,8 +128,6 @@ public abstract class AvansWebApplication {
 	public String getBaseDirectory() {
 		return System.getProperty("user.dir");
 	}
-
-	public abstract WebRouter<AvansAction> getRouter();
 
 	// hook point
 	public Optional<AvansResponse> BEFORE_DISPATCH() {
