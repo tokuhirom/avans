@@ -70,6 +70,16 @@ public abstract class AvansWebApplication implements Closeable {
 		return arg;
 	}
 
+	public long getLongArg(String name) {
+		String arg = this.getArg(name);
+		return Long.parseLong(arg);
+	}
+
+	public int getIntArg(String name) {
+		String arg = this.getArg(name);
+		return Integer.parseInt(arg);
+	}
+
 	public Optional<String> getOptionalArg(String name) {
 		String arg = this.args.get(name);
 		return Optional.ofNullable(arg);

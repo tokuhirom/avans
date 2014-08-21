@@ -61,6 +61,8 @@ public class AvansWebApplicationTest {
 			router = new WebRouter<>();
 			router.get("/", MyController::root);
 			router.get("/mustache", MyController::mustache);
+			router.get("/intarg/{id}", MyController::intarg);
+			router.get("/longarg/{id}", MyController::longarg);
 		}
 
 		public MyApplication(HttpServletRequest servletRequest,
@@ -75,6 +77,9 @@ public class AvansWebApplicationTest {
 			String path = getRequest().getPathInfo();
 			RoutingResult<BasicAction> match = router.match(
 					method, path);
+			if (match == null) {
+				return this.errorNotFound();
+			}
 			if (!match.methodAllowed()) {
 				return this.errorMethodNotAllowed();
 			}
@@ -109,6 +114,16 @@ public class AvansWebApplicationTest {
 			return web.renderJSON(res);
 		}
 
+		public static AvansResponse intarg(AvansWebApplication web) {
+			AvansAPIResponse<String> res = new AvansAPIResponse<>("INTARG:" + web.getIntArg("id"));
+			return web.renderJSON(res);
+		}
+
+		public static AvansResponse longarg(AvansWebApplication web) {
+			AvansAPIResponse<String> res = new AvansAPIResponse<>("LONGARG:" + web.getLongArg("id"));
+			return web.renderJSON(res);
+		}
+
 		public static AvansResponse mustache(AvansWebApplication web) {
 			return web.renderMustache("mustache.mustache", new Foo());
 		}
@@ -127,6 +142,24 @@ public class AvansWebApplicationTest {
 			assertEquals("application/json; charset=utf-8",
 					res.getContentType());
 			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}",
+					res.getBodyString());
+		}
+
+		{
+			ServletMechResponse res = mech.get("/intarg/5963");
+			assertEquals(200, res.getStatus());
+			assertEquals("application/json; charset=utf-8",
+					res.getContentType());
+			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}",
+					res.getBodyString());
+		}
+
+		{
+			ServletMechResponse res = mech.get("/longarg/5963");
+			assertEquals(200, res.getStatus());
+			assertEquals("application/json; charset=utf-8",
+					res.getContentType());
+			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}",
 					res.getBodyString());
 		}
 
