@@ -1,4 +1,4 @@
-package me.geso.servletmech;
+package me.geso.testmech;
 
 import java.io.ByteArrayOutputStream;
 
@@ -10,12 +10,12 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-public class ServletMechRequest {
+public class TestMechRequest {
 
 	private HttpRequestBase request;
 	private CookieStore cookieStore;
 
-	public ServletMechRequest(CookieStore cookieStore, HttpRequestBase request) {
+	public TestMechRequest(CookieStore cookieStore, HttpRequestBase request) {
 		this.cookieStore = cookieStore;
 		this.request = request;
 	}
@@ -24,19 +24,18 @@ public class ServletMechRequest {
 		return this.request.getMethod();
 	}
 
-	public ServletMechRequest setHeader(String name, String value) {
+	public TestMechRequest setHeader(String name, String value) {
 		this.request.setHeader(name, value);
 		return this;
 	}
 	
-	
-	public ServletMechRequest addHeader(String name, String value) {
+	public TestMechRequest addHeader(String name, String value) {
 		this.request.addHeader(name, value);
 		return this;
 	}
 	
 	@SneakyThrows
-	public ServletMechResponse execute() {
+	public TestMechResponse execute() {
 		try (CloseableHttpClient httpclient = HttpClients.custom()
 				.setDefaultCookieStore(cookieStore)
 				.build()) {
@@ -45,7 +44,7 @@ public class ServletMechRequest {
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				response.getEntity().writeTo(stream);
 				byte[] byteArray = stream.toByteArray();
-				return new ServletMechResponse(response, byteArray);
+				return new TestMechResponse(response, byteArray);
 			}
 		}
 	}
