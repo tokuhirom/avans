@@ -28,6 +28,7 @@ import com.github.mustachejava.Mustache;
 public abstract class AvansWebApplication {
 	private AvansRequest request;
 	private HttpServletResponse servletResponse;
+	private Map<String, String> args;
 
 	public AvansWebApplication(HttpServletRequest servletRequest,
 			HttpServletResponse servletResponse) throws IOException {
@@ -59,14 +60,15 @@ public abstract class AvansWebApplication {
 		String method = this.request.getMethod();
 		String path = this.request.getPathInfo();
 		RoutingResult<AvansAction> match = router.match(
-				this.request.getMethod(), request.getPathInfo());
+				method, path);
 		if (!match.methodAllowed()) {
 			return this.renderMethodNotAllowed();
 		}
 
 		Map<String, String> captured = match.getCaptured();
+		this.setArgs(captured);
 		AvansAction destination = match.getDestination();
-		AvansResponse response = destination.run(this, captured);
+		AvansResponse response = destination.run(this);
 		if (response == null) {
 			throw new RuntimeException(String.format(
 					"Response must not be null: %s, %s, %s",
@@ -75,6 +77,23 @@ public abstract class AvansWebApplication {
 					));
 		}
 		return response;
+	}
+
+	private void setArgs(Map<String, String> captured) {
+		this.args = captured;
+	}
+	
+	public String getArg(String name) {
+		String arg = this.args.get(name);
+		if (arg == null) {
+			throw new RuntimeException("Missing mandatory argument: " + name);
+		}
+		return arg;
+	}
+
+	public Optional<String> getOptionalArg(String name) {
+		String arg = this.args.get(name);
+		return Optional.ofNullable(arg);
 	}
 
 	private AvansResponse renderMethodNotAllowed() {

@@ -68,14 +68,12 @@ public class AvansWebApplicationTest {
 	}
 
 	public static class MyController {
-		public static AvansResponse root(AvansWebApplication web,
-				Map<String, String> params) {
+		public static AvansResponse root(AvansWebApplication web) {
 			AvansAPIResponse<String> res = new AvansAPIResponse<>("hoge");
 			return web.renderJSON(res);
 		}
 
-		public static AvansResponse mustache(AvansWebApplication web,
-				Map<String, String> params) {
+		public static AvansResponse mustache(AvansWebApplication web) {
 			return web.renderMustache("mustache.mustache", new Foo());
 		}
 
