@@ -20,10 +20,6 @@ import lombok.SneakyThrows;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Content;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
