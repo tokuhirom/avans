@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
+import me.geso.testmech.TestMechJettyServlet;
 import me.geso.testmech.TestMechResponse;
-import me.geso.testmech.TestMechServlet;
 
 import org.junit.Test;
 
@@ -49,6 +49,8 @@ public class AvansWebApplicationTest {
 			router.get("/intarg/{id}", MyController::intarg);
 			router.get("/longarg/{id}", MyController::longarg);
 			router.post("/json", MyController::json);
+			router.get("/cb", MyController::callback);
+			router.get("/query", MyController::query);
 		}
 
 		public MyApplication(HttpServletRequest servletRequest,
@@ -61,6 +63,7 @@ public class AvansWebApplicationTest {
 			AvansRequest request = this.getRequest();
 			String method = getRequest().getMethod();
 			String path = getRequest().getPathInfo();
+			System.out.println(String.format("%s %s", method, path));
 			RoutingResult<BasicAction> match = router.match(
 					method, path);
 			if (match == null) {
@@ -101,21 +104,36 @@ public class AvansWebApplicationTest {
 		}
 
 		public static AvansResponse intarg(AvansWebApplication web) {
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("INTARG:" + web.getIntArg("id"));
+			AvansAPIResponse<String> res = new AvansAPIResponse<>("INTARG:"
+					+ web.getIntArg("id"));
 			return web.renderJSON(res);
 		}
 
 		public static AvansResponse longarg(AvansWebApplication web) {
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("LONGARG:" + web.getLongArg("id"));
+			AvansAPIResponse<String> res = new AvansAPIResponse<>("LONGARG:"
+					+ web.getLongArg("id"));
 			return web.renderJSON(res);
 		}
 
 		public static AvansResponse json(AvansWebApplication web) {
 			Foo f = web.getRequest().readJSON(Foo.class);
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("name:" + f.name);
+			AvansAPIResponse<String> res = new AvansAPIResponse<>("name:"
+					+ f.name);
 			return web.renderJSON(res);
 		}
-		
+
+		public static AvansResponse callback(AvansWebApplication web) {
+			return new AvansCallbackResponse((resp) -> {
+				resp.setContentType("text/plain; charset=utf-8");
+				resp.getWriter().write("いぇーい");
+			});
+		}
+
+		public static AvansResponse query(AvansWebApplication web) {
+			String text = "name:" + web.getRequest().getParameter("name");
+			return web.renderTEXT(text);
+		}
+
 		public static AvansResponse mustache(AvansWebApplication web) {
 			return web.renderMustache("mustache.mustache", new Foo());
 		}
@@ -128,60 +146,59 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void test() throws Exception {
-		TestMechServlet mech = new TestMechServlet(MyServlet.class);
+		TestMechJettyServlet mech = new TestMechJettyServlet(MyServlet.class);
 
 		{
 			TestMechResponse res = mech.get("/").execute();
-			assertEquals(200, res.getStatus());
-			assertEquals("application/json; charset=utf-8",
-					res.getContentType());
-			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}",
-					res.getContentString());
+			res.assertSuccess();
+			res.assertContentTypeContains("json");
+			res.assertContentEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
 		}
 
 		{
 			TestMechResponse res = mech.get("/intarg/5963").execute();
-			assertEquals(200, res.getStatus());
-			assertEquals("application/json; charset=utf-8",
-					res.getContentType());
-			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}",
-					res.getContentString());
+			res.assertSuccess();
+			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentEquals(
+					"{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}"
+					);
 		}
 
 		{
 			TestMechResponse res = mech.get("/longarg/5963").execute();
-			assertEquals(200, res.getStatus());
-			assertEquals("application/json; charset=utf-8",
-					res.getContentType());
-			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}",
-					res.getContentString());
+			res.assertSuccess();
+			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentEquals(
+					"{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}"
+					);
 		}
 
 		{
 			TestMechResponse res = mech.get("/mustache").execute();
-			assertEquals(200, res.getStatus());
-			assertEquals("text/html; charset=UTF-8", res.getContentType());
-			assertEquals("Hi, John!\n", res.getContentString());
+			res.assertSuccess();
+			res.assertContentTypeEquals("text/html; charset=UTF-8");
+			res.assertContentEquals("Hi, John!\n");
 		}
 
 		{
 			MyController.Foo foo = new MyController.Foo();
 			foo.setName("iyan");
 			TestMechResponse res = mech.postJSON("/json", foo).execute();
-			assertEquals(200, res.getStatus());
-			assertEquals("application/json; charset=utf-8", res.getContentType());
-			assertEquals("{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}",
-					res.getContentString());
+			res.assertSuccess();
+			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentEquals("{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
 		}
 
 		{
 			MyController.Foo foo = new MyController.Foo();
 			foo.setName("iyan");
 			TestMechResponse res = mech.postJSON("/json", foo).execute();
-			assertEquals(200, res.getStatus());
-			assertEquals("application/json; charset=utf-8", res.getContentType());
+			res.assertSuccess();
+			res.assertContentTypeEquals("application/json; charset=utf-8");
+
 			@SuppressWarnings("unchecked")
-			AvansAPIResponse<String> data = res.readJSON(AvansAPIResponse.class);
+			AvansAPIResponse<String> data = res
+					.readJSON(AvansAPIResponse.class);
 			assertEquals(data.code, 200);
 			assertEquals(data.data, "name:iyan");
 		}
@@ -191,9 +208,21 @@ public class AvansWebApplicationTest {
 			res.assertSuccess();
 			res.assertContentTypeStartsWith("application/json");
 			res.assertContentTypeContains("json");
-			// res.contentTypeMatches("application/json");
-			System.out.println(res.getContentString());
 			res.assertContentContains("hoge");
+		}
+
+		{
+			TestMechResponse res = mech.get("/cb").execute();
+			res.assertSuccess();
+			res.assertContentTypeEquals("text/plain; charset=UTF-8");
+			res.assertContentContains("いぇーい");
+		}
+
+		{
+			TestMechResponse res = mech.get("/query?name=%E3%81%8A%E3%81%BB")
+					.execute();
+			res.assertSuccess();
+			res.assertContentContains("name:おほ");
 		}
 	}
 }

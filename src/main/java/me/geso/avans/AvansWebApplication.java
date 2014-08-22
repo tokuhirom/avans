@@ -35,7 +35,18 @@ public abstract class AvansWebApplication implements Closeable {
 		this.servletResponse = servletResponse;
 	}
 
+	protected HttpServletResponse getServletResponse() {
+		return this.servletResponse;
+	}
+
+	public void setDefaultCharacterEncoding() {
+		this.servletResponse.setCharacterEncoding("UTF-8");
+		;
+	}
+
 	public void run() throws IOException {
+		this.setDefaultCharacterEncoding();
+
 		{
 			Optional<AvansResponse> maybeResponse = this.BEFORE_DISPATCH();
 			if (maybeResponse.isPresent()) {
@@ -59,7 +70,7 @@ public abstract class AvansWebApplication implements Closeable {
 	protected void setArgs(Map<String, String> captured) {
 		this.args = captured;
 	}
-	
+
 	public String getArg(String name) {
 		String arg = this.args.get(name);
 		if (arg == null) {
@@ -104,6 +115,16 @@ public abstract class AvansWebApplication implements Closeable {
 	}
 
 	@SneakyThrows
+	public AvansResponse renderTEXT(String text) {
+		byte[] bytes = text.getBytes(Charset.forName("UTF-8"));
+
+		AvansBytesResponse res = new AvansBytesResponse();
+		res.setContentType("text/plain; charset=utf-8");
+		res.setBody(bytes);
+		return res;
+	}
+
+	@SneakyThrows
 	public AvansResponse renderJSON(Object obj) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
@@ -115,7 +136,7 @@ public abstract class AvansWebApplication implements Closeable {
 		res.setBody(json);
 		return res;
 	}
-	
+
 	@SneakyThrows
 	public AvansBytesResponse renderMustache(String template, Object context) {
 		File tmplDir = this.getTemplateDirectory();
@@ -125,7 +146,7 @@ public abstract class AvansWebApplication implements Closeable {
 		mustache.execute(writer, context).flush();
 		String bodyString = writer.toString();
 		byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
-		
+
 		AvansBytesResponse res = new AvansBytesResponse();
 		res.setContentType("text/html; charset=utf-8");
 		res.setContentLength(body.length);
@@ -136,7 +157,7 @@ public abstract class AvansWebApplication implements Closeable {
 	public File getTemplateDirectory() {
 		return new File(getBaseDirectory() + "/tmpl/");
 	}
-	
+
 	public String getBaseDirectory() {
 		return System.getProperty("user.dir");
 	}
