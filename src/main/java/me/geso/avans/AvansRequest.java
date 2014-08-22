@@ -63,6 +63,10 @@ public class AvansRequest {
 	public HttpSession getSession() {
 		return this.request.getSession();
 	}
+	
+	public void changeSessionId() {
+		this.request.changeSessionId();
+	}
 
 	/**
 	 * Read JSON from content-body. And parse it. This method runs hibernate
