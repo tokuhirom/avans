@@ -7,7 +7,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
+@ToString
 public class AvansBytesResponse implements AvansResponse {
 	@Getter
 	@Setter

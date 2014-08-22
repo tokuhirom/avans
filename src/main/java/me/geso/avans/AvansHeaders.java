@@ -7,12 +7,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import lombok.ToString;
+
 /**
  * This is *not* a thread safe.
  * 
  * @author tokuhirom
  *
  */
+@ToString
 public class AvansHeaders {
 	// should be ordered. It makes testing easier.
 	Map<String, List<String>> map = new TreeMap<>();

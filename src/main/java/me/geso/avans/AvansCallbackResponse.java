@@ -5,7 +5,13 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
+import lombok.ToString;
 
+/**
+ * The response object using callback.
+ * This class is useful for streaming response like CSV.
+ */
+@ToString
 public class AvansCallbackResponse implements AvansResponse {
 
 	private int status;
