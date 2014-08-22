@@ -1,8 +1,10 @@
 package me.geso.avans;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +18,10 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import lombok.SneakyThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 // TODO port all methods from Plack::Request
 public class AvansRequest {
 	private HttpServletRequest request;
+	private Map<String, List<FileItem>> upload;
 
 	public AvansRequest(HttpServletRequest request) {
 		this.request = request;
@@ -63,7 +70,7 @@ public class AvansRequest {
 	public HttpSession getSession() {
 		return this.request.getSession();
 	}
-	
+
 	public void changeSessionId() {
 		this.request.changeSessionId();
 	}
@@ -123,6 +130,38 @@ public class AvansRequest {
 		} else {
 			return OptionalInt.empty();
 		}
+	}
+
+	// TODO This may work. but it's not tested.
+	public Optional<FileItem> getFileItem(String name) {
+		try {
+			this.upload = new ServletFileUpload().parseParameterMap(request);
+			List<FileItem> items = this.upload.get(name);
+			if (items == null || items.isEmpty()) {
+				return Optional.empty();
+			}
+			return Optional.of(items.get(0));
+		} catch (FileUploadException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	// TODO This may work. but it's not tested.
+	public List<FileItem> getFileItems(String name) {
+		try {
+			this.upload = new ServletFileUpload().parseParameterMap(request);
+			List<FileItem> items = this.upload.get(name);
+			if (items == null) {
+				return new ArrayList<>();
+			}
+			return items;
+		} catch (FileUploadException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public ServletFileUpload createServletFileUpload() {
+		return new ServletFileUpload();
 	}
 
 	// TODO: support ServletFileUpload
