@@ -23,11 +23,6 @@ public class AvansCallbackResponse implements AvansResponse {
 	}
 
 	@Override
-	public void setStatus(int status) {
-		this.status = status;
-	}
-
-	@Override
 	public void write(HttpServletResponse response) throws IOException {
 		response.setStatus(status);
 		try {

@@ -109,7 +109,7 @@ public abstract class AvansWebApplication implements Closeable {
 	private AvansResponse renderError(int code, String message) {
 		AvansAPIResponse<String> apires = new AvansAPIResponse<>(code, message);
 
-		AvansResponse res = this.renderJSON(apires);
+		AvansBytesResponse res = this.renderJSON(apires);
 		res.setStatus(code);
 		return res;
 	}
@@ -125,7 +125,7 @@ public abstract class AvansWebApplication implements Closeable {
 	}
 
 	@SneakyThrows
-	public AvansResponse renderJSON(Object obj) {
+	public AvansBytesResponse renderJSON(Object obj) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
 
