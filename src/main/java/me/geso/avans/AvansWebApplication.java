@@ -113,6 +113,10 @@ public abstract class AvansWebApplication implements Closeable {
 		res.setStatus(code);
 		return res;
 	}
+	
+	public AvansRedirectResponse redirect(String location) {
+		return new AvansRedirectResponse(location);
+	}
 
 	@SneakyThrows
 	public AvansResponse renderTEXT(String text) {
