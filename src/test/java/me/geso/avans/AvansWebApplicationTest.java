@@ -2,6 +2,7 @@ package me.geso.avans;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import me.geso.routes.WebRouter;
 import me.geso.testmech.TestMechJettyServlet;
 import me.geso.testmech.TestMechResponse;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class AvansWebApplicationTest {
@@ -51,6 +53,8 @@ public class AvansWebApplicationTest {
 			router.post("/json", MyController::json);
 			router.get("/cb", MyController::callback);
 			router.get("/query", MyController::query);
+			router.post("/postForm", MyController::postForm);
+			router.post("/postMultipart", MyController::postMultipart);
 		}
 
 		public MyApplication(HttpServletRequest servletRequest,
@@ -130,12 +134,25 @@ public class AvansWebApplicationTest {
 		}
 
 		public static AvansResponse query(AvansWebApplication web) {
-			String text = "name:" + web.getRequest().getParameter("name");
+			String text = "name:" + web.getRequest().getParameter("name").get();
 			return web.renderTEXT(text);
 		}
 
 		public static AvansResponse mustache(AvansWebApplication web) {
 			return web.renderMustache("mustache.mustache", new Foo());
+		}
+
+		public static AvansResponse postForm(AvansWebApplication web) {
+			String text = "(postform)name:"
+					+ web.getRequest().getParameter("name").get();
+			return web.renderTEXT(text);
+		}
+
+		public static AvansResponse postMultipart(AvansWebApplication web) {
+			String text = "(postform)name:"
+					+ web.getRequest().getParameter("name").get()
+					+ ":" + web.getRequest().getFileItem("tmpl");
+			return web.renderTEXT(text);
 		}
 
 		@Data
@@ -144,10 +161,15 @@ public class AvansWebApplicationTest {
 		}
 	}
 
+	private TestMechJettyServlet mech;
+
+	@Before
+	public void before() {
+		this.mech = new TestMechJettyServlet(MyServlet.class);
+	}
+
 	@Test
 	public void test() throws Exception {
-		TestMechJettyServlet mech = new TestMechJettyServlet(MyServlet.class);
-
 		{
 			TestMechResponse res = mech.get("/").execute();
 			res.assertSuccess();
@@ -224,5 +246,23 @@ public class AvansWebApplicationTest {
 			res.assertSuccess();
 			res.assertContentContains("name:おほ");
 		}
+
+		{
+			TestMechResponse res = mech.post("/postForm")
+					.param("name", "田中")
+					.execute();
+			res.assertSuccess();
+			res.assertContentContains("(postform)name:田中");
+		}
+	}
+
+	@Test
+	public void testPostMultipart() throws Exception {
+		TestMechResponse res = mech.postMultipart("/postMultipart")
+				.param("name", "田中")
+				.file("tmpl", new File("src/test/resources/tmpl/mustache.mustache"))
+				.execute();
+		res.assertSuccess();
+		res.assertContentContains("(postform)name:田中");
 	}
 }

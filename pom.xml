@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.geso</groupId>
 	<artifactId>avans</artifactId>
-	<version>0.1.13-SNAPSHOT</version>
+	<version>0.2.1-SNAPSHOT</version>
 	<name>avans</name>
 	<description>avans</description>
 
@@ -103,7 +103,8 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>testmech</artifactId>
-			<version>0.1.4</version>
+			<version>0.2.0</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.aggregate</groupId>

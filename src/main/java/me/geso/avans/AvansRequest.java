@@ -1,7 +1,10 @@
 package me.geso.avans;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +22,9 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import lombok.SneakyThrows;
@@ -27,11 +32,23 @@ import lombok.SneakyThrows;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // TODO port all methods from Plack::Request
+/**
+ * Not thread safe.
+ * 
+ * @author tokuhirom
+ *
+ */
 public class AvansRequest {
 	private HttpServletRequest request;
-	private Map<String, List<FileItem>> upload;
+	private Map<String, List<FileItem>> uploads;
+	private Map<String, String[]> parameters;
 
 	public AvansRequest(HttpServletRequest request) {
+		try {
+			request.setCharacterEncoding(this.getCharacterEncoding());
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 		this.request = request;
 	}
 
@@ -115,18 +132,34 @@ public class AvansRequest {
 	 * @param name
 	 * @return
 	 */
-	public String getParameter(String name) {
-		return this.request.getParameter(name);
+	public Optional<String> getParameter(String name) {
+		String[] strings = this.getParameterMap().get(name);
+		if (strings == null) {
+			return Optional.empty();
+		}
+		if (strings.length == 0) {
+			return Optional.empty();
+		}
+		return Optional.of(strings[0]);
 	}
 
-	public Map<String, String[]> getParameterMap(String name) {
-		return this.request.getParameterMap();
+	public List<String> getParameters(String name) {
+		String[] strings = this.getParameterMap().get(name);
+		if (strings == null) {
+			return new ArrayList<>();
+		} else {
+			return Arrays.asList(strings);
+		}
+	}
+
+	protected String getCharacterEncoding() {
+		return "UTF-8";
 	}
 
 	public OptionalInt getIntParam(String name) {
-		String parameter = this.request.getParameter(name);
-		if (parameter != null) {
-			return OptionalInt.of(Integer.parseInt(parameter));
+		Optional<String> parameter = this.getParameter(name);
+		if (parameter.isPresent()) {
+			return OptionalInt.of(Integer.parseInt(parameter.get()));
 		} else {
 			return OptionalInt.empty();
 		}
@@ -134,30 +167,74 @@ public class AvansRequest {
 
 	// TODO This may work. but it's not tested.
 	public Optional<FileItem> getFileItem(String name) {
-		try {
-			this.upload = new ServletFileUpload().parseParameterMap(request);
-			List<FileItem> items = this.upload.get(name);
-			if (items == null || items.isEmpty()) {
-				return Optional.empty();
-			}
-			return Optional.of(items.get(0));
-		} catch (FileUploadException e) {
-			throw new RuntimeException(e);
+		List<FileItem> items = this.getFileItemMap().get(name);
+		if (items == null || items.isEmpty()) {
+			return Optional.empty();
 		}
+		return Optional.of(items.get(0));
 	}
 
 	// TODO This may work. but it's not tested.
 	public List<FileItem> getFileItems(String name) {
-		try {
-			this.upload = new ServletFileUpload().parseParameterMap(request);
-			List<FileItem> items = this.upload.get(name);
-			if (items == null) {
-				return new ArrayList<>();
-			}
-			return items;
-		} catch (FileUploadException e) {
-			throw new RuntimeException(e);
+		List<FileItem> items = this.getFileItemMap().get(name);
+		if (items == null) {
+			return new ArrayList<>();
 		}
+		return items;
+	}
+	
+	public Map<String, List<FileItem>> getFileItemMap() {
+		this.getParameterMap(); // initialize this.uploads
+		return this.uploads;
+	}
+
+	public Map<String, String[]> getParameterMap() {
+		if (this.parameters == null) {
+			try {
+				this.parameters = new HashMap<>(request.getParameterMap());
+
+				if (ServletFileUpload.isMultipartContent(request)) {
+					FileItemFactory fileItemFactory = this
+							.createFileItemFactory();
+					ServletFileUpload servletFileUpload = new ServletFileUpload(
+							fileItemFactory);
+					List<FileItem> fileItems = servletFileUpload
+							.parseRequest(this.request);
+					this.uploads = new HashMap<>();
+					for (FileItem fileItem : fileItems) {
+						if (fileItem.isFormField()) {
+							String value = fileItem.getString(this.getCharacterEncoding());
+							String[] strings = new String[1];
+							strings[0] = value;
+							this.parameters.put(fileItem.getFieldName(), strings);
+						} else {
+							if (this.uploads.containsKey(fileItem
+									.getFieldName())) {
+								this.uploads.get(fileItem.getFieldName()).add(
+										fileItem);
+							} else {
+								List<FileItem> list = new ArrayList<>();
+								list.add(fileItem);
+								this.uploads.put(fileItem.getFieldName(), list);
+							}
+						}
+					}
+				}
+			} catch (FileUploadException | UnsupportedEncodingException e) {
+				this.parameters = null;
+				throw new RuntimeException(e);
+			}
+		}
+		return this.parameters;
+	}
+
+	/**
+	 * You can override this method.
+	 * 
+	 * @return
+	 */
+	public FileItemFactory createFileItemFactory() {
+		return new DiskFileItemFactory();
 	}
 
 	public ServletFileUpload createServletFileUpload() {
