@@ -14,17 +14,14 @@ import lombok.ToString;
 @ToString
 public class AvansCallbackResponse implements AvansResponse {
 
-	private int status;
 	private Callback callback;
 
 	public AvansCallbackResponse(@NonNull Callback callback) {
-		this.status = 200;
 		this.callback = callback;
 	}
 
 	@Override
 	public void write(HttpServletResponse response) throws IOException {
-		response.setStatus(status);
 		try {
 			this.callback.call(response);
 		} catch (Exception e) {
