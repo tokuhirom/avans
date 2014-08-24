@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import lombok.ToString;
 
 /**
- * This is *not* a thread safe.
+ * This class represents HTTP headers. This is *not* a thread safe.
  * 
  * @author tokuhirom
  *
@@ -23,10 +23,12 @@ public class AvansHeaders {
 	public void add(String key, String value) {
 		key = key.toLowerCase();
 		if (key.contains("\n")) {
-			throw new RuntimeException("You can't include new line character in header key.");
+			throw new RuntimeException(
+					"You can't include new line character in header key.");
 		}
 		if (value.contains("\n")) {
-			throw new RuntimeException("You can't include new line character in header value.");
+			throw new RuntimeException(
+					"You can't include new line character in header value.");
 		}
 		if (!map.containsKey(key)) {
 			map.put(key, new ArrayList<String>());

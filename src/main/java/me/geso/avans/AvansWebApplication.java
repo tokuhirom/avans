@@ -28,6 +28,7 @@ public abstract class AvansWebApplication implements Closeable {
 	private AvansRequest request;
 	private HttpServletResponse servletResponse;
 	private Map<String, String> args;
+	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	public AvansWebApplication(HttpServletRequest servletRequest,
 			HttpServletResponse servletResponse) throws IOException {
@@ -94,33 +95,67 @@ public abstract class AvansWebApplication implements Closeable {
 		return Optional.ofNullable(arg);
 	}
 
+	/**
+	 * Create new "405 Method Not Allowed" response in JSON.
+	 * 
+	 * @return
+	 */
 	public AvansResponse errorMethodNotAllowed() {
 		return this.renderError(405, "Method Not Allowed");
 	}
 
+	/**
+	 * Create new "403 Forbidden" response in JSON.
+	 * 
+	 * @return
+	 */
 	public AvansResponse errorForbidden() {
 		return this.renderError(403, "Forbidden");
 	}
 
+	/**
+	 * Create new "404 Not Found" response in JSON.
+	 * 
+	 * @return
+	 */
 	public AvansResponse errorNotFound() {
 		return this.renderError(404, "Not Found");
 	}
 
-	private AvansResponse renderError(int code, String message) {
+	/**
+	 * Render the error response.
+	 * 
+	 * @param code
+	 * @param message
+	 * @return
+	 */
+	protected AvansResponse renderError(int code, String message) {
 		AvansAPIResponse<String> apires = new AvansAPIResponse<>(code, message);
 
 		AvansBytesResponse res = this.renderJSON(apires);
 		res.setStatus(code);
 		return res;
 	}
-	
+
+	/**
+	 * Create new redirect response. You can use relative url here.
+	 * 
+	 * @param location
+	 * @return
+	 */
 	public AvansRedirectResponse redirect(String location) {
 		return new AvansRedirectResponse(location);
 	}
 
+	/**
+	 * Create new text/plain response.
+	 * 
+	 * @param text
+	 * @return
+	 */
 	@SneakyThrows
 	public AvansResponse renderTEXT(String text) {
-		byte[] bytes = text.getBytes(Charset.forName("UTF-8"));
+		byte[] bytes = text.getBytes(UTF8);
 
 		AvansBytesResponse res = new AvansBytesResponse();
 		res.setContentType("text/plain; charset=utf-8");
@@ -128,12 +163,17 @@ public abstract class AvansWebApplication implements Closeable {
 		return res;
 	}
 
+	/**
+	 * Rendering JSON by jackson.
+	 * 
+	 * @param obj
+	 * @return
+	 */
 	@SneakyThrows
 	public AvansBytesResponse renderJSON(Object obj) {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
-
+		ObjectMapper mapper = createObjectMapper();
 		byte[] json = mapper.writeValueAsBytes(obj);
+
 		AvansBytesResponse res = new AvansBytesResponse();
 		res.setContentType("application/json; charset=utf-8");
 		res.setContentLength(json.length);
@@ -141,6 +181,25 @@ public abstract class AvansWebApplication implements Closeable {
 		return res;
 	}
 
+	/**
+	 * Create new ObjectMapper instance. You can override this method for
+	 * customizing.
+	 * 
+	 * @return
+	 */
+	protected ObjectMapper createObjectMapper() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+		return mapper;
+	}
+
+	/**
+	 * Create a response object by mustache template engine.
+	 * 
+	 * @param template
+	 * @param context
+	 * @return
+	 */
 	@SneakyThrows
 	public AvansBytesResponse renderMustache(String template, Object context) {
 		File tmplDir = this.getTemplateDirectory();
@@ -162,12 +221,28 @@ public abstract class AvansWebApplication implements Closeable {
 		return new File(getBaseDirectory() + "/tmpl/");
 	}
 
+	/**
+	 * Get project base directory. TODO: better jar location detection
+	 * algorithm.
+	 * 
+	 * @return
+	 */
+	@SneakyThrows
 	public String getBaseDirectory() {
 		return System.getProperty("user.dir");
 	}
 
-	// hook point
-	public Optional<AvansResponse> BEFORE_DISPATCH() {
+	/**
+	 * This is a hook point. You can override this.
+	 * 
+	 * Use case:
+	 * <ul>
+	 * <li>Authentication before dispatching</li>
+	 * </ul>
+	 * 
+	 * @return
+	 */
+	protected Optional<AvansResponse> BEFORE_DISPATCH() {
 		// override me.
 		return Optional.empty();
 	}

@@ -244,6 +244,12 @@ public class AvansRequest {
 		return Optional.of(strings[0]);
 	}
 
+	/**
+	 * Get parameters from queryString/contentBody by name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public List<String> getParameters(String name) {
 		String[] strings = this.getParameterMap().get(name);
 		if (strings == null) {
@@ -257,6 +263,12 @@ public class AvansRequest {
 		return "UTF-8";
 	}
 
+	/**
+	 * Get int value from parameter.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public OptionalInt getIntParam(String name) {
 		Optional<String> parameter = this.getParameter(name);
 		if (parameter.isPresent()) {
@@ -266,6 +278,12 @@ public class AvansRequest {
 		}
 	}
 
+	/**
+	 * Get uploaded file object by name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public Optional<FileItem> getFileItem(String name) {
 		List<FileItem> items = this.getFileItemMap().get(name);
 		if (items == null || items.isEmpty()) {
@@ -274,6 +292,12 @@ public class AvansRequest {
 		return Optional.of(items.get(0));
 	}
 
+	/**
+	 * Get uploaded file items by name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public List<FileItem> getFileItems(String name) {
 		List<FileItem> items = this.getFileItemMap().get(name);
 		if (items == null) {
@@ -282,24 +306,37 @@ public class AvansRequest {
 		return items;
 	}
 
+	/**
+	 * Get all uploaded file items.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public Map<String, List<FileItem>> getFileItemMap() {
 		this.getParameterMap(); // initialize this.uploads
 		return this.uploads;
 	}
 
+	/**
+	 * Get parameters in Map. This method parses followings.
+	 * <ul>
+	 * <li>query string</li>
+	 * <li>contentBody: multipart/form-data</li>
+	 * <li>contentBody: application/x-www-form-urlencoded</li>
+	 * </ul>
+	 * 
+	 * @return
+	 */
 	public Map<String, String[]> getParameterMap() {
 		if (this.parameters == null) {
 			try {
-				this.parameters = new HashMap<>(request.getParameterMap());
+				this.parameters = new TreeMap<>(request.getParameterMap());
 
 				if (ServletFileUpload.isMultipartContent(request)) {
-					FileItemFactory fileItemFactory = this
-							.createFileItemFactory();
-					ServletFileUpload servletFileUpload = new ServletFileUpload(
-							fileItemFactory);
+					ServletFileUpload servletFileUpload = this.createServletFileUpload();
 					List<FileItem> fileItems = servletFileUpload
 							.parseRequest(this.request);
-					this.uploads = new HashMap<>();
+					this.uploads = new TreeMap<>();
 					for (FileItem fileItem : fileItems) {
 						if (fileItem.isFormField()) {
 							String value = fileItem.getString(this
@@ -330,18 +367,16 @@ public class AvansRequest {
 	}
 
 	/**
+	 * Create new ServletFileUpload instance.
 	 * You can override this method.
+	 *
+	 * <p>See also commons-fileupload.</p>
 	 * 
 	 * @return
 	 */
-	public FileItemFactory createFileItemFactory() {
-		return new DiskFileItemFactory();
+	protected ServletFileUpload createServletFileUpload() {
+		FileItemFactory fileItemFactory = new DiskFileItemFactory();
+		return new ServletFileUpload(fileItemFactory);
 	}
-
-	public ServletFileUpload createServletFileUpload() {
-		return new ServletFileUpload();
-	}
-
-	// TODO: support ServletFileUpload
 
 }

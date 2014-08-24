@@ -12,9 +12,24 @@ I need the web application framework like Sledge(Popular web application framewo
 You can build web application based on servlet API.
 That's all.
 
-## TODO
+## Components
 
- * Support file uploading
+### Core dependencies
+
+ * mustache - very fast template engine.
+ * jackson - really fast JSON serializer/deserializer
+ * commons-fileupload - multipart/form-data processor
+
+### And recommended modules
+
+ * testmech - testing framework for web applications
+ * tinyorm - Tiny O/R Mapper library
+
+## FAQ
+
+### Is there a HTML::FillInForm support?
+
+No there isn't. You should do it with JavaScript.
 
 ## LICENSE
 
