@@ -48,10 +48,16 @@ public abstract class AvansWebApplication implements Closeable {
 	public void run() throws IOException {
 		this.setDefaultCharacterEncoding();
 
+		AvansResponse res = this.makeResponse();
+		this.AFTER_DISPATCH(res);
+		res.write(servletResponse);
+	}
+
+	private AvansResponse makeResponse() {
 		{
 			Optional<AvansResponse> maybeResponse = this.BEFORE_DISPATCH();
 			if (maybeResponse.isPresent()) {
-				maybeResponse.get().write(servletResponse);
+				return maybeResponse.get();
 			}
 		}
 
@@ -59,7 +65,7 @@ public abstract class AvansWebApplication implements Closeable {
 		if (res == null) {
 			throw new RuntimeException("dispatch method must not return NULL");
 		}
-		res.write(servletResponse);
+		return res;
 	}
 
 	public AvansRequest getRequest() {
@@ -72,6 +78,12 @@ public abstract class AvansWebApplication implements Closeable {
 		this.args = captured;
 	}
 
+	/**
+	 * Get a path parameter.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public String getArg(String name) {
 		String arg = this.args.get(name);
 		if (arg == null) {
@@ -80,16 +92,35 @@ public abstract class AvansWebApplication implements Closeable {
 		return arg;
 	}
 
+	/**
+	 * Get a path parameter in long.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public long getLongArg(String name) {
 		String arg = this.getArg(name);
 		return Long.parseLong(arg);
 	}
 
+	/**
+	 * Get a path parameter in int.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public int getIntArg(String name) {
 		String arg = this.getArg(name);
 		return Integer.parseInt(arg);
 	}
 
+	/**
+	 * Get a path parameter in String. But this doesn't throws exception if the
+	 * value doesn't exists.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public Optional<String> getOptionalArg(String name) {
 		String arg = this.args.get(name);
 		return Optional.ofNullable(arg);
@@ -229,7 +260,9 @@ public abstract class AvansWebApplication implements Closeable {
 	 */
 	@SneakyThrows
 	public String getBaseDirectory() {
-		return System.getProperty("user.dir");
+		String baseDirectory = this.getClass().getProtectionDomain()
+				.getCodeSource().getLocation().getPath();
+		return baseDirectory;
 	}
 
 	/**
@@ -245,6 +278,15 @@ public abstract class AvansWebApplication implements Closeable {
 	protected Optional<AvansResponse> BEFORE_DISPATCH() {
 		// override me.
 		return Optional.empty();
+	}
+
+	/**
+	 * This is a hook point. You can override this method.
+	 * 
+	 * @param res
+	 */
+	protected void AFTER_DISPATCH(AvansResponse res) {
+		return; // NOP
 	}
 
 }
