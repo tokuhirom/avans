@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -22,13 +21,13 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import lombok.SneakyThrows;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-
-import lombok.SneakyThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -215,9 +214,11 @@ public class AvansRequest {
 		Validator validator = validatorFactory.getValidator();
 		Set<ConstraintViolation<T>> violations = validator.validate(o);
 		if (!violations.isEmpty()) {
-			List<String> messages = violations.stream().map(e -> {
-				return e.getPropertyPath() + " " + e.getMessage();
-			}).collect(Collectors.toList());
+			List<String> messages = new ArrayList<>();
+			for (ConstraintViolation<T> violation: violations) {
+				String message = violation.getPropertyPath() + " " + violation.getMessage();
+				messages.add(message);
+			}
 			throw new AvansValidationException(messages);
 		}
 	}

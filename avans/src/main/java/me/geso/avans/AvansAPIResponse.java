@@ -12,9 +12,10 @@ public class AvansAPIResponse<T extends Object> {
 	@Getter
 	@Setter
 	int code;
+
 	@Getter
-	@Setter
 	List<String> messages;
+
 	@Getter
 	@Setter
 	T data;

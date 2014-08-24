@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.geso</groupId>
 	<artifactId>avans</artifactId>
-	<version>0.4.1-SNAPSHOT</version>
+	<version>0.4.2-SNAPSHOT</version>
 	<name>avans</name>
 	<description>avans</description>
 
@@ -85,7 +85,7 @@
 			<artifactId>compiler</artifactId>
 			<version>0.8.16</version>
 		</dependency>
-		<!--  bean validation -->
+		<!-- bean validation -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
@@ -101,11 +101,11 @@
 			<artifactId>javax.el</artifactId>
 			<version>2.2.4</version>
 		</dependency>
-		<!--  /bean validation -->
+		<!-- /bean validation -->
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>testmech</artifactId>
-			<version>0.2.0</version>
+			<version>0.2.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -118,8 +118,11 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
 				<configuration>
+					<compilerVersion>1.8</compilerVersion>
 					<source>1.8</source>
 					<target>1.8</target>
 					<encoding>UTF-8</encoding>
