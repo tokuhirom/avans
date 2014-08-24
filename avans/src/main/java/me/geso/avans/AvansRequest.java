@@ -141,13 +141,9 @@ public class AvansRequest {
 	 * </table>
 	 *
 	 * <p>
-	 * To reconstruct an URL with a scheme and host, use
-	 * {@link HttpUtils#getRequestURL}.
 	 *
 	 * @return a <code>String</code> containing the part of the URL from the
 	 *         protocol name up to the query string
-	 *
-	 * @see HttpUtils#getRequestURL
 	 */
 	public String getRequestURI() {
 		return this.request.getRequestURI();
@@ -308,7 +304,6 @@ public class AvansRequest {
 	/**
 	 * Get all uploaded file items.
 	 * 
-	 * @param name
 	 * @return
 	 */
 	public Map<String, List<FileItem>> getFileItemMap() {
