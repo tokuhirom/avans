@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 
@@ -195,8 +197,8 @@ public abstract class AvansWebApplication implements Closeable {
 	 */
 	@SneakyThrows
 	public AvansBytesResponse renderMustache(@NonNull String template, Object context) {
-		File tmplDir = this.getTemplateDirectory();
-		DefaultMustacheFactory factory = new DefaultMustacheFactory(tmplDir);
+		Path tmplDir = this.getTemplateDirectory();
+		DefaultMustacheFactory factory = new DefaultMustacheFactory(tmplDir.toFile());
 		Mustache mustache = factory.compile(template);
 		StringWriter writer = new StringWriter();
 		mustache.execute(writer, context).flush();
@@ -210,8 +212,8 @@ public abstract class AvansWebApplication implements Closeable {
 		return res;
 	}
 
-	public File getTemplateDirectory() {
-		return new File(getBaseDirectory() + "/tmpl/");
+	public Path getTemplateDirectory() {
+		return this.getBaseDirectory().resolve("tmpl");
 	}
 
 	/**
@@ -221,10 +223,14 @@ public abstract class AvansWebApplication implements Closeable {
 	 * @return
 	 */
 	@SneakyThrows
-	public String getBaseDirectory() {
+	public Path getBaseDirectory() {
 		String baseDirectory = this.getClass().getProtectionDomain()
 				.getCodeSource().getLocation().getPath();
-		return baseDirectory;
+		Path path = Paths.get(baseDirectory);
+		if (path.endsWith(Paths.get("target", "classes"))) {
+			path.resolve("../..");
+		}
+		return path;
 	}
 
 	/**

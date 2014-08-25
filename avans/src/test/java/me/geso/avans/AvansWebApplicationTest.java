@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -93,8 +95,8 @@ public class AvansWebApplicationTest {
 		}
 
 		@Override
-		public String getBaseDirectory() {
-			return System.getProperty("user.dir") + "/src/test/resources/";
+		public Path getBaseDirectory() {
+			return Paths.get(System.getProperty("user.dir"), "src/test/resources/");
 		}
 
 		@Override
