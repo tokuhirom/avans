@@ -228,7 +228,7 @@ public abstract class AvansWebApplication implements Closeable {
 				.getCodeSource().getLocation().getPath();
 		Path path = Paths.get(baseDirectory);
 		if (path.endsWith(Paths.get("target", "classes"))) {
-			path.resolve("../..");
+			path = path.resolve("../..");
 		}
 		return path;
 	}
