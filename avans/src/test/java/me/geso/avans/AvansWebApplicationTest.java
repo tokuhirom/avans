@@ -183,14 +183,15 @@ public class AvansWebApplicationTest {
 		{
 			TestMechResponse res = mech.get("/").execute();
 			res.assertSuccess();
-			res.assertContentTypeContains("json");
+			res.assertContentTypeMimeTypeEquals("application/json");
 			res.assertContentEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
 		}
 
 		{
 			TestMechResponse res = mech.get("/intarg/5963").execute();
 			res.assertSuccess();
-			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentTypeMimeTypeEquals("application/json");
+			res.assertContentTypeCharsetEquals("UTF-8");
 			res.assertContentEquals(
 					"{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}"
 					);
@@ -199,7 +200,8 @@ public class AvansWebApplicationTest {
 		{
 			TestMechResponse res = mech.get("/longarg/5963").execute();
 			res.assertSuccess();
-			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentTypeMimeTypeEquals("application/json");
+			res.assertContentTypeCharsetEquals("UTF-8");
 			res.assertContentEquals(
 					"{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}"
 					);
@@ -208,7 +210,8 @@ public class AvansWebApplicationTest {
 		{
 			TestMechResponse res = mech.get("/mustache").execute();
 			res.assertSuccess();
-			res.assertContentTypeEquals("text/html; charset=UTF-8");
+			res.assertContentTypeMimeTypeEquals("text/html");
+			res.assertContentTypeCharsetEquals("UTF-8");
 			res.assertContentEquals("Hi, John!\n");
 		}
 
@@ -217,7 +220,8 @@ public class AvansWebApplicationTest {
 			foo.setName("iyan");
 			TestMechResponse res = mech.postJSON("/json", foo).execute();
 			res.assertSuccess();
-			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentTypeMimeTypeEquals("application/json");
+			res.assertContentTypeCharsetEquals("UTF-8");
 			res.assertContentEquals("{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
 		}
 
@@ -226,7 +230,8 @@ public class AvansWebApplicationTest {
 			foo.setName("iyan");
 			TestMechResponse res = mech.postJSON("/json", foo).execute();
 			res.assertSuccess();
-			res.assertContentTypeEquals("application/json; charset=utf-8");
+			res.assertContentTypeMimeTypeEquals("application/json");
+			res.assertContentTypeCharsetEquals("UTF-8");
 
 			@SuppressWarnings("unchecked")
 			AvansAPIResponse<String> data = res
@@ -238,15 +243,16 @@ public class AvansWebApplicationTest {
 		{
 			TestMechResponse res = mech.get("/").execute();
 			res.assertSuccess();
-			res.assertContentTypeStartsWith("application/json");
-			res.assertContentTypeContains("json");
+			res.assertContentTypeMimeTypeEquals("application/json");
+			res.assertContentTypeCharsetEquals("UTF-8");
 			res.assertContentContains("hoge");
 		}
 
 		{
 			TestMechResponse res = mech.get("/cb").execute();
 			res.assertSuccess();
-			res.assertContentTypeEquals("text/plain; charset=UTF-8");
+			res.assertContentTypeMimeTypeEquals("text/plain");
+			res.assertContentTypeCharsetEquals("UTF-8");
 			res.assertContentContains("いぇーい");
 		}
 
