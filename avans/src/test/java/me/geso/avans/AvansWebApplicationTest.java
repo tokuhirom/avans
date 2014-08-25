@@ -78,7 +78,7 @@ public class AvansWebApplicationTest {
 			}
 
 			Map<String, String> captured = match.getCaptured();
-			this.setArgs(captured);
+			this.setPathParameters(captured);
 			BasicAction destination = match.getDestination();
 			AvansResponse response = destination.run(this);
 			if (response == null) {
@@ -109,13 +109,13 @@ public class AvansWebApplicationTest {
 
 		public static AvansResponse intarg(AvansWebApplication web) {
 			AvansAPIResponse<String> res = new AvansAPIResponse<>("INTARG:"
-					+ web.getIntArg("id"));
+					+ web.getPathParameters().getInt("id"));
 			return web.renderJSON(res);
 		}
 
 		public static AvansResponse longarg(AvansWebApplication web) {
 			AvansAPIResponse<String> res = new AvansAPIResponse<>("LONGARG:"
-					+ web.getLongArg("id"));
+					+ web.getPathParameters().getInt("id"));
 			return web.renderJSON(res);
 		}
 

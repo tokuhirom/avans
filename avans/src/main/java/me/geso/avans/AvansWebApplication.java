@@ -11,6 +11,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -27,7 +28,7 @@ import com.github.mustachejava.Mustache;
 public abstract class AvansWebApplication implements Closeable {
 	private AvansRequest request;
 	private HttpServletResponse servletResponse;
-	private Map<String, String> args;
+	private AvansPathParameters pathParameters;
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	public AvansWebApplication(HttpServletRequest servletRequest,
@@ -74,8 +75,8 @@ public abstract class AvansWebApplication implements Closeable {
 
 	public abstract AvansResponse dispatch();
 
-	protected void setArgs(Map<String, String> captured) {
-		this.args = captured;
+	protected void setPathParameters(@NonNull Map<String, String> captured) {
+		this.pathParameters = new AvansPathParameters(captured);
 	}
 
 	/**
@@ -84,46 +85,8 @@ public abstract class AvansWebApplication implements Closeable {
 	 * @param name
 	 * @return
 	 */
-	public String getArg(String name) {
-		String arg = this.args.get(name);
-		if (arg == null) {
-			throw new RuntimeException("Missing mandatory argument: " + name);
-		}
-		return arg;
-	}
-
-	/**
-	 * Get a path parameter in long.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public long getLongArg(String name) {
-		String arg = this.getArg(name);
-		return Long.parseLong(arg);
-	}
-
-	/**
-	 * Get a path parameter in int.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public int getIntArg(String name) {
-		String arg = this.getArg(name);
-		return Integer.parseInt(arg);
-	}
-
-	/**
-	 * Get a path parameter in String. But this doesn't throws exception if the
-	 * value doesn't exists.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public Optional<String> getOptionalArg(String name) {
-		String arg = this.args.get(name);
-		return Optional.ofNullable(arg);
+	public AvansPathParameters getPathParameters() {
+		return this.pathParameters;
 	}
 
 	/**
@@ -160,7 +123,7 @@ public abstract class AvansWebApplication implements Closeable {
 	 * @param message
 	 * @return
 	 */
-	protected AvansResponse renderError(int code, String message) {
+	protected AvansResponse renderError(int code, @NonNull String message) {
 		AvansAPIResponse<String> apires = new AvansAPIResponse<>(code, message);
 
 		AvansBytesResponse res = this.renderJSON(apires);
@@ -174,7 +137,7 @@ public abstract class AvansWebApplication implements Closeable {
 	 * @param location
 	 * @return
 	 */
-	public AvansRedirectResponse redirect(String location) {
+	public AvansRedirectResponse redirect(@NonNull String location) {
 		return new AvansRedirectResponse(location);
 	}
 
@@ -232,7 +195,7 @@ public abstract class AvansWebApplication implements Closeable {
 	 * @return
 	 */
 	@SneakyThrows
-	public AvansBytesResponse renderMustache(String template, Object context) {
+	public AvansBytesResponse renderMustache(@NonNull String template, Object context) {
 		File tmplDir = this.getTemplateDirectory();
 		DefaultMustacheFactory factory = new DefaultMustacheFactory(tmplDir);
 		Mustache mustache = factory.compile(template);
