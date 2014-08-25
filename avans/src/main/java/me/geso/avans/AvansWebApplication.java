@@ -82,7 +82,6 @@ public abstract class AvansWebApplication implements Closeable {
 	/**
 	 * Get a path parameter.
 	 * 
-	 * @param name
 	 * @return
 	 */
 	public AvansPathParameters getPathParameters() {

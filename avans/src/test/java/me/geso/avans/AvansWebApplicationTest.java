@@ -19,6 +19,7 @@ import me.geso.routes.WebRouter;
 import me.geso.testmech.TestMechJettyServlet;
 import me.geso.testmech.TestMechResponse;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -168,6 +169,13 @@ public class AvansWebApplicationTest {
 		this.mech = new TestMechJettyServlet(MyServlet.class);
 	}
 
+	@After
+	public void after() throws Exception {
+		if (this.mech != null) {
+			this.mech.close();
+		}
+	}
+
 	@Test
 	public void test() throws Exception {
 		{
@@ -258,9 +266,11 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testPostMultipart() throws Exception {
-		TestMechResponse res = mech.postMultipart("/postMultipart")
+		TestMechResponse res = mech
+				.postMultipart("/postMultipart")
 				.param("name", "田中")
-				.file("tmpl", new File("src/test/resources/tmpl/mustache.mustache"))
+				.file("tmpl",
+						new File("src/test/resources/tmpl/mustache.mustache"))
 				.execute();
 		res.assertSuccess();
 		res.assertContentContains("(postform)name:田中");

@@ -21,6 +21,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.commons.fileupload.FileItem;
@@ -29,6 +30,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -186,11 +188,32 @@ public class AvansRequest {
 	 * Read JSON from content-body. And parse it. This method runs hibernate
 	 * validator. If the validation was failed, it throws runtime exception.
 	 * 
+	 * @param typeReference
+	 * @return
+	 */
+	@SneakyThrows
+	public <T> T readJSON(@NonNull final TypeReference<T> typeReference) {
+		ServletInputStream inputStream = this.request.getInputStream();
+
+		ObjectMapper mapper = new ObjectMapper();
+		T instance = mapper.readValue(inputStream, typeReference);
+		if (instance != null) {
+			this.validate(instance);
+			return instance;
+		} else {
+			throw new RuntimeException("null found... in content body");
+		}
+	}
+
+	/**
+	 * Read JSON from content-body. And parse it. This method runs hibernate
+	 * validator. If the validation was failed, it throws runtime exception.
+	 * 
 	 * @param klass
 	 * @return
 	 */
 	@SneakyThrows
-	public <T> T readJSON(Class<T> klass) {
+	public <T> T readJSON(@NonNull final Class<T> klass) {
 		ServletInputStream inputStream = this.request.getInputStream();
 
 		ObjectMapper mapper = new ObjectMapper();
