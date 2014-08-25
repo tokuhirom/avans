@@ -13,24 +13,30 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class RootControllerTest {
 
 	@Test
-	public void testRoot() {
-		TestMechJettyServlet mech = new TestMechJettyServlet(KitchenServlet.class);
-		TestMechResponse res = mech.get("/").execute();
-		res.assertSuccess();
-		res.assertContentTypeContains("text/html");
-		res.assertContentContains("<!doctype");
+	public void testRoot() throws Exception {
+		try (TestMechJettyServlet mech = new TestMechJettyServlet(
+				KitchenServlet.class)) {
+			TestMechResponse res = mech.get("/").execute();
+			res.assertSuccess();
+			res.assertContentTypeMimeTypeEquals("text/html");
+			res.assertContentContains("<!doctype");
+		}
 	}
 
 	@Test
-	public void testJson() {
-		TestMechJettyServlet mech = new TestMechJettyServlet(KitchenServlet.class);
-		TestMechResponse res = mech.get("/json").execute();
-		res.assertSuccess();
-		res.assertContentTypeContains("application/json");
-		AvansAPIResponse<String> dat = res.readJSON(new TypeReference<AvansAPIResponse<String>>() {
-		});
-		assertThat(dat.getCode()).isEqualTo(200);
-		assertThat(dat.getData()).isEqualTo("hoge");
+	public void testJson() throws Exception {
+		try (TestMechJettyServlet mech = new TestMechJettyServlet(
+				KitchenServlet.class)) {
+			TestMechResponse res = mech.get("/json").execute();
+			res.assertSuccess();
+			res.assertContentTypeMimeTypeEquals("application/json");
+			res.assertContentTypeCharsetEquals("UTF-8");
+			AvansAPIResponse<RootController.MyObject> dat = res
+					.readJSON(new TypeReference<AvansAPIResponse<RootController.MyObject>>() {
+					});
+			assertThat(dat.getCode()).isEqualTo(200);
+			assertThat(dat.getData().getName()).isEqualTo("John");
+		}
 	}
 
 }

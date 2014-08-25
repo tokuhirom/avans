@@ -5,6 +5,8 @@ import me.geso.avans.AvansAPIResponse;
 import me.geso.avans.AvansResponse;
 
 import com.example.kitchen.KitchenWebApplication;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RootController {
 	public static AvansResponse root(KitchenWebApplication web) {
@@ -28,7 +30,8 @@ public class RootController {
 	public static class MyObject {
 		private String name;
 
-		public MyObject(String name) {
+		@JsonCreator
+		public MyObject(@JsonProperty("name") String name) {
 			this.name = name;
 		}
 	}
