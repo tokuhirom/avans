@@ -40,4 +40,14 @@ public class AvansBytesResponse implements AvansResponse {
 	public void setContentLength(long length) {
 		headers.add("Content-Length", ""+length);
 	}
+
+	@Override
+	public void addHeader(String name, String value) {
+		headers.add(name, value);
+	}
+
+	@Override
+	public void setHeader(String name, String value) {
+		headers.set(name, value);
+	}
 }

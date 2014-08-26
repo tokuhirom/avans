@@ -18,4 +18,8 @@ public interface AvansResponse {
 	 * @throws IOException
 	 */
 	public void write(HttpServletResponse response) throws IOException;
+
+	public void addHeader(String name, String value);
+
+	public void setHeader(String name, String value);
 }

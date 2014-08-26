@@ -58,5 +58,16 @@ public class AvansHeaders {
 	public Set<String> keySet() {
 		return map.keySet();
 	}
+	
+	public Set<String> headerNames() {
+		return this.map.keySet();
+	}
+
+	public void set(String key, String value) {
+		key = key.toLowerCase();
+		List<String> values = new ArrayList<String>();
+		values.add(value);
+		map.put(key, values);
+	}
 
 }
