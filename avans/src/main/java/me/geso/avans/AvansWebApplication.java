@@ -104,7 +104,11 @@ public abstract class AvansWebApplication implements Closeable {
 	 * @return
 	 */
 	public AvansResponse errorForbidden() {
-		return this.renderError(403, "Forbidden");
+		return this.errorForbidden("Forbidden");
+	}
+
+	public AvansResponse errorForbidden(String message) {
+		return this.renderError(403, message);
 	}
 
 	/**

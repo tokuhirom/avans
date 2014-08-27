@@ -48,6 +48,16 @@ public class AvansAPIResponse<T extends Object> {
 	}
 
 	/**
+	 * Create new instance.
+	 */
+	public AvansAPIResponse(int code, String message, T data) {
+		this.code = code;
+		this.messages = new ArrayList<>();
+		this.messages.add(message);
+		this.data = data;
+	}
+
+	/**
 	 * Set message. Current message will remove.
 	 */
 	public void setMessage(String message) {
@@ -65,8 +75,14 @@ public class AvansAPIResponse<T extends Object> {
 	/**
 	 * Create empty response
 	 */
-	public static <X> AvansAPIResponse<String> empty() {
+	public static AvansAPIResponse<String> empty() {
 		return new AvansAPIResponse<String>(null);
 	}
 
+	/**
+	 * Create 404 not found response
+	 */
+	public static AvansAPIResponse<String> notFound() {
+		return new AvansAPIResponse<String>(404, "Resource Not Found", null);
+	}
 }
