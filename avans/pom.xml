@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.geso</groupId>
 	<artifactId>avans</artifactId>
-	<version>0.5.4-SNAPSHOT</version>
+	<version>0.5.5-SNAPSHOT</version>
 	<name>avans</name>
 	<description>avans</description>
 
@@ -104,8 +104,8 @@
 		<!-- /bean validation -->
 		<dependency>
 			<groupId>me.geso</groupId>
-			<artifactId>testmech</artifactId>
-			<version>0.4.6</version>
+			<artifactId>mech</artifactId>
+			<version>0.5.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

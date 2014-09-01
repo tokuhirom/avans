@@ -1,6 +1,7 @@
 package me.geso.avans;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,8 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
-import me.geso.testmech.TestMechJettyServlet;
-import me.geso.testmech.TestMechResponse;
+import me.geso.mech.MechJettyServlet;
+import me.geso.mech.MechResponse;
 
 import org.junit.After;
 import org.junit.Before;
@@ -96,7 +97,8 @@ public class AvansWebApplicationTest {
 
 		@Override
 		public Path getBaseDirectory() {
-			return Paths.get(System.getProperty("user.dir"), "src/test/resources/");
+			return Paths.get(System.getProperty("user.dir"),
+					"src/test/resources/");
 		}
 
 		@Override
@@ -154,7 +156,8 @@ public class AvansWebApplicationTest {
 		public static AvansResponse postMultipart(AvansWebApplication web) {
 			String text = "(postform)name:"
 					+ web.getRequest().getParameter("name").get()
-					+ ":" + web.getRequest().getFileItem("tmpl");
+					+ ":"
+					+ web.getRequest().getFileItem("tmpl").get().getString();
 			return web.renderTEXT(text);
 		}
 
@@ -164,11 +167,11 @@ public class AvansWebApplicationTest {
 		}
 	}
 
-	private TestMechJettyServlet mech;
+	private MechJettyServlet mech;
 
 	@Before
 	public void before() {
-		this.mech = new TestMechJettyServlet(MyServlet.class);
+		this.mech = new MechJettyServlet(MyServlet.class);
 	}
 
 	@After
@@ -180,107 +183,115 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void test() throws Exception {
-		{
-			TestMechResponse res = mech.get("/").execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("application/json");
-			res.assertContentEquals("{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
+		try (MechResponse res = mech.get("/").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(), "application/json");
+			assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
 		}
 
-		{
-			TestMechResponse res = mech.get("/intarg/5963").execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("application/json");
-			res.assertContentTypeCharsetEquals("UTF-8");
-			res.assertContentEquals(
-					"{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}"
-					);
+		try (MechResponse res = mech.get("/intarg/5963").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(), "application/json");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}");
 		}
 
-		{
-			TestMechResponse res = mech.get("/longarg/5963").execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("application/json");
-			res.assertContentTypeCharsetEquals("UTF-8");
-			res.assertContentEquals(
-					"{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}"
-					);
+		try (MechResponse res = mech.get("/longarg/5963").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(), "application/json");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}");
 		}
 
-		{
-			TestMechResponse res = mech.get("/mustache").execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("text/html");
-			res.assertContentTypeCharsetEquals("UTF-8");
-			res.assertContentEquals("Hi, John!\n");
-		}
-
-		{
-			MyController.Foo foo = new MyController.Foo();
-			foo.setName("iyan");
-			TestMechResponse res = mech.postJSON("/json", foo).execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("application/json");
-			res.assertContentTypeCharsetEquals("UTF-8");
-			res.assertContentEquals("{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
+		try (MechResponse res = mech.get("/mustache").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(), "text/html");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertEquals(res.getContentString(), "Hi, John!\n");
 		}
 
 		{
 			MyController.Foo foo = new MyController.Foo();
 			foo.setName("iyan");
-			TestMechResponse res = mech.postJSON("/json", foo).execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("application/json");
-			res.assertContentTypeCharsetEquals("UTF-8");
-
-			@SuppressWarnings("unchecked")
-			AvansAPIResponse<String> data = res
-					.readJSON(AvansAPIResponse.class);
-			assertEquals(data.code, 200);
-			assertEquals(data.data, "name:iyan");
+			try (MechResponse res = mech.postJSON("/json", foo).execute()) {
+				assertEquals(res.getStatusCode(), 200);
+				assertEquals(res.getContentType().getMimeType(), "application/json");
+				assertEquals(res.getContentType().getCharset().displayName(),
+						"UTF-8");
+				assertEquals(res.getContentString(),
+						"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
+			}
 		}
 
 		{
-			TestMechResponse res = mech.get("/").execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("application/json");
-			res.assertContentTypeCharsetEquals("UTF-8");
-			res.assertContentContains("hoge");
+			MyController.Foo foo = new MyController.Foo();
+			foo.setName("iyan");
+			try (MechResponse res = mech.postJSON("/json", foo).execute()) {
+				assertEquals(res.getStatusCode(), 200);
+				assertEquals(res.getContentType().getMimeType(),
+						"application/json");
+				assertEquals(res.getContentType().getCharset().displayName(),
+						"UTF-8");
+
+				@SuppressWarnings("unchecked")
+				AvansAPIResponse<String> data = res
+						.readJSON(AvansAPIResponse.class);
+				assertEquals(data.code, 200);
+				assertEquals(data.data, "name:iyan");
+			}
 		}
 
 		{
-			TestMechResponse res = mech.get("/cb").execute();
-			res.assertSuccess();
-			res.assertContentTypeMimeTypeEquals("text/plain");
-			res.assertContentTypeCharsetEquals("UTF-8");
-			res.assertContentContains("いぇーい");
+			try (MechResponse res = mech.get("/").execute()) {
+				assertEquals(res.getStatusCode(), 200);
+				assertEquals(res.getContentType().getMimeType(),
+						"application/json");
+				assertEquals(res.getContentType().getCharset().displayName(),
+						"UTF-8");
+				assertTrue(res.getContentString().contains("hoge"));
+			}
 		}
 
-		{
-			TestMechResponse res = mech.get("/query?name=%E3%81%8A%E3%81%BB")
-					.execute();
-			res.assertSuccess();
-			res.assertContentContains("name:おほ");
+		try (MechResponse res = mech.get("/cb").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(),
+					"text/plain");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertTrue(res.getContentString().contains("いぇーい"));
 		}
 
-		{
-			TestMechResponse res = mech.post("/postForm")
-					.param("name", "田中")
-					.execute();
-			res.assertSuccess();
-			res.assertContentContains("(postform)name:田中");
+		try (MechResponse res = mech.get("/query?name=%E3%81%8A%E3%81%BB")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertTrue(res.getContentString().contains("name:おほ"));
+		}
+
+		try (
+				MechResponse res = mech.post("/postForm")
+						.param("name", "田中")
+						.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertTrue(res.getContentString().contains("(postform)name:田中"));
 		}
 	}
 
 	@Test
 	public void testPostMultipart() throws Exception {
-		TestMechResponse res = mech
+		try (MechResponse res = mech
 				.postMultipart("/postMultipart")
 				.param("name", "田中")
 				.file("tmpl",
 						new File("src/test/resources/tmpl/mustache.mustache"))
-				.execute();
-		res.assertSuccess();
-		res.assertContentContains("(postform)name:田中");
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertTrue(res.getContentString().contains("(postform)name:田中"));
+		}
 	}
 }
