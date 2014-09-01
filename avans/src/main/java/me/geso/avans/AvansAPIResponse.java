@@ -85,4 +85,11 @@ public class AvansAPIResponse<T extends Object> {
 	public static AvansAPIResponse<String> notFound() {
 		return new AvansAPIResponse<String>(404, "Resource Not Found", null);
 	}
+
+	/**
+	 * Create 403 forbidden API response
+	 */
+	public static AvansAPIResponse<String> Forbidden() {
+		return new AvansAPIResponse<String>(403, "Forbidden", null);
+	}
 }
