@@ -18,8 +18,10 @@ public class AvansUtil {
 		String baseDirectory = klass.getProtectionDomain()
 				.getCodeSource().getLocation().getPath();
 		Path path = Paths.get(baseDirectory);
-		if (path.endsWith(Paths.get("target", "classes"))) {
-			path = path.resolve("../..");
+		// base/target/Foo-0.0.1-SNAPSHOT.jar
+		// base/target/classes/
+		if (path.getName(path.getNameCount()-1-1).equals("target")) {
+			path = path.getParent().getParent();
 		}
 		return path;
 	}
