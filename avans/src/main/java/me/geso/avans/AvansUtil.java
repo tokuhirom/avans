@@ -20,7 +20,7 @@ public class AvansUtil {
 		Path path = Paths.get(baseDirectory);
 		// base/target/Foo-0.0.1-SNAPSHOT.jar
 		// base/target/classes/
-		if (path.getName(path.getNameCount()-1-1).equals("target")) {
+		if (path.getName(path.getNameCount()-1-1).toString().equals("target")) {
 			path = path.getParent().getParent();
 		}
 		return path;
