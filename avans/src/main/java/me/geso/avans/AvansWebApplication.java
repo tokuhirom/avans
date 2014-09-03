@@ -1,11 +1,9 @@
 package me.geso.avans;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,7 +24,7 @@ import com.github.mustachejava.Mustache;
  * @author tokuhirom
  *
  */
-public abstract class AvansWebApplication implements Closeable {
+public abstract class AvansWebApplication {
 	private AvansRequest request;
 	private HttpServletResponse servletResponse;
 	private AvansPathParameters pathParameters;
@@ -74,9 +72,14 @@ public abstract class AvansWebApplication implements Closeable {
 		return this.request;
 	}
 
-	public abstract AvansResponse dispatch();
+	public AvansResponse dispatch() {
+		AvansDispatcher dispatcher = this.createDispatcher();
+		return dispatcher.dispatch(this);
+	}
 
-	protected void setPathParameters(@NonNull Map<String, String> captured) {
+	public abstract AvansDispatcher createDispatcher();
+
+	public void setPathParameters(@NonNull Map<String, String> captured) {
 		this.pathParameters = new AvansPathParameters(captured);
 	}
 

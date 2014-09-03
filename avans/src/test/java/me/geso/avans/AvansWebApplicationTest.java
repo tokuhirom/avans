@@ -33,11 +33,10 @@ public class AvansWebApplicationTest {
 
 		public void service(ServletRequest req, ServletResponse res)
 				throws ServletException, IOException {
-			try (MyApplication app = new MyApplication(
+			MyApplication app = new MyApplication(
 					(HttpServletRequest) req,
-					(HttpServletResponse) res)) {
-				app.run();
-			}
+					(HttpServletResponse) res);
+			app.run();
 		}
 	}
 
@@ -46,7 +45,7 @@ public class AvansWebApplicationTest {
 		public AvansResponse run(AvansWebApplication web);
 	}
 
-	public static class MyApplication extends AvansWebApplication {
+	public static class MyDispatcher implements AvansDispatcher {
 		static WebRouter<BasicAction> router;
 		static {
 			router = new WebRouter<>();
@@ -61,30 +60,25 @@ public class AvansWebApplicationTest {
 			router.post("/postMultipart", MyController::postMultipart);
 		}
 
-		public MyApplication(HttpServletRequest servletRequest,
-				HttpServletResponse servletResponse) throws IOException {
-			super(servletRequest, servletResponse);
-		}
-
 		@Override
-		public AvansResponse dispatch() {
-			AvansRequest request = this.getRequest();
-			String method = getRequest().getMethod();
-			String path = getRequest().getPathInfo();
+		public AvansResponse dispatch(AvansWebApplication web) {
+			AvansRequest request = web.getRequest();
+			String method = request.getMethod();
+			String path = request.getPathInfo();
 			System.out.println(String.format("%s %s", method, path));
 			RoutingResult<BasicAction> match = router.match(
 					method, path);
 			if (match == null) {
-				return this.errorNotFound();
+				return web.errorNotFound();
 			}
 			if (!match.methodAllowed()) {
-				return this.errorMethodNotAllowed();
+				return web.errorMethodNotAllowed();
 			}
 
 			Map<String, String> captured = match.getCaptured();
-			this.setPathParameters(captured);
+			web.setPathParameters(captured);
 			BasicAction destination = match.getDestination();
-			AvansResponse response = destination.run(this);
+			AvansResponse response = destination.run(web);
 			if (response == null) {
 				throw new RuntimeException(String.format(
 						"Response must not be null: %s, %s, %s",
@@ -95,6 +89,15 @@ public class AvansWebApplicationTest {
 			return response;
 		}
 
+	}
+
+	public static class MyApplication extends AvansWebApplication {
+
+		public MyApplication(HttpServletRequest servletRequest,
+				HttpServletResponse servletResponse) throws IOException {
+			super(servletRequest, servletResponse);
+		}
+
 		@Override
 		public Path getBaseDirectory() {
 			return Paths.get(System.getProperty("user.dir"),
@@ -102,7 +105,8 @@ public class AvansWebApplicationTest {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public AvansDispatcher createDispatcher() {
+			return new MyDispatcher();
 		}
 	}
 
@@ -221,7 +225,8 @@ public class AvansWebApplicationTest {
 			foo.setName("iyan");
 			try (MechResponse res = mech.postJSON("/json", foo).execute()) {
 				assertEquals(res.getStatusCode(), 200);
-				assertEquals(res.getContentType().getMimeType(), "application/json");
+				assertEquals(res.getContentType().getMimeType(),
+						"application/json");
 				assertEquals(res.getContentType().getCharset().displayName(),
 						"UTF-8");
 				assertEquals(res.getContentString(),
