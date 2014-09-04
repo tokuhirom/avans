@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -148,6 +150,11 @@ public abstract class ControllerBase implements Controller {
 			return params.getLong(name);
 		} else if (type.equals(String.class)) {
 			return params.get(name);
+		} else if (type.equals(OptionalInt.class)) {
+			return params.getOptionalInt(name);
+		} else if (type.equals(OptionalLong.class)) {
+			return params.getOptionalLong(name);
+			// TODO: support Optional<String>
 		} else {
 			throw new RuntimeException(String.format(
 					"Unknown parameter type '%s' for '%s'", type, name));

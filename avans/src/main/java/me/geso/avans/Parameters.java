@@ -2,6 +2,8 @@ package me.geso.avans;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 import org.apache.commons.collections4.MultiMap;
 
@@ -56,6 +58,24 @@ public class Parameters {
 		return Integer.parseInt(arg);
 	}
 
+	public OptionalInt getOptionalInt(String name) {
+		Optional<String> arg = this.getOptional(name);
+		if (arg.isPresent()) {
+			return OptionalInt.of(Integer.parseInt(arg.get()));
+		} else {
+			return OptionalInt.empty();
+		}
+	}
+
+	public OptionalLong getOptionalLong(String name) {
+		Optional<String> arg = this.getOptional(name);
+		if (arg.isPresent()) {
+			return OptionalLong.of(Long.parseLong(arg.get()));
+		} else {
+			return OptionalLong.empty();
+		}
+	}
+
 	/**
 	 * Get a path parameter in String. But this doesn't throws exception if the
 	 * value doesn't exists.
@@ -63,9 +83,12 @@ public class Parameters {
 	 * @param name
 	 * @return
 	 */
-	public Optional<String> getOptionalArg(String name) {
+	public Optional<String> getOptional(String name) {
 		@SuppressWarnings("unchecked")
 		Collection<String> collection = (Collection<String>) map.get(name);
+		if (collection == null) {
+			return Optional.empty();
+		}
 		return collection.stream().findFirst();
 	}
 }

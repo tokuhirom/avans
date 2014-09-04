@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.OptionalInt;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -127,8 +128,9 @@ public class AvansWebApplicationTest {
 		}
 
 		@GET("/queryParamAnnotation")
-		public WebResponse queryParamAnnotation(@QueryParam("a") String a) {
-			String text = "a:" + a;
+		public WebResponse queryParamAnnotation(@QueryParam("a") String a,
+				@QueryParam("b") OptionalInt b, @QueryParam("c") OptionalInt c) {
+			String text = "a:" + a + ",b:" + b + ",c:" + c;
 			return this.renderTEXT(text);
 		}
 
@@ -289,7 +291,8 @@ public class AvansWebApplicationTest {
 				.postMultipart("/postMultipart")
 				.param("name", "田中")
 				.file("tmpl",
-						new File("src/test/resources/templates/mustache.mustache"))
+						new File(
+								"src/test/resources/templates/mustache.mustache"))
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertTrue(res.getContentString().contains("(postform)name:田中"));
@@ -302,7 +305,13 @@ public class AvansWebApplicationTest {
 				.get("/queryParamAnnotation?a=b")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
-			assertEquals("a:b", res.getContentString());
+			assertEquals("a:b,b:OptionalInt.empty,c:OptionalInt.empty", res.getContentString());
+		}
+		try (MechResponse res = mech
+				.get("/queryParamAnnotation?a=b&b=4&c=5")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:b,b:OptionalInt[4],c:OptionalInt[5]", res.getContentString());
 		}
 	}
 
