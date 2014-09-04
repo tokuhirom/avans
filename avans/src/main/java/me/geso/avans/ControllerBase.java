@@ -18,6 +18,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
+import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 
 import org.apache.commons.collections4.MultiMap;
@@ -119,6 +120,10 @@ public abstract class ControllerBase implements Controller {
 					Class<?> type = types[i];
 					params[i] = getParameter(name, type, this.getRequest()
 							.getBodyParams());
+				} else if (annotation instanceof PathParam) {
+					String name = ((PathParam) annotation).value();
+					Class<?> type = types[i];
+					params[i] = getParameter(name, type, this.getPathParameters());
 				}
 			}
 		}
@@ -296,7 +301,7 @@ public abstract class ControllerBase implements Controller {
 	}
 
 	public Path getTemplateDirectory() {
-		return this.getBaseDirectory().resolve("tmpl");
+		return this.getBaseDirectory().resolve("templates");
 	}
 
 	/**
