@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -17,8 +16,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lombok.Data;
-import me.geso.routes.RoutingResult;
-import me.geso.routes.WebRouter;
+import me.geso.avans.annotation.GET;
+import me.geso.avans.annotation.JsonParam;
+import me.geso.avans.annotation.POST;
+import me.geso.avans.annotation.QueryParam;
+import me.geso.avans.annotation.BodyParam;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 
@@ -30,139 +32,104 @@ public class AvansWebApplicationTest {
 
 	public static class MyServlet extends HttpServlet {
 		private static final long serialVersionUID = 1L;
-
-		public void service(ServletRequest req, ServletResponse res)
-				throws ServletException, IOException {
-			MyApplication app = new MyApplication(
-					(HttpServletRequest) req,
-					(HttpServletResponse) res);
-			app.run();
-		}
-	}
-
-	@FunctionalInterface
-	public interface BasicAction {
-		public AvansResponse run(AvansWebApplication web);
-	}
-
-	public static class MyDispatcher implements AvansDispatcher {
-		static WebRouter<BasicAction> router;
+		private static final Dispatcher dispatcher = new Dispatcher();
 		static {
-			router = new WebRouter<>();
-			router.get("/", MyController::root);
-			router.get("/mustache", MyController::mustache);
-			router.get("/intarg/{id}", MyController::intarg);
-			router.get("/longarg/{id}", MyController::longarg);
-			router.post("/json", MyController::json);
-			router.get("/cb", MyController::callback);
-			router.get("/query", MyController::query);
-			router.post("/postForm", MyController::postForm);
-			router.post("/postMultipart", MyController::postMultipart);
+			dispatcher.registerClass(MyController.class);
 		}
 
-		@Override
-		public AvansResponse dispatch(AvansWebApplication web) {
-			AvansRequest request = web.getRequest();
-			String method = request.getMethod();
-			String path = request.getPathInfo();
-			System.out.println(String.format("%s %s", method, path));
-			RoutingResult<BasicAction> match = router.match(
-					method, path);
-			if (match == null) {
-				return web.errorNotFound();
-			}
-			if (!match.methodAllowed()) {
-				return web.errorMethodNotAllowed();
-			}
-
-			Map<String, String> captured = match.getCaptured();
-			web.setPathParameters(captured);
-			BasicAction destination = match.getDestination();
-			AvansResponse response = destination.run(web);
-			if (response == null) {
-				throw new RuntimeException(String.format(
-						"Response must not be null: %s, %s, %s",
-						request.getMethod(), request.getPathInfo(),
-						destination.toString()
-						));
-			}
-			return response;
+		public void service(ServletRequest req, ServletResponse resp)
+				throws ServletException, IOException {
+			dispatcher.handler((HttpServletRequest) req,
+					(HttpServletResponse) resp);
 		}
-
 	}
 
-	public static class MyApplication extends AvansWebApplication {
-
-		public MyApplication(HttpServletRequest servletRequest,
-				HttpServletResponse servletResponse) throws IOException {
-			super(servletRequest, servletResponse);
-		}
+	public static class MyControllerBase extends ControllerBase {
 
 		@Override
 		public Path getBaseDirectory() {
 			return Paths.get(System.getProperty("user.dir"),
 					"src/test/resources/");
 		}
-
-		@Override
-		public AvansDispatcher createDispatcher() {
-			return new MyDispatcher();
-		}
 	}
 
-	public static class MyController {
-		public static AvansResponse root(AvansWebApplication web) {
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("hoge");
-			return web.renderJSON(res);
+	public static class MyController extends MyControllerBase {
+
+		@GET("/")
+		public WebResponse root() {
+			APIResponse<String> res = new APIResponse<>("hoge");
+			return this.renderJSON(res);
 		}
 
-		public static AvansResponse intarg(AvansWebApplication web) {
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("INTARG:"
-					+ web.getPathParameters().getInt("id"));
-			return web.renderJSON(res);
+		@GET("/intarg/{id}")
+		public WebResponse intarg() {
+			APIResponse<String> res = new APIResponse<>("INTARG:"
+					+ this.getPathParameters().getInt("id"));
+			return this.renderJSON(res);
 		}
 
-		public static AvansResponse longarg(AvansWebApplication web) {
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("LONGARG:"
-					+ web.getPathParameters().getInt("id"));
-			return web.renderJSON(res);
+		@GET("/longarg/{id}")
+		public WebResponse longarg() {
+			APIResponse<String> res = new APIResponse<>("LONGARG:"
+					+ this.getPathParameters().getInt("id"));
+			return this.renderJSON(res);
 		}
 
-		public static AvansResponse json(AvansWebApplication web) {
-			Foo f = web.getRequest().readJSON(Foo.class);
-			AvansAPIResponse<String> res = new AvansAPIResponse<>("name:"
+		@POST("/json")
+		public WebResponse json() {
+			Foo f = this.getRequest().readJSON(Foo.class);
+			APIResponse<String> res = new APIResponse<>("name:"
 					+ f.name);
-			return web.renderJSON(res);
+			return this.renderJSON(res);
 		}
 
-		public static AvansResponse callback(AvansWebApplication web) {
-			return new AvansCallbackResponse((resp) -> {
+		@POST("/jsonParam")
+		public WebResponse jsonParam(@JsonParam Foo f) {
+			APIResponse<String> res = new APIResponse<>("name:"
+					+ f.name);
+			return this.renderJSON(res);
+		}
+
+		@GET("/cb")
+		public WebResponse callback() {
+			return new CallbackResponse((resp) -> {
 				resp.setContentType("text/plain; charset=utf-8");
 				resp.getWriter().write("いぇーい");
 			});
 		}
 
-		public static AvansResponse query(AvansWebApplication web) {
-			String text = "name:" + web.getRequest().getParameter("name").get();
-			return web.renderTEXT(text);
+		@GET("/query")
+		public WebResponse query() {
+			String text = "name:"
+					+ this.getRequest().getQueryParams().get("name");
+			return this.renderTEXT(text);
 		}
 
-		public static AvansResponse mustache(AvansWebApplication web) {
-			return web.renderMustache("mustache.mustache", new Foo());
+		@GET("/mustache")
+		public WebResponse mustache() {
+			return this.renderMustache("mustache.mustache", new Foo());
 		}
 
-		public static AvansResponse postForm(AvansWebApplication web) {
+		@POST("/postForm")
+		public WebResponse postForm() {
 			String text = "(postform)name:"
-					+ web.getRequest().getParameter("name").get();
-			return web.renderTEXT(text);
+					+ this.getRequest().getBodyParams().get("name");
+			return this.renderTEXT(text);
 		}
 
-		public static AvansResponse postMultipart(AvansWebApplication web) {
+		@POST("/postMultipart")
+		public WebResponse postMultipart() {
 			String text = "(postform)name:"
-					+ web.getRequest().getParameter("name").get()
+					+ this.getRequest().getBodyParams().get("name")
 					+ ":"
-					+ web.getRequest().getFileItem("tmpl").get().getString();
-			return web.renderTEXT(text);
+					+ this.getRequest().getFileItem("tmpl").get().getString();
+			return this.renderTEXT(text);
+		}
+
+		@GET("/queryParamAnnotation")
+		public WebResponse queryParamAnnotation(@QueryParam("a") String a) {
+			String text = "a:" + a;
+			return this.renderTEXT(text);
 		}
 
 		@Data
@@ -229,24 +196,10 @@ public class AvansWebApplicationTest {
 						"application/json");
 				assertEquals(res.getContentType().getCharset().displayName(),
 						"UTF-8");
-				assertEquals(res.getContentString(),
-						"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
-			}
-		}
-
-		{
-			MyController.Foo foo = new MyController.Foo();
-			foo.setName("iyan");
-			try (MechResponse res = mech.postJSON("/json", foo).execute()) {
-				assertEquals(res.getStatusCode(), 200);
-				assertEquals(res.getContentType().getMimeType(),
-						"application/json");
-				assertEquals(res.getContentType().getCharset().displayName(),
-						"UTF-8");
 
 				@SuppressWarnings("unchecked")
-				AvansAPIResponse<String> data = res
-						.readJSON(AvansAPIResponse.class);
+				APIResponse<String> data = res
+						.readJSON(APIResponse.class);
 				assertEquals(data.code, 200);
 				assertEquals(data.data, "name:iyan");
 			}
@@ -278,12 +231,46 @@ public class AvansWebApplicationTest {
 			assertTrue(res.getContentString().contains("name:おほ"));
 		}
 
+	}
+
+	@Test
+	public void testPostForm() {
 		try (
 				MechResponse res = mech.post("/postForm")
 						.param("name", "田中")
 						.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertTrue(res.getContentString().contains("(postform)name:田中"));
+		}
+	}
+
+	@Test
+	public void testJson() {
+		MyController.Foo foo = new MyController.Foo();
+		foo.setName("iyan");
+		try (MechResponse res = mech.postJSON("/json", foo).execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(),
+					"application/json");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
+		}
+	}
+
+	@Test
+	public void testJsonParam() {
+		MyController.Foo foo = new MyController.Foo();
+		foo.setName("iyan");
+		try (MechResponse res = mech.postJSON("/jsonParam", foo).execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(),
+					"application/json");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
 		}
 	}
 
@@ -297,6 +284,16 @@ public class AvansWebApplicationTest {
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertTrue(res.getContentString().contains("(postform)name:田中"));
+		}
+	}
+
+	@Test
+	public void testQueryParamAnnotation() throws Exception {
+		try (MechResponse res = mech
+				.get("/queryParamAnnotation?a=b")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:b", res.getContentString());
 		}
 	}
 }

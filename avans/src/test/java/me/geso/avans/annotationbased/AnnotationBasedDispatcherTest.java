@@ -13,9 +13,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.geso.avans.AvansDispatcher;
-import me.geso.avans.AvansResponse;
-import me.geso.avans.AvansWebApplication;
+import me.geso.avans.Dispatcher;
+import me.geso.avans.WebResponse;
+import me.geso.avans.ControllerBase;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 
@@ -28,35 +28,30 @@ public class AnnotationBasedDispatcherTest {
 	public static class MyServlet extends HttpServlet {
 		private static final long serialVersionUID = 1L;
 
-		public void service(ServletRequest req, ServletResponse res)
-				throws ServletException, IOException {
-			MyApplication app = new MyApplication(
-					(HttpServletRequest) req,
-					(HttpServletResponse) res);
-			app.run();
-		}
-	}
-
-	@FunctionalInterface
-	public static interface BasicAction {
-		public AvansResponse run(AvansWebApplication web);
-	}
-
-	public static class MyApplication extends AvansWebApplication {
-
-		static final AnnotationBasedDispatcher dispatcher = new AnnotationBasedDispatcher();
+		static final Dispatcher dispatcher = new Dispatcher();
 		static {
 			try {
 				dispatcher.registerPackage("me.geso.avans.annotationbased");
+				System.out.println(dispatcher.getRouter().toString());
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
 
-		public MyApplication(HttpServletRequest servletRequest,
-				HttpServletResponse servletResponse) throws IOException {
-			super(servletRequest, servletResponse);
+		public void service(ServletRequest req, ServletResponse res)
+				throws ServletException, IOException {
+			dispatcher.handler(
+					(HttpServletRequest) req,
+					(HttpServletResponse) res);
 		}
+	}
+
+	@FunctionalInterface
+	public static interface BasicAction {
+		public WebResponse run(ControllerBase web);
+	}
+
+	public static class MyApplication extends ControllerBase {
 
 		@Override
 		public Path getBaseDirectory() {
@@ -64,10 +59,6 @@ public class AnnotationBasedDispatcherTest {
 					"src/test/resources/");
 		}
 
-		@Override
-		public AvansDispatcher createDispatcher() {
-			return dispatcher;
-		}
 	}
 
 	private MechJettyServlet mech;

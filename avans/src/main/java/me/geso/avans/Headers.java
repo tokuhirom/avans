@@ -16,7 +16,7 @@ import lombok.ToString;
  *
  */
 @ToString
-public class AvansHeaders {
+public class Headers {
 	// should be ordered. It makes testing easier.
 	Map<String, List<String>> map = new TreeMap<>();
 

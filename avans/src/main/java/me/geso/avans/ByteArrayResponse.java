@@ -10,10 +10,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 @ToString
-public class AvansBytesResponse implements AvansResponse {
+public class ByteArrayResponse implements WebResponse {
 	@Getter
 	@Setter
-	AvansHeaders headers = new AvansHeaders();
+	Headers headers = new Headers();
 	@Getter
 	@Setter
 	private int status = 200;

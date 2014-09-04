@@ -6,11 +6,11 @@ import lombok.Getter;
 import lombok.ToString;
 
 @ToString
-public class AvansValidationException extends RuntimeException {
+public class ValidationException extends RuntimeException {
 	@Getter
 	private final List<String> messages;
 
-	AvansValidationException(List<String> messages) {
+	ValidationException(List<String> messages) {
 		this.messages = messages;
 	}
 

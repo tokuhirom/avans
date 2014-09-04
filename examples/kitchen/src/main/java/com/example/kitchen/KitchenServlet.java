@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class KitchenServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private static Dispatcher dispatcher = new Dispatcher();
 
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {

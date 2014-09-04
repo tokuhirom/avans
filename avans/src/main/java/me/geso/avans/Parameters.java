@@ -1,7 +1,9 @@
 package me.geso.avans;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.Optional;
+
+import org.apache.commons.collections4.MultiMap;
 
 /**
  * The class represents path paremeters.
@@ -9,10 +11,15 @@ import java.util.Optional;
  * @author tokuhirom
  *
  */
-public class AvansPathParameters {
-	private final Map<String, String> map;
+public class Parameters {
+	@Override
+	public String toString() {
+		return "Parameters [map=" + map + "]";
+	}
 
-	public AvansPathParameters(Map<String, String> map) {
+	private final MultiMap<String, String> map;
+
+	public Parameters(MultiMap<String, String> map) {
 		this.map = map;
 	}
 
@@ -21,7 +28,10 @@ public class AvansPathParameters {
 			throw new RuntimeException("Missing mandatory path parameter: "
 					+ name);
 		}
-		return map.get(name);
+
+		@SuppressWarnings("unchecked")
+		Collection<String> collection = (Collection<String>) map.get(name);
+		return collection.iterator().next();
 	}
 
 	/**
@@ -54,10 +64,8 @@ public class AvansPathParameters {
 	 * @return
 	 */
 	public Optional<String> getOptionalArg(String name) {
-		if (this.map.containsKey(name)) {
-			return Optional.of(map.get(name));
-		} else {
-			return Optional.empty();
-		}
+		@SuppressWarnings("unchecked")
+		Collection<String> collection = (Collection<String>) map.get(name);
+		return collection.stream().findFirst();
 	}
 }

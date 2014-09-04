@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author tokuhirom
  *
  */
-public interface AvansResponse {
+public interface WebResponse {
 	/**
 	 * Write the response to HttpServletResponse object.
 	 * 

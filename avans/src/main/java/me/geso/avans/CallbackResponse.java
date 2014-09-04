@@ -12,14 +12,14 @@ import lombok.ToString;
  * response like CSV.
  */
 @ToString
-public class AvansCallbackResponse implements AvansResponse {
+public class CallbackResponse implements WebResponse {
 
 	private final Callback callback;
-	private final AvansHeaders headers;
+	private final Headers headers;
 
-	public AvansCallbackResponse(@NonNull Callback callback) {
+	public CallbackResponse(@NonNull Callback callback) {
 		this.callback = callback;
-		this.headers = new AvansHeaders();
+		this.headers = new Headers();
 	}
 
 	@Override

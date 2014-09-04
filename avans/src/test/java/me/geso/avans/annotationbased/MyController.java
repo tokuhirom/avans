@@ -1,22 +1,24 @@
 package me.geso.avans.annotationbased;
 
-import me.geso.avans.AvansAPIResponse;
-import me.geso.avans.AvansResponse;
-import me.geso.avans.AvansWebApplication;
+import me.geso.avans.APIResponse;
+import me.geso.avans.WebResponse;
+import me.geso.avans.ControllerBase;
+import me.geso.avans.annotation.BodyParam;
+import me.geso.avans.annotation.GET;
+import me.geso.avans.annotation.POST;
 
-public class MyController {
+public class MyController extends ControllerBase {
 
 	@GET("/")
-	public static AvansResponse root(AvansWebApplication web) {
-		AvansAPIResponse<String> res = new AvansAPIResponse<>("hoge");
-		return web.renderJSON(res);
+	public WebResponse root() {
+		APIResponse<String> res = new APIResponse<>("hoge");
+		return renderJSON(res);
 	}
 
 	@POST("/postForm")
-	public static AvansResponse postForm(AvansWebApplication web) {
-		String text = "(postform)name:"
-				+ web.getRequest().getParameter("name").get();
-		return web.renderTEXT(text);
+	public WebResponse postForm(@BodyParam("name") String name) {
+		String text = "(postform)name:" + name;
+		return renderTEXT(text);
 	}
 
 }

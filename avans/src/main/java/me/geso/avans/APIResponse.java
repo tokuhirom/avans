@@ -8,7 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @ToString
-public class AvansAPIResponse<T extends Object> {
+public class APIResponse<T extends Object> {
 	@Getter
 	@Setter
 	int code;
@@ -23,7 +23,7 @@ public class AvansAPIResponse<T extends Object> {
 	/**
 	 * Create new instance.
 	 */
-	public AvansAPIResponse() {
+	public APIResponse() {
 		this.code = 200;
 		this.messages = new ArrayList<>();
 		this.data = null;
@@ -32,7 +32,7 @@ public class AvansAPIResponse<T extends Object> {
 	/**
 	 * Create new instance with the data. Default status code is 200.
 	 */
-	public AvansAPIResponse(T data) {
+	public APIResponse(T data) {
 		this.code = 200;
 		this.messages = new ArrayList<>();
 		this.data = data;
@@ -41,7 +41,7 @@ public class AvansAPIResponse<T extends Object> {
 	/**
 	 * Create new instance.
 	 */
-	public AvansAPIResponse(int code, T data) {
+	public APIResponse(int code, T data) {
 		this.code = code;
 		this.messages = new ArrayList<>();
 		this.data = data;
@@ -50,7 +50,7 @@ public class AvansAPIResponse<T extends Object> {
 	/**
 	 * Create new instance.
 	 */
-	public AvansAPIResponse(int code, String message, T data) {
+	public APIResponse(int code, String message, T data) {
 		this.code = code;
 		this.messages = new ArrayList<>();
 		this.messages.add(message);
@@ -75,21 +75,21 @@ public class AvansAPIResponse<T extends Object> {
 	/**
 	 * Create empty response
 	 */
-	public static AvansAPIResponse<String> empty() {
-		return new AvansAPIResponse<String>(null);
+	public static APIResponse<String> empty() {
+		return new APIResponse<String>(null);
 	}
 
 	/**
 	 * Create 404 not found response
 	 */
-	public static AvansAPIResponse<String> notFound() {
-		return new AvansAPIResponse<String>(404, "Resource Not Found", null);
+	public static APIResponse<String> notFound() {
+		return new APIResponse<String>(404, "Resource Not Found", null);
 	}
 
 	/**
 	 * Create 403 forbidden API response
 	 */
-	public static AvansAPIResponse<String> Forbidden() {
-		return new AvansAPIResponse<String>(403, "Forbidden", null);
+	public static APIResponse<String> Forbidden() {
+		return new APIResponse<String>(403, "Forbidden", null);
 	}
 }

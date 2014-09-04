@@ -4,14 +4,14 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class AvansRedirectResponse implements AvansResponse {
+public class RedirectResponse implements WebResponse {
 
 	private final String location;
-	private final AvansHeaders headers;
+	private final Headers headers;
 
-	public AvansRedirectResponse(String location) {
+	public RedirectResponse(String location) {
 		this.location = location;
-		this.headers = new AvansHeaders();
+		this.headers = new Headers();
 	}
 
 	@Override

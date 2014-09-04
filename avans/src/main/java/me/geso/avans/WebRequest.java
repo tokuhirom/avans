@@ -2,13 +2,12 @@ package me.geso.avans;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -24,11 +23,13 @@ import javax.validation.ValidatorFactory;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+import org.apache.commons.collections4.MultiMap;
+import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,12 +41,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author tokuhirom
  *
  */
-public class AvansRequest {
+public class WebRequest {
 	private final HttpServletRequest request;
-	private Map<String, List<FileItem>> uploads;
-	private Map<String, String[]> parameters;
+	private MultiMap<String, FileItem> uploads;
+	private Parameters queryParams;
+	private Parameters bodyParams;
 
-	public AvansRequest(final HttpServletRequest request) {
+	public WebRequest(final HttpServletRequest request) {
 		try {
 			request.setCharacterEncoding(this.getCharacterEncoding());
 		} catch (UnsupportedEncodingException e) {
@@ -238,63 +240,17 @@ public class AvansRequest {
 		Set<ConstraintViolation<T>> violations = validator.validate(o);
 		if (!violations.isEmpty()) {
 			List<String> messages = new ArrayList<>();
-			for (ConstraintViolation<T> violation: violations) {
-				String message = violation.getPropertyPath() + " " + violation.getMessage();
+			for (ConstraintViolation<T> violation : violations) {
+				String message = violation.getPropertyPath() + " "
+						+ violation.getMessage();
 				messages.add(message);
 			}
-			throw new AvansValidationException(messages);
-		}
-	}
-
-	/**
-	 * Read parameters from query string/content-body
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public Optional<String> getParameter(String name) {
-		String[] strings = this.getParameterMap().get(name);
-		if (strings == null) {
-			return Optional.empty();
-		}
-		if (strings.length == 0) {
-			return Optional.empty();
-		}
-		return Optional.of(strings[0]);
-	}
-
-	/**
-	 * Get parameters from queryString/contentBody by name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public List<String> getParameters(String name) {
-		String[] strings = this.getParameterMap().get(name);
-		if (strings == null) {
-			return new ArrayList<>();
-		} else {
-			return Arrays.asList(strings);
+			throw new ValidationException(messages);
 		}
 	}
 
 	protected String getCharacterEncoding() {
 		return "UTF-8";
-	}
-
-	/**
-	 * Get int value from parameter.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public OptionalInt getIntParam(String name) {
-		Optional<String> parameter = this.getParameter(name);
-		if (parameter.isPresent()) {
-			return OptionalInt.of(Integer.parseInt(parameter.get()));
-		} else {
-			return OptionalInt.empty();
-		}
 	}
 
 	/**
@@ -304,11 +260,9 @@ public class AvansRequest {
 	 * @return
 	 */
 	public Optional<FileItem> getFileItem(String name) {
-		List<FileItem> items = this.getFileItemMap().get(name);
-		if (items == null || items.isEmpty()) {
-			return Optional.empty();
-		}
-		return Optional.of(items.get(0));
+		@SuppressWarnings("unchecked")
+		Collection<FileItem> items = (Collection<FileItem>) this.getFileItemMap().get(name);
+		return items.stream().findFirst();
 	}
 
 	/**
@@ -317,11 +271,9 @@ public class AvansRequest {
 	 * @param name
 	 * @return
 	 */
-	public List<FileItem> getFileItems(String name) {
-		List<FileItem> items = this.getFileItemMap().get(name);
-		if (items == null) {
-			return new ArrayList<>();
-		}
+	public Collection<FileItem> getFileItems(String name) {
+		@SuppressWarnings("unchecked")
+		Collection<FileItem> items = (Collection<FileItem>) this.getFileItemMap().get(name);
 		return items;
 	}
 
@@ -330,71 +282,62 @@ public class AvansRequest {
 	 * 
 	 * @return
 	 */
-	public Map<String, List<FileItem>> getFileItemMap() {
-		this.getParameterMap(); // initialize this.uploads
+	public MultiMap<String, FileItem> getFileItemMap() {
+		this.getBodyParams(); // initialize this.uploads
 		return this.uploads;
 	}
 
 	/**
-	 * Get parameters in Map. This method parses followings.
-	 * <ul>
-	 * <li>query string</li>
-	 * <li>contentBody: multipart/form-data</li>
-	 * <li>contentBody: application/x-www-form-urlencoded</li>
-	 * </ul>
-	 * 
-	 * @return
-	 */
-	public Map<String, String[]> getParameterMap() {
-		if (this.parameters == null) {
-			try {
-				this.parameters = new TreeMap<>(request.getParameterMap());
-
-				if (ServletFileUpload.isMultipartContent(request)) {
-					ServletFileUpload servletFileUpload = this.createServletFileUpload();
-					List<FileItem> fileItems = servletFileUpload
-							.parseRequest(this.request);
-					this.uploads = new TreeMap<>();
-					for (FileItem fileItem : fileItems) {
-						if (fileItem.isFormField()) {
-							String value = fileItem.getString(this
-									.getCharacterEncoding());
-							String[] strings = new String[1];
-							strings[0] = value;
-							this.parameters.put(fileItem.getFieldName(),
-									strings);
-						} else {
-							if (this.uploads.containsKey(fileItem
-									.getFieldName())) {
-								this.uploads.get(fileItem.getFieldName()).add(
-										fileItem);
-							} else {
-								List<FileItem> list = new ArrayList<>();
-								list.add(fileItem);
-								this.uploads.put(fileItem.getFieldName(), list);
-							}
-						}
-					}
-				}
-			} catch (FileUploadException | UnsupportedEncodingException e) {
-				this.parameters = null;
-				throw new RuntimeException(e);
-			}
-		}
-		return this.parameters;
-	}
-
-	/**
-	 * Create new ServletFileUpload instance.
-	 * You can override this method.
+	 * Create new ServletFileUpload instance. You can override this method.
 	 *
-	 * <p>See also commons-fileupload.</p>
+	 * <p>
+	 * See also commons-fileupload.
+	 * </p>
 	 * 
 	 * @return
 	 */
 	protected ServletFileUpload createServletFileUpload() {
 		FileItemFactory fileItemFactory = new DiskFileItemFactory();
 		return new ServletFileUpload(fileItemFactory);
+	}
+
+	public Parameters getQueryParams() {
+		if (this.queryParams == null) {
+			this.queryParams = AvansUtil.parseQueryString(
+					this.getQueryString(), this.getCharacterEncoding());
+		}
+		return queryParams;
+	}
+
+	@SneakyThrows
+	public Parameters getBodyParams() {
+		if (this.bodyParams == null) {
+			if (this.request.getContentType().startsWith(
+					"application/x-www-form-urlencoded")) {
+				String queryString = IOUtils.toString(this.request.getInputStream(), this.getCharacterEncoding());
+				this.bodyParams = AvansUtil.parseQueryString(
+						queryString, this.getCharacterEncoding());
+			} else if (ServletFileUpload.isMultipartContent(request)) {
+				MultiMap<String,String> bodyParams = new MultiValueMap<String, String>();
+				MultiMap<String,FileItem> uploads = new MultiValueMap<String, FileItem>();
+				ServletFileUpload servletFileUpload = this
+						.createServletFileUpload();
+				List<FileItem> fileItems = servletFileUpload
+						.parseRequest(this.request);
+				for (FileItem fileItem : fileItems) {
+					if (fileItem.isFormField()) {
+						String value = fileItem.getString(this
+								.getCharacterEncoding());
+						bodyParams.put(fileItem.getFieldName(), value);
+					} else {
+						uploads.put(fileItem.getFieldName(), fileItem);
+					}
+				}
+				this.uploads = uploads;
+				this.bodyParams = new Parameters(bodyParams);
+			}
+		}
+		return this.bodyParams;
 	}
 
 }
