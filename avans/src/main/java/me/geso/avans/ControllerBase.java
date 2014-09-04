@@ -49,7 +49,7 @@ public abstract class ControllerBase implements Controller {
 		this.servletResponse = servletResponse;
 
 		MultiMap<String, String> pathParameters = new MultiValueMap<String, String>();
-		for (String key: captured.keySet()) {
+		for (String key : captured.keySet()) {
 			pathParameters.put(key, captured.get(key));
 		}
 		this.pathParameters = new Parameters(pathParameters);
@@ -106,28 +106,38 @@ public abstract class ControllerBase implements Controller {
 		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		Object[] params = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; ++i) {
-			for (Annotation annotation : parameterAnnotations[i]) {
-				if (annotation instanceof JsonParam) {
-					Object param = this.getRequest().readJSON(types[i]);
-					params[i] = param;
-				} else if (annotation instanceof QueryParam) {
-					String name = ((QueryParam) annotation).value();
-					Class<?> type = types[i];
-					params[i] = getParameter(name, type, this.getRequest()
-							.getQueryParams());
-				} else if (annotation instanceof BodyParam) {
-					String name = ((BodyParam) annotation).value();
-					Class<?> type = types[i];
-					params[i] = getParameter(name, type, this.getRequest()
-							.getBodyParams());
-				} else if (annotation instanceof PathParam) {
-					String name = ((PathParam) annotation).value();
-					Class<?> type = types[i];
-					params[i] = getParameter(name, type, this.getPathParameters());
-				}
-			}
+			params[i] = makeParameter(method, parameters[i], types[i],
+					parameterAnnotations[i]);
 		}
 		return params;
+	}
+
+	public Object makeParameter(Method method, Parameter parameter,
+			Class<?> type, Annotation[] annotations) {
+		for (Annotation annotation : annotations) {
+			if (annotation instanceof JsonParam) {
+				Object param = this.getRequest().readJSON(type);
+				return param;
+			} else if (annotation instanceof QueryParam) {
+				String name = ((QueryParam) annotation).value();
+				return getParameter(name, type, this.getRequest()
+						.getQueryParams());
+			} else if (annotation instanceof BodyParam) {
+				String name = ((BodyParam) annotation).value();
+				return getParameter(name, type, this.getRequest()
+						.getBodyParams());
+			} else if (annotation instanceof PathParam) {
+				String name = ((PathParam) annotation).value();
+				return getParameter(name, type, this.getPathParameters());
+			}
+		}
+	
+		return this.MAKE_PARAMETER(method, parameter);
+	}
+
+	protected Object MAKE_PARAMETER(Method method, Parameter parameter) {
+		// I AM  HOOK POINT
+		return null;
 	}
 
 	private Object getParameter(String name, Class<?> type,
