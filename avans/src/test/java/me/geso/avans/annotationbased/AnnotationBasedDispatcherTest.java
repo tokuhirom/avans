@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import me.geso.avans.AvansServlet;
 import me.geso.avans.Dispatcher;
 import me.geso.avans.WebResponse;
 import me.geso.avans.ControllerBase;
@@ -61,7 +62,9 @@ public class AnnotationBasedDispatcherTest {
 
 	@Before
 	public void before() {
-		this.mech = new MechJettyServlet(MyServlet.class);
+		AvansServlet servlet = new AvansServlet();
+		servlet.registerPackage(MyController.class.getPackage());
+		this.mech = new MechJettyServlet(servlet);
 	}
 
 	@After

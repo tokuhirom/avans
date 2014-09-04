@@ -19,6 +19,7 @@ import lombok.Data;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.POST;
+import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
@@ -127,6 +128,12 @@ public class AvansWebApplicationTest {
 
 		@GET("/queryParamAnnotation")
 		public WebResponse queryParamAnnotation(@QueryParam("a") String a) {
+			String text = "a:" + a;
+			return this.renderTEXT(text);
+		}
+
+		@GET("/pathParamAnnotation/{a}")
+		public WebResponse pathParamAnnotation(@PathParam("a") String a) {
 			String text = "a:" + a;
 			return this.renderTEXT(text);
 		}
@@ -290,6 +297,16 @@ public class AvansWebApplicationTest {
 	public void testQueryParamAnnotation() throws Exception {
 		try (MechResponse res = mech
 				.get("/queryParamAnnotation?a=b")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:b", res.getContentString());
+		}
+	}
+
+	@Test
+	public void testPathParamAnnotation() throws Exception {
+		try (MechResponse res = mech
+				.get("/pathParamAnnotation/b")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals("a:b", res.getContentString());
