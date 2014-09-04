@@ -289,7 +289,7 @@ public class AvansWebApplicationTest {
 				.postMultipart("/postMultipart")
 				.param("name", "田中")
 				.file("tmpl",
-						new File("src/test/resources/tmpl/mustache.mustache"))
+						new File("src/test/resources/templates/mustache.mustache"))
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertTrue(res.getContentString().contains("(postform)name:田中"));
