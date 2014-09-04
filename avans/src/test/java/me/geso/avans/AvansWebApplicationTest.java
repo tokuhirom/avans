@@ -20,7 +20,6 @@ import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.POST;
 import me.geso.avans.annotation.QueryParam;
-import me.geso.avans.annotation.BodyParam;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 

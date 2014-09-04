@@ -44,8 +44,8 @@
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
-			<artifactId>testmech</artifactId>
-			<version>0.4.0</version>
+			<artifactId>mech</artifactId>
+			<version>0.6.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

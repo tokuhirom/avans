@@ -1,20 +1,22 @@
 package com.example.kitchen.controller;
 
 import lombok.Data;
-import me.geso.avans.AvansAPIResponse;
-import me.geso.avans.AvansResponse;
+import me.geso.avans.APIResponse;
+import me.geso.avans.ControllerBase;
+import me.geso.avans.WebResponse;
+import me.geso.avans.annotation.GET;
 
-import com.example.kitchen.KitchenWebApplication;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RootController {
-	public static AvansResponse root(KitchenWebApplication web) {
+public class RootController extends ControllerBase {
+	@GET("/")
+	public WebResponse root() {
 		// This code render tmpl/root.mustache.
 
 		TmplParams params = new TmplParams();
 		params.setName("太郎");
-		return web.renderMustache("root.mustache", params);
+		return this.renderMustache("root.mustache", params);
 	}
 	
 	@Data
@@ -22,8 +24,9 @@ public class RootController {
 		String name;
 	}
 
-	public static AvansResponse json(KitchenWebApplication web) {
-		return web.renderJSON(new AvansAPIResponse<>(new MyObject("John")));
+	@GET("/json")
+	public WebResponse json() {
+		return this.renderJSON(new APIResponse<>(new MyObject("John")));
 	}
 	
 	@Data

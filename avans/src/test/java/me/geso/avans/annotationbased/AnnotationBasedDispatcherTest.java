@@ -30,12 +30,8 @@ public class AnnotationBasedDispatcherTest {
 
 		static final Dispatcher dispatcher = new Dispatcher();
 		static {
-			try {
-				dispatcher.registerPackage("me.geso.avans.annotationbased");
-				System.out.println(dispatcher.getRouter().toString());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			dispatcher.registerPackage("me.geso.avans.annotationbased");
+			System.out.println(dispatcher.getRouter().toString());
 		}
 
 		public void service(ServletRequest req, ServletResponse res)
