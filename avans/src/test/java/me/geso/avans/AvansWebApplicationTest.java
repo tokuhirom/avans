@@ -185,14 +185,6 @@ public class AvansWebApplicationTest {
 					"{\"code\":200,\"messages\":[],\"data\":\"LONGARG:5963\"}");
 		}
 
-		try (MechResponse res = mech.get("/mustache").execute()) {
-			assertEquals(res.getStatusCode(), 200);
-			assertEquals(res.getContentType().getMimeType(), "text/html");
-			assertEquals(res.getContentType().getCharset().displayName(),
-					"UTF-8");
-			assertEquals(res.getContentString(), "Hi, John!\n");
-		}
-
 		{
 			MyController.Foo foo = new MyController.Foo();
 			foo.setName("iyan");
@@ -237,6 +229,17 @@ public class AvansWebApplicationTest {
 			assertTrue(res.getContentString().contains("name:おほ"));
 		}
 
+	}
+
+	@Test
+	public void testMustache() {
+		try (MechResponse res = mech.get("/mustache").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentType().getMimeType(), "text/html");
+			assertEquals(res.getContentType().getCharset().displayName(),
+					"UTF-8");
+			assertEquals(res.getContentString(), "Hi, John!\n");
+		}
 	}
 
 	@Test
