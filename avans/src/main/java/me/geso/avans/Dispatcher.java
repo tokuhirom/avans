@@ -1,19 +1,19 @@
 package me.geso.avans;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.SneakyThrows;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
@@ -27,7 +27,8 @@ public class Dispatcher {
 	public Dispatcher() {
 	}
 
-	public void registerPackage(String packageName) throws IOException {
+	@SneakyThrows
+	public void registerPackage(String packageName) {
 		logger.info("Registering package: {}", packageName);
 		ClassLoader contextClassLoader = Thread.currentThread()
 				.getContextClassLoader();
