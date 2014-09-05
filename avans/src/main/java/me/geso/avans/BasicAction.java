@@ -100,7 +100,7 @@ public class BasicAction implements Action {
 			}
 		}
 
-		Object param = this.MAKE_PARAMETER(method, parameter);
+		Object param = this.MAKE_PARAMETER(controller, method, parameter);
 		if (param == null) {
 			throw new RuntimeException(String.format(
 					"There is no way to create parameter: %s, %s, %s",
@@ -112,12 +112,13 @@ public class BasicAction implements Action {
 
 	/**
 	 * Hook point for generating parameters.
+	 * @param controller 
 	 * 
 	 * @param method
 	 * @param parameter
 	 * @return
 	 */
-	protected Object MAKE_PARAMETER(Method method, Parameter parameter) {
+	protected Object MAKE_PARAMETER(Controller controller, Method method, Parameter parameter) {
 		// I AM HOOK POINT
 		return null;
 	}

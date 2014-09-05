@@ -22,7 +22,7 @@ public class MakeParameterTest {
 		}
 
 		@Override
-		protected Object MAKE_PARAMETER(Method method, Parameter parameter) {
+		protected Object MAKE_PARAMETER(Controller controller, Method method, Parameter parameter) {
 			System.out.println("HAHAHA");
 			if (parameter.getType() == Iyan.class) {
 				Iyan iyan = new Iyan();
