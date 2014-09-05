@@ -91,6 +91,12 @@ public class AvansWebApplicationTest {
 			return this.renderJSON(res);
 		}
 
+		@GET("/jsonEasy")
+		public APIResponse<String> jsonEasy() {
+			APIResponse<String> res = new APIResponse<>("It's easy!");
+			return res;
+		}
+
 		@POST("/jsonParam")
 		public WebResponse jsonParam(@JsonParam Foo f) {
 			APIResponse<String> res = new APIResponse<>("name:"
@@ -162,7 +168,8 @@ public class AvansWebApplicationTest {
 
 		@POST("/uploadOptionalFile")
 		@SneakyThrows
-		public WebResponse uploadOptionalFile(@UploadFile("a") Optional<FileItem> a) {
+		public WebResponse uploadOptionalFile(
+				@UploadFile("a") Optional<FileItem> a) {
 			String text = "a:";
 			if (a.isPresent()) {
 				text = text + a.get().getString("UTF-8");
@@ -177,7 +184,7 @@ public class AvansWebApplicationTest {
 		public WebResponse uploadFileArray(@UploadFile("a") FileItem[] a) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("a:");
-			for (FileItem item: a) {
+			for (FileItem item : a) {
 				builder.append(item.getString("UTF-8"));
 				builder.append(",");
 			}
@@ -311,6 +318,15 @@ public class AvansWebApplicationTest {
 					"UTF-8");
 			assertEquals(res.getContentString(),
 					"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
+		}
+	}
+
+	@Test
+	public void testJsonEasy() {
+		try (MechResponse res = mech.get("/jsonEasy").execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"It's easy!\"}");
 		}
 	}
 

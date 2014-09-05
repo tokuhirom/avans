@@ -59,12 +59,27 @@ public class BasicAction implements Action {
 		}
 
 		Object[] params = this.makeParameters(controller, method);
-		WebResponse res = (WebResponse) method.invoke(controller, params);
-		if (res == null) {
+		Object res = method.invoke(controller, params);
+		if (res instanceof WebResponse) {
+			return (WebResponse) res;
+		} else if (res == null) {
 			throw new RuntimeException(
 					"dispatch method must not return NULL");
+		} else {
+			return this.convertResponse(controller, res);
 		}
-		return res;
+	}
+
+	// You can hook this.
+	protected WebResponse convertResponse(Controller controller, Object res) {
+		if (res instanceof APIResponse) {
+			// Rendering APIResponse with Jackson by defualt.
+			return controller.renderJSON(res);
+		} else {
+			throw new RuntimeException(String.format(
+					"Unkonwn return value from action: %s(%s)", Object.class,
+					controller.getRequest().getPathInfo()));
+		}
 	}
 
 	private Object[] makeParameters(Controller controller, Method method) {
@@ -105,11 +120,13 @@ public class BasicAction implements Action {
 				// @UploadFile
 				String name = ((UploadFile) annotation).value();
 				if (type == FileItem.class) {
-					Optional<FileItem> maybeFileItem = controller.getRequest().getFileItem(name);
+					Optional<FileItem> maybeFileItem = controller.getRequest()
+							.getFileItem(name);
 					if (maybeFileItem.isPresent()) {
 						return maybeFileItem.get();
 					} else {
-						throw new RuntimeException(String.format("Missing mandatory file: %s", name));
+						throw new RuntimeException(String.format(
+								"Missing mandatory file: %s", name));
 					}
 				} else if (type == FileItem[].class) {
 					FileItem[] items = controller.getRequest()
@@ -117,7 +134,8 @@ public class BasicAction implements Action {
 					return items;
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
-					Optional<FileItem> maybeFileItem = controller.getRequest().getFileItem(name);
+					Optional<FileItem> maybeFileItem = controller.getRequest()
+							.getFileItem(name);
 					return maybeFileItem;
 				} else {
 					throw new RuntimeException(

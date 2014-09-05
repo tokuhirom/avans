@@ -19,4 +19,6 @@ public interface Controller {
 
 	Parameters getPathParameters();
 
+	public WebResponse renderJSON(Object obj);
+
 }
