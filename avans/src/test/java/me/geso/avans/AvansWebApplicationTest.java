@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -18,14 +20,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lombok.Data;
+import lombok.SneakyThrows;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.POST;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
+import me.geso.avans.annotation.UploadFile;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 
+import org.apache.commons.collections4.MultiMap;
+import org.apache.commons.fileupload.FileItem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,6 +151,37 @@ public class AvansWebApplicationTest {
 		public WebResponse optionalString(@QueryParam("a") Optional<String> a) {
 			String text = "a:" + a;
 			return this.renderTEXT(text);
+		}
+
+		@POST("/uploadFile")
+		@SneakyThrows
+		public WebResponse uploadFile(@UploadFile("a") FileItem a) {
+			String text = "a:" + a.getString("UTF-8");
+			return this.renderTEXT(text);
+		}
+
+		@POST("/uploadOptionalFile")
+		@SneakyThrows
+		public WebResponse uploadOptionalFile(@UploadFile("a") Optional<FileItem> a) {
+			String text = "a:";
+			if (a.isPresent()) {
+				text = text + a.get().getString("UTF-8");
+			} else {
+				text = text + "missing";
+			}
+			return this.renderTEXT(text);
+		}
+
+		@POST("/uploadFileArray")
+		@SneakyThrows
+		public WebResponse uploadFileArray(@UploadFile("a") FileItem[] a) {
+			StringBuilder builder = new StringBuilder();
+			builder.append("a:");
+			for (FileItem item: a) {
+				builder.append(item.getString("UTF-8"));
+				builder.append(",");
+			}
+			return this.renderTEXT(builder.toString());
 		}
 
 		@Data
@@ -312,13 +349,15 @@ public class AvansWebApplicationTest {
 				.get("/queryParamAnnotation?a=b")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
-			assertEquals("a:b,b:OptionalInt.empty,c:OptionalInt.empty", res.getContentString());
+			assertEquals("a:b,b:OptionalInt.empty,c:OptionalInt.empty",
+					res.getContentString());
 		}
 		try (MechResponse res = mech
 				.get("/queryParamAnnotation?a=b&b=4&c=5")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
-			assertEquals("a:b,b:OptionalInt[4],c:OptionalInt[5]", res.getContentString());
+			assertEquals("a:b,b:OptionalInt[4],c:OptionalInt[5]",
+					res.getContentString());
 		}
 	}
 
@@ -346,6 +385,48 @@ public class AvansWebApplicationTest {
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals("a:Optional.empty", res.getContentString());
+		}
+	}
+
+	@Test
+	public void testUploadFile() throws Exception {
+		try (MechResponse res = mech
+				.postMultipart("/uploadFile")
+				.file("a", new File("src/test/resources/hello.txt"))
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:hello", res.getContentString());
+		}
+	}
+
+	@Test
+	public void testUploadOptionalFile() throws Exception {
+		try (MechResponse res = mech
+				.postMultipart("/uploadOptionalFile")
+				.file("a", new File("src/test/resources/hello.txt"))
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:hello", res.getContentString());
+		}
+
+		// missing
+		try (MechResponse res = mech
+				.postMultipart("/uploadOptionalFile")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:hello", res.getContentString());
+		}
+	}
+
+	@Test
+	public void testUploadFileArray() throws Exception {
+		try (MechResponse res = mech
+				.postMultipart("/uploadFileArray")
+				.file("a", new File("src/test/resources/hello.txt"))
+				.file("a", new File("src/test/resources/hello.txt"))
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:hello,hello,", res.getContentString());
 		}
 	}
 }

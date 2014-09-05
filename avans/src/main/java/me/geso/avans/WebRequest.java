@@ -257,6 +257,9 @@ public class WebRequest {
 	public Optional<FileItem> getFileItem(String name) {
 		@SuppressWarnings("unchecked")
 		Collection<FileItem> items = (Collection<FileItem>) this.getFileItemMap().get(name);
+		if (items == null) {
+			return Optional.empty();
+		}
 		return items.stream().findFirst();
 	}
 
@@ -269,6 +272,9 @@ public class WebRequest {
 	public Collection<FileItem> getFileItems(String name) {
 		@SuppressWarnings("unchecked")
 		Collection<FileItem> items = (Collection<FileItem>) this.getFileItemMap().get(name);
+		if (items == null) {
+			return new ArrayList<>();
+		}
 		return items;
 	}
 

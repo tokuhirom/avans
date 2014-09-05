@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -14,11 +15,14 @@ import java.util.OptionalLong;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
+import me.geso.avans.annotation.UploadFile;
 
 public class BasicAction implements Action {
 	private final Class<? extends Controller> controllerClass;
@@ -97,6 +101,30 @@ public class BasicAction implements Action {
 				String name = ((PathParam) annotation).value();
 				return getObjectFromParameter(annotation, name, type,
 						controller.getPathParameters());
+			} else if (annotation instanceof UploadFile) {
+				// @UploadFile
+				String name = ((UploadFile) annotation).value();
+				if (type == FileItem.class) {
+					Optional<FileItem> maybeFileItem = controller.getRequest().getFileItem(name);
+					if (maybeFileItem.isPresent()) {
+						return maybeFileItem.get();
+					} else {
+						throw new RuntimeException(String.format("Missing mandatory file: %s", name));
+					}
+				} else if (type == FileItem[].class) {
+					FileItem[] items = controller.getRequest()
+							.getFileItems(name).toArray(new FileItem[0]);
+					return items;
+				} else if (type == Optional.class) {
+					// It must be Optional<FileItem>
+					Optional<FileItem> maybeFileItem = controller.getRequest().getFileItem(name);
+					return maybeFileItem;
+				} else {
+					throw new RuntimeException(
+							String.format(
+									"You shouldn't use @UploadFile annotation with %s. You must use FileItem or FileItem[]",
+									type));
+				}
 			}
 		}
 
@@ -112,13 +140,15 @@ public class BasicAction implements Action {
 
 	/**
 	 * Hook point for generating parameters.
-	 * @param controller 
+	 * 
+	 * @param controller
 	 * 
 	 * @param method
 	 * @param parameter
 	 * @return
 	 */
-	protected Object MAKE_PARAMETER(Controller controller, Method method, Parameter parameter) {
+	protected Object MAKE_PARAMETER(Controller controller, Method method,
+			Parameter parameter) {
 		// I AM HOOK POINT
 		return null;
 	}
