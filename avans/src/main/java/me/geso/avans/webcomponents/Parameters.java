@@ -1,4 +1,4 @@
-package me.geso.avans;
+package me.geso.avans.webcomponents;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -108,6 +108,7 @@ public class Parameters {
 	}
 	
 	public boolean containsKey(String name) {
+		@SuppressWarnings("unchecked")
 		Collection<String> collection = (Collection<String>) map.get(name);
 		if (collection == null) {
 			return false;

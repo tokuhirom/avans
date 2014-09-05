@@ -23,6 +23,8 @@ import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.webcomponents.Parameters;
+import me.geso.avans.webcomponents.WebResponse;
 
 public class BasicAction implements Action {
 	private final Class<? extends Controller> controllerClass;

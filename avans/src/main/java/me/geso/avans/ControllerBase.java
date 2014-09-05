@@ -11,6 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import me.geso.avans.webcomponents.ByteArrayResponse;
+import me.geso.avans.webcomponents.Parameters;
+import me.geso.avans.webcomponents.RedirectResponse;
+import me.geso.avans.webcomponents.WebRequest;
+import me.geso.avans.webcomponents.WebResponse;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;

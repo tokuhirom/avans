@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import me.geso.avans.AvansServlet;
 import me.geso.avans.Dispatcher;
-import me.geso.avans.WebResponse;
 import me.geso.avans.ControllerBase;
+import me.geso.avans.webcomponents.WebResponse;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 

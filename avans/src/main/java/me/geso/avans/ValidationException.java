@@ -10,7 +10,7 @@ public class ValidationException extends RuntimeException {
 	@Getter
 	private final List<String> messages;
 
-	ValidationException(List<String> messages) {
+	public ValidationException(List<String> messages) {
 		this.messages = messages;
 	}
 

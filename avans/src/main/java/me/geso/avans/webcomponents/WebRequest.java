@@ -1,6 +1,5 @@
-package me.geso.avans;
+package me.geso.avans.webcomponents;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +21,8 @@ import javax.validation.ValidatorFactory;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import me.geso.avans.AvansUtil;
+import me.geso.avans.ValidationException;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;

@@ -27,6 +27,8 @@ import me.geso.avans.annotation.POST;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.webcomponents.CallbackResponse;
+import me.geso.avans.webcomponents.WebResponse;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 

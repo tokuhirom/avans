@@ -1,11 +1,14 @@
 package me.geso.avans;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import me.geso.avans.webcomponents.Parameters;
+import me.geso.avans.webcomponents.WebRequest;
+import me.geso.avans.webcomponents.WebResponse;
 
 public interface Controller {
 

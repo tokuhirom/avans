@@ -1,4 +1,4 @@
-package me.geso.avans;
+package me.geso.avans.webcomponents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString
 public class Headers {
 	// should be ordered. It makes testing easier.
-	Map<String, List<String>> map = new TreeMap<>();
+	private Map<String, List<String>> map = new TreeMap<>();
 
 	public void add(String key, String value) {
 		key = key.toLowerCase();

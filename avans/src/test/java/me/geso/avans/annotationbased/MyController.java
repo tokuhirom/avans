@@ -1,11 +1,11 @@
 package me.geso.avans.annotationbased;
 
 import me.geso.avans.APIResponse;
-import me.geso.avans.WebResponse;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
+import me.geso.avans.webcomponents.WebResponse;
 
 public class MyController extends ControllerBase {
 

@@ -1,4 +1,4 @@
-package me.geso.avans;
+package me.geso.avans.webcomponents;
 
 import java.io.IOException;
 
