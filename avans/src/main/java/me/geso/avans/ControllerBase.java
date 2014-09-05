@@ -1,27 +1,16 @@
 package me.geso.avans;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import me.geso.avans.annotation.BodyParam;
-import me.geso.avans.annotation.JsonParam;
-import me.geso.avans.annotation.PathParam;
-import me.geso.avans.annotation.QueryParam;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;
@@ -134,7 +123,7 @@ public abstract class ControllerBase implements Controller {
 	 * @return
 	 */
 	protected WebResponse renderError(int code, @NonNull String message) {
-		APIResponse<String> apires = new APIResponse<>(code, message);
+		APIResponse<String> apires = new APIResponse<>(code, null, message);
 
 		ByteArrayResponse res = this.renderJSON(apires);
 		res.setStatus(code);

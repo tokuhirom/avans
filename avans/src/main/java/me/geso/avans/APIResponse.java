@@ -41,19 +41,12 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Create new instance.
 	 */
-	public APIResponse(int code, T data) {
-		this.code = code;
-		this.messages = new ArrayList<>();
-		this.data = data;
-	}
-
-	/**
-	 * Create new instance.
-	 */
 	public APIResponse(int code, String message, T data) {
 		this.code = code;
 		this.messages = new ArrayList<>();
-		this.messages.add(message);
+		if (message != null) {
+			this.messages.add(message);
+		}
 		this.data = data;
 	}
 
@@ -75,21 +68,21 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Create empty response
 	 */
-	public static APIResponse<String> empty() {
-		return new APIResponse<String>(null);
+	public static <T> APIResponse<T> empty() {
+		return new APIResponse<T>(null);
 	}
 
 	/**
 	 * Create 404 not found response
 	 */
-	public static APIResponse<String> notFound() {
-		return new APIResponse<String>(404, "Resource Not Found", null);
+	public static <T> APIResponse<T> notFound() {
+		return new APIResponse<T>(404, "Resource Not Found", null);
 	}
 
 	/**
 	 * Create 403 forbidden API response
 	 */
-	public static APIResponse<String> Forbidden() {
-		return new APIResponse<String>(403, "Forbidden", null);
+	public static <T> APIResponse<T> Forbidden() {
+		return new APIResponse<T>(403, "Forbidden", null);
 	}
 }
