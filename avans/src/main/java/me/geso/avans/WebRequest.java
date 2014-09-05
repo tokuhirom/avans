@@ -42,18 +42,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class WebRequest {
-	private final HttpServletRequest request;
+	private final HttpServletRequest servletRequest;
 	private MultiMap<String, FileItem> uploads;
 	private Parameters queryParams;
 	private Parameters bodyParams;
 
 	public WebRequest(final HttpServletRequest request) {
-		try {
-			request.setCharacterEncoding(this.getCharacterEncoding());
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-		this.request = request;
+		this.servletRequest = request;
 	}
 
 	/**
@@ -62,7 +57,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public String getPathInfo() {
-		return this.request.getPathInfo();
+		return this.servletRequest.getPathInfo();
 	}
 
 	/**
@@ -72,7 +67,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public String getHeader(String name) {
-		return this.request.getHeader(name);
+		return this.servletRequest.getHeader(name);
 	}
 
 	/**
@@ -82,7 +77,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public List<String> getHeaders(String name) {
-		return Collections.list(this.request.getHeaders(name));
+		return Collections.list(this.servletRequest.getHeaders(name));
 	}
 
 	/**
@@ -92,10 +87,10 @@ public class WebRequest {
 	 */
 	public Map<String, List<String>> getHeaderMap() {
 		Map<String, List<String>> map = new TreeMap<>();
-		Enumeration<String> headerNames = this.request.getHeaderNames();
+		Enumeration<String> headerNames = this.servletRequest.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
 			final String name = headerNames.nextElement();
-			final ArrayList<String> values = Collections.list(this.request
+			final ArrayList<String> values = Collections.list(this.servletRequest
 					.getHeaders(name));
 			map.put(name, values);
 		}
@@ -108,7 +103,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public int getContentLength() {
-		return this.request.getContentLength();
+		return this.servletRequest.getContentLength();
 	}
 
 	/**
@@ -117,7 +112,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public String getMethod() {
-		return this.request.getMethod();
+		return this.servletRequest.getMethod();
 	}
 
 	/**
@@ -149,7 +144,7 @@ public class WebRequest {
 	 *         protocol name up to the query string
 	 */
 	public String getRequestURI() {
-		return this.request.getRequestURI();
+		return this.servletRequest.getRequestURI();
 	}
 
 	/**
@@ -158,7 +153,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public String getQueryString() {
-		return this.request.getQueryString();
+		return this.servletRequest.getQueryString();
 	}
 
 	/**
@@ -167,7 +162,7 @@ public class WebRequest {
 	 * @return
 	 */
 	public Cookie[] getCookies() {
-		return this.request.getCookies();
+		return this.servletRequest.getCookies();
 	}
 
 	/**
@@ -176,14 +171,14 @@ public class WebRequest {
 	 * @return
 	 */
 	public HttpSession getSession() {
-		return this.request.getSession();
+		return this.servletRequest.getSession();
 	}
 
 	/**
 	 * Change session id.
 	 */
 	public void changeSessionId() {
-		this.request.changeSessionId();
+		this.servletRequest.changeSessionId();
 	}
 
 	/**
@@ -195,7 +190,7 @@ public class WebRequest {
 	 */
 	@SneakyThrows
 	public <T> T readJSON(@NonNull final TypeReference<T> typeReference) {
-		ServletInputStream inputStream = this.request.getInputStream();
+		ServletInputStream inputStream = this.servletRequest.getInputStream();
 
 		ObjectMapper mapper = new ObjectMapper();
 		T instance = mapper.readValue(inputStream, typeReference);
@@ -216,7 +211,7 @@ public class WebRequest {
 	 */
 	@SneakyThrows
 	public <T> T readJSON(@NonNull final Class<T> klass) {
-		ServletInputStream inputStream = this.request.getInputStream();
+		ServletInputStream inputStream = this.servletRequest.getInputStream();
 
 		ObjectMapper mapper = new ObjectMapper();
 		T instance = mapper.readValue(inputStream, klass);
@@ -250,7 +245,7 @@ public class WebRequest {
 	}
 
 	protected String getCharacterEncoding() {
-		return "UTF-8";
+		return this.servletRequest.getCharacterEncoding();
 	}
 
 	/**
@@ -312,18 +307,18 @@ public class WebRequest {
 	@SneakyThrows
 	public Parameters getBodyParams() {
 		if (this.bodyParams == null) {
-			if (this.request.getContentType().startsWith(
+			if (this.servletRequest.getContentType().startsWith(
 					"application/x-www-form-urlencoded")) {
-				String queryString = IOUtils.toString(this.request.getInputStream(), this.getCharacterEncoding());
+				String queryString = IOUtils.toString(this.servletRequest.getInputStream(), this.getCharacterEncoding());
 				this.bodyParams = AvansUtil.parseQueryString(
 						queryString, this.getCharacterEncoding());
-			} else if (ServletFileUpload.isMultipartContent(request)) {
+			} else if (ServletFileUpload.isMultipartContent(servletRequest)) {
 				MultiMap<String,String> bodyParams = new MultiValueMap<String, String>();
 				MultiMap<String,FileItem> uploads = new MultiValueMap<String, FileItem>();
 				ServletFileUpload servletFileUpload = this
 						.createServletFileUpload();
 				List<FileItem> fileItems = servletFileUpload
-						.parseRequest(this.request);
+						.parseRequest(this.servletRequest);
 				for (FileItem fileItem : fileItems) {
 					if (fileItem.isFormField()) {
 						String value = fileItem.getString(this
@@ -338,6 +333,11 @@ public class WebRequest {
 			}
 		}
 		return this.bodyParams;
+	}
+
+	@SneakyThrows
+	public void setCharacterEncoding(String env) {
+		this.servletRequest.setCharacterEncoding(env);
 	}
 
 }

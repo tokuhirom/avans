@@ -49,6 +49,7 @@ public abstract class ControllerBase implements Controller {
 		this.BEFORE_INIT();
 		this.request = new WebRequest(servletRequest);
 		this.servletResponse = servletResponse;
+		this.setDefaultCharacterEncoding();
 
 		MultiMap<String, String> pathParameters = new MultiValueMap<String, String>();
 		for (String key : captured.keySet()) {
@@ -78,103 +79,11 @@ public abstract class ControllerBase implements Controller {
 
 	public void setDefaultCharacterEncoding() {
 		this.servletResponse.setCharacterEncoding("UTF-8");
-	}
-
-	private WebResponse makeResponse(Method method) {
-		{
-			Optional<WebResponse> maybeResponse = this.BEFORE_DISPATCH();
-			if (maybeResponse.isPresent()) {
-				return maybeResponse.get();
-			}
-		}
-
-		try {
-			Object[] params = this.makeParameters(method);
-			WebResponse res = (WebResponse) method.invoke(this, params);
-			if (res == null) {
-				throw new RuntimeException(
-						"dispatch method must not return NULL");
-			}
-			return res;
-		} catch (IllegalAccessException | IllegalArgumentException
-				| InvocationTargetException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public Object[] makeParameters(Method method) {
-		Parameter[] parameters = method.getParameters();
-		Class<?>[] types = method.getParameterTypes();
-		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-		Object[] params = new Object[parameters.length];
-		for (int i = 0; i < parameters.length; ++i) {
-			params[i] = makeParameter(method, parameters[i], types[i],
-					parameterAnnotations[i]);
-		}
-		return params;
-	}
-
-	public Object makeParameter(Method method, Parameter parameter,
-			Class<?> type, Annotation[] annotations) {
-		for (Annotation annotation : annotations) {
-			if (annotation instanceof JsonParam) {
-				Object param = this.getRequest().readJSON(type);
-				return param;
-			} else if (annotation instanceof QueryParam) {
-				String name = ((QueryParam) annotation).value();
-				return getParameter(name, type, this.getRequest()
-						.getQueryParams());
-			} else if (annotation instanceof BodyParam) {
-				String name = ((BodyParam) annotation).value();
-				return getParameter(name, type, this.getRequest()
-						.getBodyParams());
-			} else if (annotation instanceof PathParam) {
-				String name = ((PathParam) annotation).value();
-				return getParameter(name, type, this.getPathParameters());
-			}
-		}
-	
-		return this.MAKE_PARAMETER(method, parameter);
-	}
-
-	protected Object MAKE_PARAMETER(Method method, Parameter parameter) {
-		// I AM  HOOK POINT
-		return null;
-	}
-
-	private Object getParameter(String name, Class<?> type,
-			Parameters params) {
-		if (type.equals(int.class)) {
-			return params.getInt(name);
-		} else if (type.equals(long.class)) {
-			return params.getLong(name);
-		} else if (type.equals(String.class)) {
-			return params.get(name);
-		} else if (type.equals(OptionalInt.class)) {
-			return params.getOptionalInt(name);
-		} else if (type.equals(OptionalLong.class)) {
-			return params.getOptionalLong(name);
-			// TODO: support Optional<String>
-		} else {
-			throw new RuntimeException(String.format(
-					"Unknown parameter type '%s' for '%s'", type, name));
-		}
+		this.request.setCharacterEncoding("UTF-8");
 	}
 
 	public WebRequest getRequest() {
 		return this.request;
-	}
-
-	public void dispatch(Method method) {
-		try {
-			this.setDefaultCharacterEncoding();
-
-			WebResponse res = this.makeResponse(method);
-			this.AFTER_DISPATCH(res);
-			res.write(servletResponse);
-		} catch (IllegalArgumentException | IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	/**
@@ -342,7 +251,7 @@ public abstract class ControllerBase implements Controller {
 	 * 
 	 * @return
 	 */
-	protected Optional<WebResponse> BEFORE_DISPATCH() {
+	public Optional<WebResponse> BEFORE_DISPATCH() {
 		// override me.
 		return Optional.empty();
 	}
@@ -352,7 +261,7 @@ public abstract class ControllerBase implements Controller {
 	 * 
 	 * @param res
 	 */
-	protected void AFTER_DISPATCH(WebResponse res) {
+	public void AFTER_DISPATCH(WebResponse res) {
 		return; // NOP
 	}
 

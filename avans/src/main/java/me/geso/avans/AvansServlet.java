@@ -25,6 +25,10 @@ public class AvansServlet extends HttpServlet {
 	public void registerClass(Class<? extends Controller> klass) {
 		this.dispatcher.registerClass(klass);
 	}
+	
+	public void setActionFactory(ActionFactory actionFactory) {
+		this.dispatcher.setActionFactory(actionFactory);
+	}
 
 	public Dispatcher getDispatcher() {
 		return dispatcher;
@@ -35,6 +39,10 @@ public class AvansServlet extends HttpServlet {
 		dispatcher.handler(
 				(HttpServletRequest) req,
 				(HttpServletResponse) res);
+	}
+
+	public void setActionClass(Class<? extends Action> actionClass) {
+		this.setActionFactory(new BasicActionFactory(actionClass));
 	}
 
 }

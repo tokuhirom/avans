@@ -22,7 +22,8 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 public class Dispatcher {
 	private static final Logger logger = LoggerFactory
 			.getLogger(Dispatcher.class);
-	private final WebRouter<Destination> router = new WebRouter<>();
+	private final WebRouter<Action> router = new WebRouter<>();
+	private ActionFactory actionFactory = new BasicActionFactory(BasicAction.class);
 
 	public Dispatcher() {
 	}
@@ -54,20 +55,20 @@ public class Dispatcher {
 					POST post = method.getAnnotation(POST.class);
 					if (post != null) {
 						String path = post.value();
-						Destination destination = new Destination(klass,
+						Action action = this.actionFactory.create(klass,
 								method);
 						logger.info("POST {}", path);
-						router.post(path, destination);
+						router.post(path, action);
 					}
 				}
 				{
 					GET get = method.getAnnotation(GET.class);
 					if (get != null) {
 						String path = get.value();
-						Destination destination = new Destination(klass,
+						Action action = this.actionFactory.create(klass,
 								method);
 						logger.info("GET {}", path);
-						router.get(path, destination);
+						router.get(path, action);
 					}
 				}
 			}
@@ -75,12 +76,12 @@ public class Dispatcher {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public void handler(HttpServletRequest request, HttpServletResponse response) {
 		String method = request.getMethod();
 		String path = request.getPathInfo();
 		// log.debug("{} {}", method, path);
-		RoutingResult<Destination> match = router.match(
+		RoutingResult<Action> match = router.match(
 				method, path);
 		if (match == null) {
 			this.writeNotFoundErrorPage(request, response);
@@ -92,16 +93,9 @@ public class Dispatcher {
 			return;
 		}
 
-		try {
-			Map<String, String> captured = match.getCaptured();
-			Destination destination = match.getDestination();
-			Controller pages = destination.getKlass().newInstance();
-			pages.init(request, response, captured);
-			pages.dispatch(destination.getMethod());
-		} catch (IllegalAccessException | IllegalArgumentException
-				| InstantiationException e) {
-			throw new RuntimeException(e);
-		}
+		Map<String, String> captured = match.getCaptured();
+		Action action = match.getDestination();
+		action.invoke(request, response, captured);
 	}
 
 	private void writeMethodNotAllowedErrorPage(HttpServletRequest request,
@@ -130,27 +124,19 @@ public class Dispatcher {
 		}
 	}
 
-	public static class Destination {
-		private final Class<? extends Controller> klass;
-		private final Method method;
-
-		public Destination(Class<? extends Controller> klass,
-				Method method) {
-			this.klass = klass;
-			this.method = method;
-		}
-
-		public Class<? extends Controller> getKlass() {
-			return klass;
-		}
-
-		public Method getMethod() {
-			return method;
-		}
+	public WebRouter<Action> getRouter() {
+		return this.router;
 	}
 
-	public WebRouter<Destination> getRouter() {
-		return this.router;
+	public ActionFactory getActionFactory() {
+		return actionFactory;
+	}
+
+	public void setActionFactory(ActionFactory actionFactory) {
+		if (!this.router.isEmpty()) {
+			throw new IllegalStateException("You must set ActionFactory first!");
+		}
+		this.actionFactory = actionFactory;
 	}
 
 }

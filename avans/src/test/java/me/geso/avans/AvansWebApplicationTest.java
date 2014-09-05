@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import javax.servlet.ServletException;
@@ -136,6 +137,12 @@ public class AvansWebApplicationTest {
 
 		@GET("/pathParamAnnotation/{a}")
 		public WebResponse pathParamAnnotation(@PathParam("a") String a) {
+			String text = "a:" + a;
+			return this.renderTEXT(text);
+		}
+
+		@GET("/optionalString")
+		public WebResponse optionalString(@QueryParam("a") Optional<String> a) {
 			String text = "a:" + a;
 			return this.renderTEXT(text);
 		}
@@ -322,6 +329,23 @@ public class AvansWebApplicationTest {
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals("a:b", res.getContentString());
+		}
+	}
+
+	@Test
+	public void testOptionalString() throws Exception {
+		try (MechResponse res = mech
+				.get("/optionalString?a=b")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:Optional[b]", res.getContentString());
+		}
+
+		try (MechResponse res = mech
+				.get("/optionalString")
+				.execute()) {
+			assertEquals(res.getStatusCode(), 200);
+			assertEquals("a:Optional.empty", res.getContentString());
 		}
 	}
 }

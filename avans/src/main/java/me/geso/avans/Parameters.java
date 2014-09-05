@@ -2,6 +2,7 @@ package me.geso.avans;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
@@ -58,6 +59,11 @@ public class Parameters {
 		return Integer.parseInt(arg);
 	}
 
+	public double getDouble(String name) {
+		String arg = this.get(name);
+		return Double.parseDouble(arg);
+	}
+
 	public OptionalInt getOptionalInt(String name) {
 		Optional<String> arg = this.getOptional(name);
 		if (arg.isPresent()) {
@@ -76,6 +82,15 @@ public class Parameters {
 		}
 	}
 
+	public OptionalDouble getOptionalDouble(String name) {
+		Optional<String> arg = this.getOptional(name);
+		if (arg.isPresent()) {
+			return OptionalDouble.of(Double.parseDouble(arg.get()));
+		} else {
+			return OptionalDouble.empty();
+		}
+	}
+
 	/**
 	 * Get a path parameter in String. But this doesn't throws exception if the
 	 * value doesn't exists.
@@ -91,4 +106,18 @@ public class Parameters {
 		}
 		return collection.stream().findFirst();
 	}
+	
+	public boolean containsKey(String name) {
+		Collection<String> collection = (Collection<String>) map.get(name);
+		if (collection == null) {
+			return false;
+		}
+		if (collection.isEmpty()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+
 }
