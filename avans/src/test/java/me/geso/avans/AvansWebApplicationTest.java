@@ -414,7 +414,7 @@ public class AvansWebApplicationTest {
 				.postMultipart("/uploadOptionalFile")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
-			assertEquals("a:hello", res.getContentString());
+			assertEquals("a:missing", res.getContentString());
 		}
 	}
 
