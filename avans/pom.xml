@@ -125,6 +125,12 @@
 			<artifactId>commons-collections4</artifactId>
 			<version>4.0</version>
 		</dependency>
+        <!-- running jetty server -->
+        <dependency>
+            <groupId>org.eclipse.jetty.aggregate</groupId>
+            <artifactId>jetty-all</artifactId>
+            <version>9.2.1.v20140609</version>
+        </dependency>
 	</dependencies>
 
 	<build>
