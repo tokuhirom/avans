@@ -18,6 +18,7 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		Server server = new JettyServerBuilder()
 				.setPort(21110)
+				.registerClass(Foo.class)
 				.build();
 		server.start();
 		server.join();
