@@ -152,7 +152,7 @@ public abstract class ControllerBase implements Controller {
 	 * @return
 	 */
 	@SneakyThrows
-	public WebResponse renderTEXT(String text) {
+	public WebResponse renderText(String text) {
 		if (text == null) {
 			throw new IllegalArgumentException("text must not be null");
 		}

@@ -115,7 +115,7 @@ public class AvansWebApplicationTest {
 		public WebResponse query() {
 			String text = "name:"
 					+ this.getRequest().getQueryParams().get("name");
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@GET("/mustache")
@@ -127,7 +127,7 @@ public class AvansWebApplicationTest {
 		public WebResponse postForm() {
 			String text = "(postform)name:"
 					+ this.getRequest().getBodyParams().get("name");
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@POST("/postMultipart")
@@ -136,33 +136,33 @@ public class AvansWebApplicationTest {
 					+ this.getRequest().getBodyParams().get("name")
 					+ ":"
 					+ this.getRequest().getFileItem("tmpl").get().getString();
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@GET("/queryParamAnnotation")
 		public WebResponse queryParamAnnotation(@QueryParam("a") String a,
 				@QueryParam("b") OptionalInt b, @QueryParam("c") OptionalInt c) {
 			String text = "a:" + a + ",b:" + b + ",c:" + c;
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@GET("/pathParamAnnotation/{a}")
 		public WebResponse pathParamAnnotation(@PathParam("a") String a) {
 			String text = "a:" + a;
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@GET("/optionalString")
 		public WebResponse optionalString(@QueryParam("a") Optional<String> a) {
 			String text = "a:" + a;
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@POST("/uploadFile")
 		@SneakyThrows
 		public WebResponse uploadFile(@UploadFile("a") FileItem a) {
 			String text = "a:" + a.getString("UTF-8");
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@POST("/uploadOptionalFile")
@@ -175,7 +175,7 @@ public class AvansWebApplicationTest {
 			} else {
 				text = text + "missing";
 			}
-			return this.renderTEXT(text);
+			return this.renderText(text);
 		}
 
 		@POST("/uploadFileArray")
@@ -187,7 +187,7 @@ public class AvansWebApplicationTest {
 				builder.append(item.getString("UTF-8"));
 				builder.append(",");
 			}
-			return this.renderTEXT(builder.toString());
+			return this.renderText(builder.toString());
 		}
 
 		@Data

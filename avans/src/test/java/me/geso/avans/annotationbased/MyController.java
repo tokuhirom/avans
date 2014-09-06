@@ -18,7 +18,7 @@ public class MyController extends ControllerBase {
 	@POST("/postForm")
 	public WebResponse postForm(@BodyParam("name") String name) {
 		String text = "(postform)name:" + name;
-		return renderTEXT(text);
+		return renderText(text);
 	}
 
 }

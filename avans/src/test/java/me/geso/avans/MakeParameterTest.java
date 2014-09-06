@@ -38,7 +38,7 @@ public class MakeParameterTest {
 	public static class MyController extends ControllerBase {
 		@GET("/")
 		public WebResponse root(Iyan iyan) {
-			return this.renderTEXT(iyan.v);
+			return this.renderText(iyan.v);
 		}
 	}
 
