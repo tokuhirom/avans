@@ -12,10 +12,10 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
  * Created by tokuhirom on 9/6/14.
  */
 public class JettyServerBuilder {
-	private int port;
+	private int port = 80;
 	private final AvansServlet servlet;
-	private int minThreads;
-	private int maxThreads;
+	private int minThreads = 80;
+	private int maxThreads = 80;
 
 	public JettyServerBuilder() {
 		this.servlet = new AvansServlet();
