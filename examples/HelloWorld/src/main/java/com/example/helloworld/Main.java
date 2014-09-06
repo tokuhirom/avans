@@ -11,7 +11,7 @@ public class Main {
 	public static class Foo extends ControllerBase {
 		@GET("/")
 		public WebResponse hello() {
-			return this.renderTEXT("Hello, world");
+			return this.renderText("Hello, world");
 		}
 	}
 
