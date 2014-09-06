@@ -12,55 +12,58 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
  * Created by tokuhirom on 9/6/14.
  */
 public class JettyServerBuilder {
-    private int port;
-    private final AvansServlet servlet;
-    private int minThreads;
-    private int maxThreads;
+	private int port;
+	private final AvansServlet servlet;
+	private int minThreads;
+	private int maxThreads;
 
-    public JettyServerBuilder() {
-        this.servlet = new AvansServlet();
-    }
-    
-    public JettyServerBuilder setPort(int port) {
-        this.port = port;
+	public JettyServerBuilder() {
+		this.servlet = new AvansServlet();
+	}
+
+	public JettyServerBuilder setPort(int port) {
+		this.port = port;
 		return this;
-    }
+	}
 
-    public JettyServerBuilder registerPackage(Package pkg) {
-        this.servlet.registerPackage(pkg);
-        return this;
-    }
+	public JettyServerBuilder registerPackage(Package pkg) {
+		this.servlet.registerPackage(pkg);
+		return this;
+	}
 
-    public JettyServerBuilder registerClass(Class<? extends Controller> klass) {
-        this.servlet.registerClass(klass);
-        return this;
-    }
-    // TODO: add enableAccessLog() method.
+	public JettyServerBuilder registerClass(Class<? extends Controller> klass) {
+		this.servlet.registerClass(klass);
+		return this;
+	}
 
-    public Server build() {
-        QueuedThreadPool queuedThreadPool = new QueuedThreadPool(this.minThreads, this.maxThreads);
+	// TODO: add enableAccessLog() method.
 
-        Server server = new Server(queuedThreadPool);
-        ServerConnector serverConnector = new ServerConnector(server);
-        serverConnector.setPort(port);
-        server.addConnector(serverConnector);
-        ServletHolder servletHolder = new ServletHolder(this.servlet);
-        ServletContextHandler context = new ServletContextHandler(
-                server,
-                "/",
-                ServletContextHandler.SESSIONS
-        );
-        context.addServlet(servletHolder, "/*");
-        server.setStopAtShutdown(true);
-        return server;
-    }
+	public Server build() {
+		QueuedThreadPool queuedThreadPool = new QueuedThreadPool(
+				this.minThreads, this.maxThreads);
 
-    public JettyServerBuilder setMaxThreads(int maxThreads) {
-        this.maxThreads = maxThreads;
-        return this;
-    }
-    public JettyServerBuilder setMinThreads(int minThreads) {
-        this.minThreads = minThreads;
-        return this;
-    }
+		Server server = new Server(queuedThreadPool);
+		ServerConnector serverConnector = new ServerConnector(server);
+		serverConnector.setPort(port);
+		server.addConnector(serverConnector);
+		ServletHolder servletHolder = new ServletHolder(this.servlet);
+		ServletContextHandler context = new ServletContextHandler(
+				server,
+				"/",
+				ServletContextHandler.SESSIONS
+				);
+		context.addServlet(servletHolder, "/*");
+		server.setStopAtShutdown(true);
+		return server;
+	}
+
+	public JettyServerBuilder setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+		return this;
+	}
+
+	public JettyServerBuilder setMinThreads(int minThreads) {
+		this.minThreads = minThreads;
+		return this;
+	}
 }
