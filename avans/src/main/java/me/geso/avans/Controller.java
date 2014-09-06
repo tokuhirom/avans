@@ -6,9 +6,9 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.geso.avans.webcomponents.Parameters;
-import me.geso.avans.webcomponents.WebRequest;
-import me.geso.avans.webcomponents.WebResponse;
+import me.geso.webscrew.Parameters;
+import me.geso.webscrew.WebRequest;
+import me.geso.webscrew.WebResponse;
 
 public interface Controller {
 

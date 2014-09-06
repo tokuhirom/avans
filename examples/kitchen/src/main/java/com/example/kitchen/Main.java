@@ -1,37 +1,24 @@
 package com.example.kitchen;
 
-import org.eclipse.jetty.server.Connector;
+import com.example.kitchen.controller.RootController;
+import me.geso.avans.jetty.JettyServerBuilder;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 public class Main {
-	public static void main(String[] args) throws Exception {
-		new Main().doMain();
-	}
+    public static void main(String[] args) throws Exception {
+        new Main().doMain();
+    }
 
-	final int port = 8080;
-	final int maxThreads = 80;
-	final int minThreads = maxThreads;
+    final int port = 8080;
 
-	private void doMain() throws Exception {
-		QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads,
-				minThreads);
-
-		Server server = new Server(threadPool);
-		ServerConnector connector = new ServerConnector(server);
-		connector.setPort(port);
-		server.setConnectors(new Connector[] { connector });
-		ServletContextHandler context = new ServletContextHandler(
-				server,
-				"/",
-				ServletContextHandler.SESSIONS
-				);
-		context.addServlet(KitchenServlet.class, "/*");
-		server.setStopAtShutdown(true);
-		server.start();
-		server.join();
-	}
+    private void doMain() throws Exception {
+        Server server = new JettyServerBuilder(port)
+                .setMaxThreads(80)
+                .setMinThreads(80)
+                .registerPackage(RootController.class.getPackage())
+                .build();
+        server.start();
+        server.join();
+    }
 
 }

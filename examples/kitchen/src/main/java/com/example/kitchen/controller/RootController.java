@@ -1,13 +1,12 @@
 package com.example.kitchen.controller;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import me.geso.avans.APIResponse;
 import me.geso.avans.ControllerBase;
-import me.geso.avans.WebResponse;
 import me.geso.avans.annotation.GET;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import me.geso.avans.webcomponents.WebResponse;
 
 public class RootController extends ControllerBase {
 	@GET("/")

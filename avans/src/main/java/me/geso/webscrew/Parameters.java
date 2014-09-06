@@ -1,4 +1,4 @@
-package me.geso.avans.webcomponents;
+package me.geso.webscrew;
 
 import java.util.Collection;
 import java.util.Optional;

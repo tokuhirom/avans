@@ -3,4 +3,4 @@
  *  It helps to write HTTP Servlets.
  *
  */
-package me.geso.avans.webcomponents;
+package me.geso.webscrew;

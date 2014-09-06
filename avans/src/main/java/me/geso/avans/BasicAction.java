@@ -3,9 +3,6 @@ package me.geso.avans;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -15,16 +12,16 @@ import java.util.OptionalLong;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
-import me.geso.avans.webcomponents.Parameters;
-import me.geso.avans.webcomponents.WebResponse;
+import me.geso.webscrew.Parameters;
+import me.geso.webscrew.WebResponse;
+
+import org.apache.commons.fileupload.FileItem;
 
 public class BasicAction implements Action {
 	private final Class<? extends Controller> controllerClass;

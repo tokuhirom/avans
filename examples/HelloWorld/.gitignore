@@ -2,5 +2,5 @@
 /.project
 /.settings/
 /target/
-/.idea/
-/avans-all.iml
+/build/
+/bin/

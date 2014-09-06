@@ -1,4 +1,4 @@
-package me.geso.avans.webcomponents;
+package me.geso.webscrew;
 
 import java.io.IOException;
 
@@ -16,10 +16,11 @@ public class RedirectResponse implements WebResponse {
 
 	@Override
 	public void write(HttpServletResponse response) throws IOException {
-		headers.keySet().forEach(name -> {
-			headers.getAll(name)
-					.forEach(value -> response.addHeader(name, value));
-		});
+		for (String name : headers.keySet()) {
+			for (String value : headers.getAll(name)) {
+				response.addHeader(name, value);
+			}
+		}
 		response.sendRedirect(location);
 	}
 

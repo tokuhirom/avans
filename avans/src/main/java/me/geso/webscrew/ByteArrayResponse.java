@@ -1,4 +1,4 @@
-package me.geso.avans.webcomponents;
+package me.geso.webscrew;
 
 import java.io.IOException;
 import java.io.OutputStream;

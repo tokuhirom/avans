@@ -7,10 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -27,12 +25,11 @@ import me.geso.avans.annotation.POST;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
-import me.geso.avans.webcomponents.CallbackResponse;
-import me.geso.avans.webcomponents.WebResponse;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
+import me.geso.webscrew.CallbackResponse;
+import me.geso.webscrew.WebResponse;
 
-import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.fileupload.FileItem;
 import org.junit.After;
 import org.junit.Before;
