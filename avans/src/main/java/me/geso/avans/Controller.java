@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import me.geso.webscrew.Parameters;
-import me.geso.webscrew.WebRequest;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.request.WebRequest;
+import me.geso.webscrew.response.WebResponse;
 
 public interface Controller {
 

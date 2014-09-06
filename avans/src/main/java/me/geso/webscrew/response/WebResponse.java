@@ -1,4 +1,4 @@
-package me.geso.webscrew;
+package me.geso.webscrew.response;
 
 import java.io.IOException;
 

@@ -27,8 +27,8 @@ import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
-import me.geso.webscrew.CallbackResponse;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.response.CallbackResponse;
+import me.geso.webscrew.response.WebResponse;
 
 import org.apache.commons.fileupload.FileItem;
 import org.junit.After;

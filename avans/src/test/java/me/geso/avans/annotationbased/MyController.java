@@ -5,7 +5,7 @@ import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.response.WebResponse;
 
 public class MyController extends ControllerBase {
 

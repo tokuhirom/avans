@@ -1,4 +1,4 @@
-package me.geso.webscrew;
+package me.geso.webscrew.response;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import me.geso.webscrew.Headers;
 
 @ToString
 public class ByteArrayResponse implements WebResponse {

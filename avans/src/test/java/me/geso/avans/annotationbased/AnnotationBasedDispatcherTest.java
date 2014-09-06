@@ -18,7 +18,7 @@ import me.geso.avans.Dispatcher;
 import me.geso.avans.ControllerBase;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.response.WebResponse;
 
 import org.junit.After;
 import org.junit.Before;

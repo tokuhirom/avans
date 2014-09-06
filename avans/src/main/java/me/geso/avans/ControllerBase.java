@@ -11,11 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import me.geso.webscrew.ByteArrayResponse;
 import me.geso.webscrew.Parameters;
-import me.geso.webscrew.RedirectResponse;
-import me.geso.webscrew.WebRequest;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.request.WebRequest;
+import me.geso.webscrew.response.ByteArrayResponse;
+import me.geso.webscrew.response.RedirectResponse;
+import me.geso.webscrew.response.WebResponse;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;

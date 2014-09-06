@@ -19,7 +19,7 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.webscrew.Parameters;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.response.WebResponse;
 
 import org.apache.commons.fileupload.FileItem;
 

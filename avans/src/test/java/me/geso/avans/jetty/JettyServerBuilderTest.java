@@ -5,7 +5,7 @@ import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.GET;
 import me.geso.mech.Mech;
 import me.geso.mech.MechResponse;
-import me.geso.webscrew.WebResponse;
+import me.geso.webscrew.response.WebResponse;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;

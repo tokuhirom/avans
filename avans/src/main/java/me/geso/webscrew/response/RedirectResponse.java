@@ -1,8 +1,10 @@
-package me.geso.webscrew;
+package me.geso.webscrew.response;
 
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
+
+import me.geso.webscrew.Headers;
 
 public class RedirectResponse implements WebResponse {
 

@@ -1,4 +1,4 @@
-package me.geso.webscrew;
+package me.geso.webscrew.request;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +23,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.AvansUtil;
 import me.geso.avans.ValidationException;
+import me.geso.webscrew.Parameters;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;

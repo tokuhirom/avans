@@ -1,4 +1,4 @@
-package me.geso.webscrew;
+package me.geso.webscrew.response;
 
 import java.io.IOException;
 
@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
 import lombok.ToString;
+import me.geso.webscrew.Headers;
 
 /**
  * The response object using callback. This class is useful for streaming
