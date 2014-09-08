@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import me.geso.avans.validator.JsonParamValidator;
+import me.geso.avans.validator.TinyValidatorJsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.ByteArrayResponse;
@@ -128,7 +130,7 @@ public abstract class ControllerBase implements Controller {
 	 * @return
 	 */
 	protected WebResponse renderError(int code, @NonNull String message) {
-		APIResponse<String> apires = new APIResponse<>(code, null, message);
+		APIResponse<String> apires = new APIResponse<>(code, message, null);
 
 		ByteArrayResponse res = this.renderJSON(apires);
 		res.setStatus(code);
@@ -257,6 +259,10 @@ public abstract class ControllerBase implements Controller {
 	 */
 	public void AFTER_DISPATCH(WebResponse res) {
 		return; // NOP
+	}
+
+	public JsonParamValidator createJsonParamValidator() {
+		return new TinyValidatorJsonParamValidator();
 	}
 
 }

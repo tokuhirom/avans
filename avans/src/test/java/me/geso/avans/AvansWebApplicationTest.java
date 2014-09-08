@@ -27,6 +27,7 @@ import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
+import me.geso.tinyvalidator.constraints.NotNull;
 import me.geso.webscrew.response.CallbackResponse;
 import me.geso.webscrew.response.WebResponse;
 
@@ -120,7 +121,9 @@ public class AvansWebApplicationTest {
 
 		@GET("/mustache")
 		public WebResponse mustache() {
-			return this.renderMustache("mustache.mustache", new Foo());
+			Foo foo = new Foo();
+			foo.setName("John");
+			return this.renderMustache("mustache.mustache", foo);
 		}
 
 		@POST("/postForm")
@@ -189,11 +192,12 @@ public class AvansWebApplicationTest {
 			}
 			return this.renderText(builder.toString());
 		}
+	}
 
-		@Data
-		public static class Foo {
-			String name = "John";
-		}
+	@Data
+	public static class Foo {
+		@NotNull
+		private String name;
 	}
 
 	private MechJettyServlet mech;
@@ -238,7 +242,7 @@ public class AvansWebApplicationTest {
 		}
 
 		{
-			MyController.Foo foo = new MyController.Foo();
+			Foo foo = new Foo();
 			foo.setName("iyan");
 			try (MechResponse res = mech.postJSON("/json", foo).execute()) {
 				assertEquals(res.getStatusCode(), 200);
@@ -307,7 +311,7 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testJson() {
-		MyController.Foo foo = new MyController.Foo();
+		Foo foo = new Foo();
 		foo.setName("iyan");
 		try (MechResponse res = mech.postJSON("/json", foo).execute()) {
 			assertEquals(res.getStatusCode(), 200);
@@ -331,16 +335,39 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testJsonParam() {
-		MyController.Foo foo = new MyController.Foo();
-		foo.setName("iyan");
+		System.setProperty("org.jboss.logging.provider", "slf4j");
+		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
+		{
+			Foo foo = new Foo();
+			foo.setName("iyan");
+			try (MechResponse res = mech.postJSON("/jsonParam", foo).execute()) {
+				assertEquals(res.getStatusCode(), 200);
+				assertEquals(res.getContentType().getMimeType(),
+						"application/json");
+				assertEquals(res.getContentType().getCharset().displayName(),
+						"UTF-8");
+				assertEquals(res.getContentString(),
+						"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
+			}
+		}
+
+	}
+
+	@Test
+	public void testJsonParamValidationFailed() {
+		// validation failed.
+		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
+		Foo foo = new Foo();
+		foo.setName(null);
 		try (MechResponse res = mech.postJSON("/jsonParam", foo).execute()) {
-			assertEquals(res.getStatusCode(), 200);
+			assertEquals(200, res.getStatusCode());
 			assertEquals(res.getContentType().getMimeType(),
 					"application/json");
 			assertEquals(res.getContentType().getCharset().displayName(),
 					"UTF-8");
-			assertEquals(res.getContentString(),
-					"{\"code\":200,\"messages\":[],\"data\":\"name:iyan\"}");
+			assertEquals(
+					"{\"code\":403,\"messages\":[\"You should fill name.\"],\"data\":null}",
+					res.getContentString());
 		}
 	}
 

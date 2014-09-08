@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import me.geso.avans.validator.JsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
@@ -23,5 +24,7 @@ public interface Controller {
 	Parameters getPathParameters();
 
 	public WebResponse renderJSON(Object obj);
+
+	public JsonParamValidator createJsonParamValidator();
 
 }

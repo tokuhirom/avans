@@ -50,6 +50,12 @@ public class APIResponse<T extends Object> {
 		this.data = data;
 	}
 
+	public APIResponse(int code, List<String> messages, T data) {
+		this.code = code;
+		this.messages = messages;
+		this.data = data;
+	}
+
 	/**
 	 * Set message. Current message will remove.
 	 */

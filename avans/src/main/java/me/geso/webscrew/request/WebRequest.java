@@ -7,22 +7,16 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.AvansUtil;
-import me.geso.avans.ValidationException;
 import me.geso.webscrew.Parameters;
 
 import org.apache.commons.collections4.MultiMap;
@@ -197,7 +191,6 @@ public class WebRequest {
 		ObjectMapper mapper = new ObjectMapper();
 		T instance = mapper.readValue(inputStream, typeReference);
 		if (instance != null) {
-			this.validate(instance);
 			return instance;
 		} else {
 			throw new RuntimeException("null found... in content body");
@@ -218,31 +211,9 @@ public class WebRequest {
 		ObjectMapper mapper = new ObjectMapper();
 		T instance = mapper.readValue(inputStream, klass);
 		if (instance != null) {
-			this.validate(instance);
 			return instance;
 		} else {
 			throw new RuntimeException("null found... in content body");
-		}
-	}
-
-	/**
-	 * Validate object by bean validation.
-	 * 
-	 * @param o
-	 */
-	public <T> void validate(T o) {
-		ValidatorFactory validatorFactory = Validation
-				.buildDefaultValidatorFactory();
-		Validator validator = validatorFactory.getValidator();
-		Set<ConstraintViolation<T>> violations = validator.validate(o);
-		if (!violations.isEmpty()) {
-			List<String> messages = new ArrayList<>();
-			for (ConstraintViolation<T> violation : violations) {
-				String message = violation.getPropertyPath() + " "
-						+ violation.getMessage();
-				messages.add(message);
-			}
-			throw new ValidationException(messages);
 		}
 	}
 

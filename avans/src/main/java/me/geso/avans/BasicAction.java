@@ -18,6 +18,8 @@ import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.validator.JsonParamValidator;
+import me.geso.avans.validator.TinyValidatorJsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.response.WebResponse;
 
@@ -26,6 +28,7 @@ import org.apache.commons.fileupload.FileItem;
 public class BasicAction implements Action {
 	private final Class<? extends Controller> controllerClass;
 	private final Method method;
+	private WebResponse response = null;
 
 	public BasicAction(Class<? extends Controller> klass,
 			Method method) {
@@ -58,6 +61,9 @@ public class BasicAction implements Action {
 		}
 
 		Object[] params = this.makeParameters(controller, method);
+		if (this.isFinished()) {
+			return this.response;
+		}
 		Object res = method.invoke(controller, params);
 		if (res instanceof WebResponse) {
 			return (WebResponse) res;
@@ -100,6 +106,11 @@ public class BasicAction implements Action {
 		for (Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
 				Object param = controller.getRequest().readJSON(type);
+				JsonParamValidator jsonParamValidator = controller.createJsonParamValidator();
+				Optional<WebResponse> validate = jsonParamValidator.validate(controller, param);
+				if (validate.isPresent()) {
+					this.response = validate.get();
+				}
 				return param;
 			} else if (annotation instanceof QueryParam) {
 				String name = ((QueryParam) annotation).value();
@@ -153,6 +164,10 @@ public class BasicAction implements Action {
 					parameter.getName()));
 		}
 		return param;
+	}
+
+	public boolean isFinished() {
+		return this.response != null;
 	}
 
 	/**
