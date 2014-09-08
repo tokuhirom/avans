@@ -21,6 +21,7 @@ import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.validator.JsonParamValidator;
 import me.geso.avans.validator.TinyValidatorJsonParamValidator;
 import me.geso.webscrew.Parameters;
+import me.geso.webscrew.request.WebRequestUpload;
 import me.geso.webscrew.response.WebResponse;
 
 import org.apache.commons.fileupload.FileItem;
@@ -129,8 +130,8 @@ public class BasicAction implements Action {
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
 				String name = ((UploadFile) annotation).value();
-				if (type == FileItem.class) {
-					Optional<FileItem> maybeFileItem = controller.getRequest()
+				if (type == WebRequestUpload.class) {
+					Optional<WebRequestUpload> maybeFileItem = controller.getRequest()
 							.getFileItem(name);
 					if (maybeFileItem.isPresent()) {
 						return maybeFileItem.get();
@@ -138,13 +139,13 @@ public class BasicAction implements Action {
 						throw new RuntimeException(String.format(
 								"Missing mandatory file: %s", name));
 					}
-				} else if (type == FileItem[].class) {
-					FileItem[] items = controller.getRequest()
-							.getFileItems(name).toArray(new FileItem[0]);
+				} else if (type == WebRequestUpload[].class) {
+					WebRequestUpload[] items = controller.getRequest()
+							.getFileItems(name).toArray(new WebRequestUpload[0]);
 					return items;
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
-					Optional<FileItem> maybeFileItem = controller.getRequest()
+					Optional<WebRequestUpload> maybeFileItem = controller.getRequest()
 							.getFileItem(name);
 					return maybeFileItem;
 				} else {

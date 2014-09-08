@@ -28,10 +28,10 @@ import me.geso.avans.annotation.UploadFile;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.tinyvalidator.constraints.NotNull;
+import me.geso.webscrew.request.WebRequestUpload;
 import me.geso.webscrew.response.CallbackResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import org.apache.commons.fileupload.FileItem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -138,7 +138,7 @@ public class AvansWebApplicationTest {
 			String text = "(postform)name:"
 					+ this.getRequest().getBodyParams().get("name")
 					+ ":"
-					+ this.getRequest().getFileItem("tmpl").get().getString();
+					+ this.getRequest().getFileItem("tmpl").get().getString("UTF-8");
 			return this.renderText(text);
 		}
 
@@ -163,7 +163,7 @@ public class AvansWebApplicationTest {
 
 		@POST("/uploadFile")
 		@SneakyThrows
-		public WebResponse uploadFile(@UploadFile("a") FileItem a) {
+		public WebResponse uploadFile(@UploadFile("a") WebRequestUpload a) {
 			String text = "a:" + a.getString("UTF-8");
 			return this.renderText(text);
 		}
@@ -171,7 +171,7 @@ public class AvansWebApplicationTest {
 		@POST("/uploadOptionalFile")
 		@SneakyThrows
 		public WebResponse uploadOptionalFile(
-				@UploadFile("a") Optional<FileItem> a) {
+				@UploadFile("a") Optional<WebRequestUpload> a) {
 			String text = "a:";
 			if (a.isPresent()) {
 				text = text + a.get().getString("UTF-8");
@@ -183,10 +183,10 @@ public class AvansWebApplicationTest {
 
 		@POST("/uploadFileArray")
 		@SneakyThrows
-		public WebResponse uploadFileArray(@UploadFile("a") FileItem[] a) {
+		public WebResponse uploadFileArray(@UploadFile("a") WebRequestUpload[] a) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("a:");
-			for (FileItem item : a) {
+			for (WebRequestUpload item : a) {
 				builder.append(item.getString("UTF-8"));
 				builder.append(",");
 			}

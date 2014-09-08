@@ -18,6 +18,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.AvansUtil;
 import me.geso.webscrew.Parameters;
+import me.geso.webscrew.request.impl.WebRequestUploadImpl;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;
@@ -39,7 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class WebRequest {
 	private final HttpServletRequest servletRequest;
-	private MultiMap<String, FileItem> uploads;
+	private MultiMap<String, WebRequestUpload> uploads;
 	private Parameters queryParams;
 	private Parameters bodyParams;
 
@@ -227,9 +228,9 @@ public class WebRequest {
 	 * @param name
 	 * @return
 	 */
-	public Optional<FileItem> getFileItem(String name) {
+	public Optional<WebRequestUpload> getFileItem(String name) {
 		@SuppressWarnings("unchecked")
-		Collection<FileItem> items = (Collection<FileItem>) this.getFileItemMap().get(name);
+		Collection<WebRequestUpload> items = (Collection<WebRequestUpload>) this.getFileItemMap().get(name);
 		if (items == null) {
 			return Optional.empty();
 		}
@@ -242,9 +243,9 @@ public class WebRequest {
 	 * @param name
 	 * @return
 	 */
-	public Collection<FileItem> getFileItems(String name) {
+	public Collection<WebRequestUpload> getFileItems(String name) {
 		@SuppressWarnings("unchecked")
-		Collection<FileItem> items = (Collection<FileItem>) this.getFileItemMap().get(name);
+		Collection<WebRequestUpload> items = (Collection<WebRequestUpload>) this.getFileItemMap().get(name);
 		if (items == null) {
 			return new ArrayList<>();
 		}
@@ -256,7 +257,7 @@ public class WebRequest {
 	 * 
 	 * @return
 	 */
-	public MultiMap<String, FileItem> getFileItemMap() {
+	public MultiMap<String, WebRequestUpload> getFileItemMap() {
 		this.getBodyParams(); // initialize this.uploads
 		return this.uploads;
 	}
@@ -293,7 +294,7 @@ public class WebRequest {
 						queryString, this.getCharacterEncoding());
 			} else if (ServletFileUpload.isMultipartContent(servletRequest)) {
 				MultiMap<String,String> bodyParams = new MultiValueMap<String, String>();
-				MultiMap<String,FileItem> uploads = new MultiValueMap<String, FileItem>();
+				MultiMap<String,WebRequestUpload> uploads = new MultiValueMap<>();
 				ServletFileUpload servletFileUpload = this
 						.createServletFileUpload();
 				List<FileItem> fileItems = servletFileUpload
@@ -304,7 +305,7 @@ public class WebRequest {
 								.getCharacterEncoding());
 						bodyParams.put(fileItem.getFieldName(), value);
 					} else {
-						uploads.put(fileItem.getFieldName(), fileItem);
+						uploads.put(fileItem.getFieldName(), new WebRequestUploadImpl(fileItem));
 					}
 				}
 				this.uploads = uploads;
