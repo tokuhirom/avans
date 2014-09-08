@@ -19,12 +19,9 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.validator.JsonParamValidator;
-import me.geso.avans.validator.TinyValidatorJsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequestUpload;
 import me.geso.webscrew.response.WebResponse;
-
-import org.apache.commons.fileupload.FileItem;
 
 public class BasicAction implements Action {
 	private final Class<? extends Controller> controllerClass;
