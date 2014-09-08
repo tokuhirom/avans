@@ -110,9 +110,9 @@
 		</dependency>
 		<!-- running jetty server -->
 		<dependency>
-			<groupId>org.eclipse.jetty.aggregate</groupId>
-			<artifactId>jetty-all</artifactId>
-			<version>9.2.1.v20140609</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>9.2.2.v20140723</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
