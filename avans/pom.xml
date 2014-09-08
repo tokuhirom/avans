@@ -114,12 +114,6 @@
 			<artifactId>jetty-servlet</artifactId>
 			<version>9.2.2.v20140723</version>
 		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.2</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
