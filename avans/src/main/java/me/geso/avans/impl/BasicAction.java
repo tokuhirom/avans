@@ -1,4 +1,4 @@
-package me.geso.avans;
+package me.geso.avans.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lombok.SneakyThrows;
+import me.geso.avans.APIResponse;
+import me.geso.avans.Action;
+import me.geso.avans.Controller;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
@@ -23,6 +26,12 @@ import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequestUpload;
 import me.geso.webscrew.response.WebResponse;
 
+/***
+ * Basic action form.
+ *
+ * @author tokuhirom
+ *
+ */
 public class BasicAction implements Action {
 	private final Class<? extends Controller> controllerClass;
 	private final Method method;
@@ -104,8 +113,10 @@ public class BasicAction implements Action {
 		for (Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
 				Object param = controller.getRequest().readJSON(type);
-				JsonParamValidator jsonParamValidator = controller.createJsonParamValidator();
-				Optional<WebResponse> validate = jsonParamValidator.validate(controller, param);
+				JsonParamValidator jsonParamValidator = controller
+						.createJsonParamValidator();
+				Optional<WebResponse> validate = jsonParamValidator.validate(
+						controller, param);
 				if (validate.isPresent()) {
 					this.response = validate.get();
 				}
@@ -128,7 +139,8 @@ public class BasicAction implements Action {
 				// @UploadFile
 				String name = ((UploadFile) annotation).value();
 				if (type == WebRequestUpload.class) {
-					Optional<WebRequestUpload> maybeFileItem = controller.getRequest()
+					Optional<WebRequestUpload> maybeFileItem = controller
+							.getRequest()
 							.getFileItem(name);
 					if (maybeFileItem.isPresent()) {
 						return maybeFileItem.get();
@@ -138,11 +150,13 @@ public class BasicAction implements Action {
 					}
 				} else if (type == WebRequestUpload[].class) {
 					WebRequestUpload[] items = controller.getRequest()
-							.getFileItems(name).toArray(new WebRequestUpload[0]);
+							.getFileItems(name)
+							.toArray(new WebRequestUpload[0]);
 					return items;
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
-					Optional<WebRequestUpload> maybeFileItem = controller.getRequest()
+					Optional<WebRequestUpload> maybeFileItem = controller
+							.getRequest()
 							.getFileItem(name);
 					return maybeFileItem;
 				} else {
@@ -164,6 +178,11 @@ public class BasicAction implements Action {
 		return param;
 	}
 
+	/**
+	 * Return true if there is {@code this.response!=null}.
+	 * 
+	 * @return
+	 */
 	public boolean isFinished() {
 		return this.response != null;
 	}

@@ -1,9 +1,12 @@
-package me.geso.avans;
+package me.geso.avans.impl;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import lombok.SneakyThrows;
+import me.geso.avans.Action;
+import me.geso.avans.ActionFactory;
+import me.geso.avans.Controller;
 
 public class BasicActionFactory implements ActionFactory {
 
@@ -11,8 +14,7 @@ public class BasicActionFactory implements ActionFactory {
 
 	@SneakyThrows
 	public BasicActionFactory(Class<? extends Action> actionClass) {
-		Constructor<? extends Action> constructor = actionClass.getConstructor(Class.class, Method.class);
-		this.constructor = constructor;
+		this.constructor = actionClass.getConstructor(Class.class, Method.class);
 	}
 
 	@Override

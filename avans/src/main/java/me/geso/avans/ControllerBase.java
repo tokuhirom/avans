@@ -15,6 +15,7 @@ import me.geso.avans.validator.JsonParamValidator;
 import me.geso.avans.validator.TinyValidatorJsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
+import me.geso.webscrew.request.impl.DefaultWebRequest;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
@@ -43,7 +44,7 @@ public abstract class ControllerBase implements Controller {
 			HttpServletResponse servletResponse,
 			Map<String, String> captured) {
 		this.BEFORE_INIT();
-		this.request = new WebRequest(servletRequest);
+		this.request = this.createWebReqeust(servletRequest);
 		this.servletResponse = servletResponse;
 		this.setDefaultCharacterEncoding();
 
@@ -53,6 +54,10 @@ public abstract class ControllerBase implements Controller {
 		}
 		this.pathParameters = new Parameters(pathParameters);
 		this.AFTER_INIT();
+	}
+	
+	public WebRequest createWebReqeust(HttpServletRequest servletRequest) {
+		return new DefaultWebRequest(servletRequest);
 	}
 
 	protected void BEFORE_INIT() {
