@@ -30,17 +30,12 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>0.13.0</version>
+			<version>0.13.2</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>routes</artifactId>
 			<version>0.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.aggregate</groupId>
-			<artifactId>jetty-all</artifactId>
-			<version>9.2.1.v20140609</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
@@ -101,7 +96,7 @@
 									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.example.helloworld.HelloWorldApplication</mainClass>
+									<mainClass>com.example.kitchen.Main</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
