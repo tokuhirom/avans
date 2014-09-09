@@ -4,9 +4,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Optional;
 
 import me.geso.avans.annotation.GET;
-import me.geso.avans.impl.BasicAction;
+import me.geso.avans.methodparameter.DefaultMethodParameterBuilder;
+import me.geso.avans.methodparameter.MethodParameterBuilder;
+import me.geso.avans.methodparameter.Param;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.webscrew.response.WebResponse;
@@ -18,20 +21,16 @@ public class MakeParameterTest {
 		String v;
 	}
 
-	public static class MyAction extends BasicAction {
-		public MyAction(Class<? extends Controller> klass, Method method) {
-			super(klass, method);
-		}
+	public static class MyMethodParameterBuilder extends DefaultMethodParameterBuilder {
 
 		@Override
-		protected Object MAKE_PARAMETER(Controller controller, Method method, Parameter parameter) {
-			System.out.println("HAHAHA");
+		protected Optional<Param> MAKE_PARAMETER(Controller controller, Method method, Parameter parameter) {
 			if (parameter.getType() == Iyan.class) {
 				Iyan iyan = new Iyan();
 				iyan.v = "mattn";
-				return iyan;
+				return Optional.of(new Param("iyan", iyan, parameter.getAnnotations()));
 			}
-			return null;
+			return Optional.empty();
 		}
 
 	}
@@ -41,12 +40,15 @@ public class MakeParameterTest {
 		public WebResponse root(Iyan iyan) {
 			return this.renderText(iyan.v);
 		}
+		
+		public MethodParameterBuilder createMethodParameterBuilder() {
+			return new MyMethodParameterBuilder();
+		}
 	}
 
 	@Test
 	public void test() throws Exception {
 		AvansServlet servlet = new AvansServlet();
-		servlet.setActionClass(MyAction.class);
 		servlet.registerClass(MyController.class);
 		try (MechJettyServlet mech = new MechJettyServlet(servlet)) {
 			try (MechResponse res = mech.get("/").execute()) {

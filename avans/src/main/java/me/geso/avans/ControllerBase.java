@@ -1,8 +1,13 @@
 package me.geso.avans;
 
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -11,8 +16,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import me.geso.avans.validator.JsonParamValidator;
-import me.geso.avans.validator.TinyValidatorJsonParamValidator;
+import me.geso.avans.annotation.JsonParam;
+import me.geso.avans.methodparameter.DefaultMethodParameterBuilder;
+import me.geso.avans.methodparameter.MethodParameterBuilder;
+import me.geso.avans.methodparameter.Param;
+import me.geso.tinyvalidator.ConstraintViolation;
+import me.geso.tinyvalidator.Validator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.request.impl.DefaultWebRequest;
@@ -55,7 +64,7 @@ public abstract class ControllerBase implements Controller {
 		this.pathParameters = new Parameters(pathParameters);
 		this.AFTER_INIT();
 	}
-	
+
 	public WebRequest createWebReqeust(HttpServletRequest servletRequest) {
 		return new DefaultWebRequest(servletRequest);
 	}
@@ -266,8 +275,88 @@ public abstract class ControllerBase implements Controller {
 		return; // NOP
 	}
 
-	public JsonParamValidator createJsonParamValidator() {
-		return new TinyValidatorJsonParamValidator();
+	@SneakyThrows
+	public void invoke(Method method, HttpServletRequest servletRequest,
+			HttpServletResponse servletResponse, Map<String, String> captured) {
+		this.init(servletRequest, servletResponse, captured);
+
+		WebResponse response = this.makeResponse(this, method);
+		this.AFTER_DISPATCH(response);
+		response.write(servletResponse);
+	}
+
+	@SneakyThrows
+	private WebResponse makeResponse(Controller controller, Method method) {
+		{
+			Optional<WebResponse> maybeResponse = controller.BEFORE_DISPATCH();
+			if (maybeResponse.isPresent()) {
+				return maybeResponse.get();
+			}
+		}
+
+		MethodParameterBuilder builder = this.createMethodParameterBuilder();
+		Param[] params = builder.build(this, method);
+		{
+			Optional<WebResponse> webResponse = this.validateParameters(params);
+			if (webResponse.isPresent()) {
+				return webResponse.get();
+			}
+		}
+		Object[] objectParams = Arrays.stream(params).map(it -> it.getObject())
+				.toArray();
+		Object res = method.invoke(controller, objectParams);
+		if (res instanceof WebResponse) {
+			return (WebResponse) res;
+		} else if (res == null) {
+			throw new RuntimeException(
+					"dispatch method must not return NULL");
+		} else {
+			return this.convertResponse(controller, res);
+		}
+	}
+
+	private Optional<WebResponse> validateParameters(Param[] params) {
+		Validator validator = new Validator();
+		List<String> messages = new ArrayList<>();
+		for (Param param : params) {
+			Object object = param.getObject();
+			Annotation[] annotations = param.getAnnotations();
+			for (Annotation annotation : annotations) {
+				if (annotation instanceof JsonParam) {
+					List<ConstraintViolation<Object>> validate = validator
+							.validate(object);
+					validate.stream().forEach(
+							violation -> {
+								String message = violation.getRoutePath() + " "
+										+ violation.getMessage();
+								messages.add(message);
+							});
+				}
+			}
+		}
+		// TODO validate parameters.
+		if (messages.isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(this.renderJSON(new APIResponse<Object>(403,
+					messages, null)));
+		}
+	}
+
+	public MethodParameterBuilder createMethodParameterBuilder() {
+		return new DefaultMethodParameterBuilder();
+	}
+
+	// You can hook this.
+	protected WebResponse convertResponse(Controller controller, Object res) {
+		if (res instanceof APIResponse) {
+			// Rendering APIResponse with Jackson by defualt.
+			return controller.renderJSON(res);
+		} else {
+			throw new RuntimeException(String.format(
+					"Unkonwn return value from action: %s(%s)", Object.class,
+					controller.getRequest().getPathInfo()));
+		}
 	}
 
 }

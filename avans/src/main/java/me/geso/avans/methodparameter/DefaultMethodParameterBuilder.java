@@ -1,30 +1,23 @@
-package me.geso.avans.impl;
+package me.geso.avans.methodparameter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import lombok.SneakyThrows;
-import me.geso.avans.APIResponse;
-import me.geso.avans.Action;
 import me.geso.avans.Controller;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
-import me.geso.avans.validator.JsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequestUpload;
-import me.geso.webscrew.response.WebResponse;
 
 /***
  * Basic action form.
@@ -32,73 +25,15 @@ import me.geso.webscrew.response.WebResponse;
  * @author tokuhirom
  *
  */
-public class BasicAction implements Action {
-	private final Class<? extends Controller> controllerClass;
-	private final Method method;
-	private WebResponse response = null;
+public class DefaultMethodParameterBuilder implements MethodParameterBuilder {
+	private final List<String> validationErrors = new ArrayList<>();
+	private final List<Object> parameters = new ArrayList<>();
 
-	public BasicAction(Class<? extends Controller> klass,
-			Method method) {
-		this.controllerClass = klass;
-		this.method = method;
-	}
-
-	public Method getMethod() {
-		return method;
-	}
-
-	@SneakyThrows
-	@Override
-	public void invoke(HttpServletRequest servletRequest,
-			HttpServletResponse servletResponse, Map<String, String> captured) {
-		Controller controller = controllerClass.newInstance();
-		controller.init(servletRequest, servletResponse, captured);
-		WebResponse response = this.makeResponse(controller);
-		controller.AFTER_DISPATCH(response);
-		response.write(servletResponse);
-	}
-
-	@SneakyThrows
-	private WebResponse makeResponse(Controller controller) {
-		{
-			Optional<WebResponse> maybeResponse = controller.BEFORE_DISPATCH();
-			if (maybeResponse.isPresent()) {
-				return maybeResponse.get();
-			}
-		}
-
-		Object[] params = this.makeParameters(controller, method);
-		if (this.isFinished()) {
-			return this.response;
-		}
-		Object res = method.invoke(controller, params);
-		if (res instanceof WebResponse) {
-			return (WebResponse) res;
-		} else if (res == null) {
-			throw new RuntimeException(
-					"dispatch method must not return NULL");
-		} else {
-			return this.convertResponse(controller, res);
-		}
-	}
-
-	// You can hook this.
-	protected WebResponse convertResponse(Controller controller, Object res) {
-		if (res instanceof APIResponse) {
-			// Rendering APIResponse with Jackson by defualt.
-			return controller.renderJSON(res);
-		} else {
-			throw new RuntimeException(String.format(
-					"Unkonwn return value from action: %s(%s)", Object.class,
-					controller.getRequest().getPathInfo()));
-		}
-	}
-
-	private Object[] makeParameters(Controller controller, Method method) {
+	public Param[] build(Controller controller, Method method) {
 		Parameter[] parameters = method.getParameters();
 		Class<?>[] types = method.getParameterTypes();
 		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-		Object[] params = new Object[parameters.length];
+		Param[] params = new Param[parameters.length];
 		for (int i = 0; i < parameters.length; ++i) {
 			params[i] = makeParameter(controller, method, parameters[i],
 					types[i],
@@ -107,34 +42,27 @@ public class BasicAction implements Action {
 		return params;
 	}
 
-	private Object makeParameter(Controller controller, Method method,
+	private Param makeParameter(Controller controller, Method method,
 			Parameter parameter,
 			Class<?> type, Annotation[] annotations) {
 		for (Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
 				Object param = controller.getRequest().readJSON(type);
-				JsonParamValidator jsonParamValidator = controller
-						.createJsonParamValidator();
-				Optional<WebResponse> validate = jsonParamValidator.validate(
-						controller, param);
-				if (validate.isPresent()) {
-					this.response = validate.get();
-				}
-				return param;
+				return new Param("json", param, annotations);
 			} else if (annotation instanceof QueryParam) {
 				String name = ((QueryParam) annotation).value();
-				return getObjectFromParameter(annotation, name, type,
+				return new Param(name, getObjectFromParameter(annotation, name, type,
 						controller.getRequest()
-								.getQueryParams());
+								.getQueryParams()), annotations);
 			} else if (annotation instanceof BodyParam) {
 				String name = ((BodyParam) annotation).value();
-				return getObjectFromParameter(annotation, name, type,
+				return new Param(name, getObjectFromParameter(annotation, name, type,
 						controller.getRequest()
-								.getBodyParams());
+								.getBodyParams()), annotations);
 			} else if (annotation instanceof PathParam) {
 				String name = ((PathParam) annotation).value();
-				return getObjectFromParameter(annotation, name, type,
-						controller.getPathParameters());
+				return new Param(name, getObjectFromParameter(annotation, name, type,
+						controller.getPathParameters()), annotations);
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
 				String name = ((UploadFile) annotation).value();
@@ -143,7 +71,7 @@ public class BasicAction implements Action {
 							.getRequest()
 							.getFileItem(name);
 					if (maybeFileItem.isPresent()) {
-						return maybeFileItem.get();
+						return new Param(name, maybeFileItem.get(), annotations);
 					} else {
 						throw new RuntimeException(String.format(
 								"Missing mandatory file: %s", name));
@@ -152,13 +80,13 @@ public class BasicAction implements Action {
 					WebRequestUpload[] items = controller.getRequest()
 							.getFileItems(name)
 							.toArray(new WebRequestUpload[0]);
-					return items;
+					return new Param(name, items, annotations);
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
 					Optional<WebRequestUpload> maybeFileItem = controller
 							.getRequest()
 							.getFileItem(name);
-					return maybeFileItem;
+					return new Param(name, maybeFileItem, annotations);
 				} else {
 					throw new RuntimeException(
 							String.format(
@@ -168,23 +96,15 @@ public class BasicAction implements Action {
 			}
 		}
 
-		Object param = this.MAKE_PARAMETER(controller, method, parameter);
-		if (param == null) {
+		Optional<Param> param = this.MAKE_PARAMETER(controller, method, parameter);
+		if (param.isPresent()) {
+			return param.get();
+		} else {
 			throw new RuntimeException(String.format(
 					"There is no way to create parameter: %s, %s, %s",
 					controller.getClass().getName(), method.getName(),
 					parameter.getName()));
 		}
-		return param;
-	}
-
-	/**
-	 * Return true if there is {@code this.response!=null}.
-	 * 
-	 * @return
-	 */
-	public boolean isFinished() {
-		return this.response != null;
 	}
 
 	/**
@@ -196,7 +116,7 @@ public class BasicAction implements Action {
 	 * @param parameter
 	 * @return
 	 */
-	protected Object MAKE_PARAMETER(Controller controller, Method method,
+	protected Optional<Param> MAKE_PARAMETER(Controller controller, Method method,
 			Parameter parameter) {
 		// I AM HOOK POINT
 		return null;
@@ -257,4 +177,11 @@ public class BasicAction implements Action {
 		}
 	}
 
+	public Object[] getParameters() {
+		return this.parameters.stream().toArray(Object[]::new);
+	}
+
+	public boolean hasValidationError() {
+		return !this.validationErrors.isEmpty();
+	}
 }

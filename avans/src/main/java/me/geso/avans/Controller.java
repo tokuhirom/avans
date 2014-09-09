@@ -1,12 +1,12 @@
 package me.geso.avans;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.geso.avans.validator.JsonParamValidator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
@@ -25,6 +25,6 @@ public interface Controller {
 
 	public WebResponse renderJSON(Object obj);
 
-	public JsonParamValidator createJsonParamValidator();
+	public void invoke(Method method, HttpServletRequest request, HttpServletResponse response, Map<String, String> captured);
 
 }

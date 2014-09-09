@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
-import me.geso.avans.impl.BasicAction;
-import me.geso.avans.impl.BasicActionFactory;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
 
@@ -25,7 +23,6 @@ public class Dispatcher {
 	private static final Logger logger = LoggerFactory
 			.getLogger(Dispatcher.class);
 	private final WebRouter<Action> router = new WebRouter<>();
-	private ActionFactory actionFactory = new BasicActionFactory(BasicAction.class);
 
 	public Dispatcher() {
 	}
@@ -57,8 +54,7 @@ public class Dispatcher {
 					POST post = method.getAnnotation(POST.class);
 					if (post != null) {
 						String path = post.value();
-						Action action = this.actionFactory.create(klass,
-								method);
+						Action action = new Action(klass, method);
 						logger.info("POST {}", path);
 						router.post(path, action);
 					}
@@ -67,8 +63,7 @@ public class Dispatcher {
 					GET get = method.getAnnotation(GET.class);
 					if (get != null) {
 						String path = get.value();
-						Action action = this.actionFactory.create(klass,
-								method);
+						Action action = new Action(klass, method);
 						logger.info("GET {}", path);
 						router.get(path, action);
 					}
@@ -78,7 +73,8 @@ public class Dispatcher {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
+	@SneakyThrows
 	public void handler(HttpServletRequest request, HttpServletResponse response) {
 		String method = request.getMethod();
 		String path = request.getPathInfo();
@@ -97,7 +93,8 @@ public class Dispatcher {
 
 		Map<String, String> captured = match.getCaptured();
 		Action action = match.getDestination();
-		action.invoke(request, response, captured);
+		Controller controller = action.getControllerClass().newInstance();
+		controller.invoke(action.getMethod(), request, response, captured);
 	}
 
 	private void writeMethodNotAllowedErrorPage(HttpServletRequest request,
@@ -130,15 +127,22 @@ public class Dispatcher {
 		return this.router;
 	}
 
-	public ActionFactory getActionFactory() {
-		return actionFactory;
-	}
-
-	public void setActionFactory(ActionFactory actionFactory) {
-		if (!this.router.isEmpty()) {
-			throw new IllegalStateException("You must set ActionFactory first!");
+	public static class Action {
+		public Action(Class<? extends Controller> controllerClass, Method method) {
+			this.controllerClass = controllerClass;
+			this.method = method;
 		}
-		this.actionFactory = actionFactory;
+
+		public Class<? extends Controller> getControllerClass() {
+			return controllerClass;
+		}
+
+		public Method getMethod() {
+			return method;
+		}
+
+		private final Class<? extends Controller> controllerClass;
+		private final Method method;
 	}
 
 }

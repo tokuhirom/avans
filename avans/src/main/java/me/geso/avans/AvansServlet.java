@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.geso.avans.impl.BasicActionFactory;
-
 public class AvansServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -28,10 +26,6 @@ public class AvansServlet extends HttpServlet {
 		this.dispatcher.registerClass(klass);
 	}
 	
-	public void setActionFactory(ActionFactory actionFactory) {
-		this.dispatcher.setActionFactory(actionFactory);
-	}
-
 	public Dispatcher getDispatcher() {
 		return dispatcher;
 	}
@@ -41,10 +35,6 @@ public class AvansServlet extends HttpServlet {
 		dispatcher.handler(
 				(HttpServletRequest) req,
 				(HttpServletResponse) res);
-	}
-
-	public void setActionClass(Class<? extends Action> actionClass) {
-		this.setActionFactory(new BasicActionFactory(actionClass));
 	}
 
 }

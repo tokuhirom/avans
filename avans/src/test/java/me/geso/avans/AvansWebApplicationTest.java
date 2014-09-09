@@ -366,7 +366,7 @@ public class AvansWebApplicationTest {
 			assertEquals(res.getContentType().getCharset().displayName(),
 					"UTF-8");
 			assertEquals(
-					"{\"code\":403,\"messages\":[\"You should fill name.\"],\"data\":null}",
+					"{\"code\":403,\"messages\":[\"name may not be null.\"],\"data\":null}",
 					res.getContentString());
 		}
 	}
