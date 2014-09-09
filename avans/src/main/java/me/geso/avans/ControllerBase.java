@@ -327,7 +327,7 @@ public abstract class ControllerBase implements Controller {
 							.validate(object);
 					validate.stream().forEach(
 							violation -> {
-								String message = violation.getRoutePath() + " "
+								String message = violation.getPropertyPath() + " "
 										+ violation.getMessage();
 								messages.add(message);
 							});
@@ -338,7 +338,7 @@ public abstract class ControllerBase implements Controller {
 		if (messages.isEmpty()) {
 			return Optional.empty();
 		} else {
-			return Optional.of(this.renderJSON(new APIResponse<Object>(403,
+			return Optional.of(this.renderJSON(new APIResponse<>(403,
 					messages, null)));
 		}
 	}
@@ -350,11 +350,11 @@ public abstract class ControllerBase implements Controller {
 	// You can hook this.
 	protected WebResponse convertResponse(Controller controller, Object res) {
 		if (res instanceof APIResponse) {
-			// Rendering APIResponse with Jackson by defualt.
+			// Rendering APIResponse with Jackson by default.
 			return controller.renderJSON(res);
 		} else {
 			throw new RuntimeException(String.format(
-					"Unkonwn return value from action: %s(%s)", Object.class,
+					"Unknown return value from action: %s(%s)", Object.class,
 					controller.getRequest().getPathInfo()));
 		}
 	}
