@@ -93,8 +93,9 @@ public class Dispatcher {
 
 		Map<String, String> captured = match.getCaptured();
 		Action action = match.getDestination();
-		Controller controller = action.getControllerClass().newInstance();
-		controller.invoke(action.getMethod(), request, response, captured);
+		try (Controller controller = action.getControllerClass().newInstance()) {
+			controller.invoke(action.getMethod(), request, response, captured);
+		}
 	}
 
 	private void writeMethodNotAllowedErrorPage(HttpServletRequest request,

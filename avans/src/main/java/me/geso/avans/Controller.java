@@ -11,7 +11,7 @@ import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
 
-public interface Controller {
+public interface Controller extends AutoCloseable {
 
 	void init(HttpServletRequest request, HttpServletResponse response,
 			Map<String, String> captured);

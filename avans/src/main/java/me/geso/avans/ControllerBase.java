@@ -358,5 +358,8 @@ public abstract class ControllerBase implements Controller {
 					controller.getRequest().getPathInfo()));
 		}
 	}
+	
+	public void close() {
+	}
 
 }
