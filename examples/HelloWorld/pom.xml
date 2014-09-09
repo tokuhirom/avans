@@ -15,16 +15,20 @@
 
 	<repositories>
 		<repository>
-			<id>tokuhirom</id>
+			<id>tokuhirom-snapshot</id>
 			<url>https://tokuhirom.github.io/maven/snapshot/</url>
 		</repository>
+        <repository>
+            <id>tokuhirom-release</id>
+            <url>https://tokuhirom.github.io/maven/release/</url>
+        </repository>
 	</repositories>
 
 	<dependencies>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>0.13.0</version>
+			<version>0.13.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

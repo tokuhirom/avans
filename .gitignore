@@ -4,3 +4,4 @@
 /target/
 /.idea/
 /avans-all.iml
+/hs_err_pid*.log

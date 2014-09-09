@@ -14,8 +14,8 @@ public class Main {
 	private void doMain() throws Exception {
 		Server server = new JettyServerBuilder()
 				.setPort(port)
-				.setMaxThreads(80)
-				.setMinThreads(80)
+				.setMaxThreads(10)
+				.setMinThreads(10)
 				.registerPackage(RootController.class.getPackage())
 				.build();
 		server.start();

@@ -18,10 +18,11 @@ public class RootControllerTest {
 	public void testRoot() throws Exception {
 		try (MechJettyServlet mech = new MechJettyServlet(
 				KitchenServlet.class)) {
-			MechResponse res = mech.get("/").execute();
-			assertEquals(200, res.getStatusCode());
-			assertEquals("text/html", res.getContentType().getMimeType());
-			assertTrue(res.getContentString().contains("<!doctype"));
+			try (MechResponse res = mech.get("/").execute()) {
+                assertEquals(200, res.getStatusCode());
+                assertEquals("text/html", res.getContentType().getMimeType());
+                assertTrue(res.getContentString().contains("<!doctype"));
+            }
 		}
 	}
 
@@ -29,15 +30,16 @@ public class RootControllerTest {
 	public void testJson() throws Exception {
 		try (MechJettyServlet mech = new MechJettyServlet(
 				KitchenServlet.class)) {
-			MechResponse res = mech.get("/json").execute();
-			assertEquals(200, res.getStatusCode());
-			assertEquals("application/json", res.getContentType().getMimeType());
-			assertEquals("UTF-8", res.getContentType().getCharset().displayName());
-			APIResponse<RootController.MyObject> dat = res
-					.readJSON(new TypeReference<APIResponse<RootController.MyObject>>() {
-					});
-			assertThat(dat.getCode()).isEqualTo(200);
-			assertThat(dat.getData().getName()).isEqualTo("John");
+			try (MechResponse res = mech.get("/json").execute()) {
+                assertEquals(200, res.getStatusCode());
+                assertEquals("application/json", res.getContentType().getMimeType());
+                assertEquals("UTF-8", res.getContentType().getCharset().displayName());
+                APIResponse<RootController.MyObject> dat = res
+                        .readJSON(new TypeReference<APIResponse<RootController.MyObject>>() {
+                        });
+                assertThat(dat.getCode()).isEqualTo(200);
+                assertThat(dat.getData().getName()).isEqualTo("John");
+            }
 		}
 	}
 
