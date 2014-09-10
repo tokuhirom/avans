@@ -243,8 +243,8 @@ public abstract class ControllerBase implements Controller {
     }
 
     /**
-     * This is a hook point. You can override this.
-     * <p/>
+     * This is a hook point. You can override this.<br>
+     * <br>
      * Use case:
      * <ul>
      * <li>Authentication before dispatching</li>

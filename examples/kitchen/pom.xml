@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>0.13.2</version>
+			<version>0.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
