@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>routes</artifactId>
-			<version>0.1.0</version>
+			<version>0.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>tinyvalidator</artifactId>
-			<version>0.2.0</version>
+			<version>0.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>mech</artifactId>
-			<version>0.6.1</version>
+			<version>0.7.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

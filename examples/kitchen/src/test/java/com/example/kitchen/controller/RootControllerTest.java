@@ -1,16 +1,15 @@
 package com.example.kitchen.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.example.kitchen.KitchenServlet;
+import com.fasterxml.jackson.core.type.TypeReference;
 import me.geso.avans.APIResponse;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
-
 import org.junit.Test;
 
-import com.example.kitchen.KitchenServlet;
-import com.fasterxml.jackson.core.type.TypeReference;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class RootControllerTest {
 

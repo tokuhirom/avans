@@ -1,15 +1,13 @@
 package com.example.kitchen;
 
-import java.io.IOException;
+import com.example.kitchen.controller.RootController;
+import me.geso.avans.Dispatcher;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import me.geso.avans.Dispatcher;
-
-import com.example.kitchen.controller.RootController;
+import java.io.IOException;
 
 public class KitchenServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -22,5 +20,9 @@ public class KitchenServlet extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		dispatcher.handler(req, resp);
+	}
+
+	public static Dispatcher getDispatcher() {
+		return KitchenServlet.dispatcher;
 	}
 }
