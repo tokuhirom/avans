@@ -88,7 +88,7 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Create 403 forbidden API response
 	 */
-	public static <T> APIResponse<T> Forbidden() {
+	public static <T> APIResponse<T> forbidden() {
 		return new APIResponse<T>(403, "Forbidden", null);
 	}
 }
