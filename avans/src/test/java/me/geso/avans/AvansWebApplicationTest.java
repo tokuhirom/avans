@@ -1,14 +1,17 @@
 package me.geso.avans;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.OptionalInt;
+import lombok.Data;
+import lombok.SneakyThrows;
+import me.geso.avans.annotation.*;
+import me.geso.mech.MechJettyServlet;
+import me.geso.mech.MechResponse;
+import me.geso.tinyvalidator.constraints.NotNull;
+import me.geso.webscrew.request.WebRequestUpload;
+import me.geso.webscrew.response.CallbackResponse;
+import me.geso.webscrew.response.WebResponse;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -16,25 +19,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.OptionalInt;
 
-import lombok.Data;
-import lombok.SneakyThrows;
-import me.geso.avans.annotation.GET;
-import me.geso.avans.annotation.JsonParam;
-import me.geso.avans.annotation.POST;
-import me.geso.avans.annotation.PathParam;
-import me.geso.avans.annotation.QueryParam;
-import me.geso.avans.annotation.UploadFile;
-import me.geso.mech.MechJettyServlet;
-import me.geso.mech.MechResponse;
-import me.geso.tinyvalidator.constraints.NotNull;
-import me.geso.webscrew.request.WebRequestUpload;
-import me.geso.webscrew.response.CallbackResponse;
-import me.geso.webscrew.response.WebResponse;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AvansWebApplicationTest {
 
