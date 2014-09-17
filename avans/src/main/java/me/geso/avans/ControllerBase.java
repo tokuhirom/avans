@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
+
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.*;
@@ -16,11 +17,13 @@ import me.geso.webscrew.request.impl.DefaultWebRequest;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
+
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -28,6 +31,7 @@ import java.lang.reflect.Parameter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * You should create this object per HTTP request.
@@ -49,8 +53,8 @@ public abstract class ControllerBase implements Controller {
         this.setDefaultCharacterEncoding();
 
         MultiMap<String, String> pathParameters = new MultiValueMap<String, String>();
-        for (String key : captured.keySet()) {
-            pathParameters.put(key, captured.get(key));
+        for (Entry<String, String> entry : captured.entrySet()) {
+            pathParameters.put(entry.getKey(), entry.getValue());
         }
         this.pathParameters = new Parameters(pathParameters);
         this.AFTER_INIT();
