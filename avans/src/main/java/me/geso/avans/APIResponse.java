@@ -6,7 +6,13 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import me.geso.tinyvalidator.Valid;
 
+/**
+ * Standard API Response object.
+ * 
+ * @param <T>
+ */
 @ToString
 public class APIResponse<T extends Object> {
 	@Getter
@@ -16,6 +22,7 @@ public class APIResponse<T extends Object> {
 	@Getter
 	List<String> messages;
 
+	@Valid
 	@Getter
 	@Setter
 	T data;
