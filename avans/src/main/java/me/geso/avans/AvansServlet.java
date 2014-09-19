@@ -29,7 +29,7 @@ public class AvansServlet extends HttpServlet {
 	/**
 	 * Scan package and register all classes.
 	 * 
-	 * @param packageName
+	 * @param pkg
 	 */
 	public void registerPackage(Package pkg) {
 		this.dispatcher.registerPackage(pkg.getName());
@@ -38,7 +38,7 @@ public class AvansServlet extends HttpServlet {
 	/**
 	 * Register paths from class.
 	 * 
-	 * @param packageName
+	 * @param klass
 	 */
 	public void registerClass(Class<? extends Controller> klass) {
 		this.dispatcher.registerClass(klass);
