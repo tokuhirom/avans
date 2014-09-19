@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
+import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.tinyvalidator.ConstraintViolation;
@@ -26,7 +27,6 @@ import org.apache.commons.collections4.map.MultiValueMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.websocket.server.PathParam;
 
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
