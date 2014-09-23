@@ -3,16 +3,19 @@ package me.geso.avans;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
-import lombok.SneakyThrows;
+
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -24,13 +27,18 @@ public class Dispatcher {
     public Dispatcher() {
     }
 
-    @SneakyThrows
     public void registerPackage(String packageName) {
         logger.info("Registering package: {}", packageName);
         ClassLoader contextClassLoader = Thread.currentThread()
                 .getContextClassLoader();
-        ImmutableSet<ClassInfo> topLevelClasses = ClassPath.from(
-                contextClassLoader).getTopLevelClasses(packageName);
+        ImmutableSet<ClassInfo> topLevelClasses;
+		try {
+			topLevelClasses = ClassPath.from(
+			        contextClassLoader).getTopLevelClasses(packageName);
+		} catch (IOException e) {
+			// It caused by programming error.
+			throw new RuntimeException(e);
+		}
         for (ClassInfo classInfo : topLevelClasses) {
             Class<?> klass = classInfo.load();
             if (Controller.class.isAssignableFrom(klass)) {

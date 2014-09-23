@@ -1,12 +1,12 @@
 package me.geso.avans;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
@@ -28,8 +28,10 @@ import org.apache.commons.collections4.map.MultiValueMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.Charset;
@@ -166,7 +168,6 @@ public abstract class ControllerBase implements Controller {
      * @param text
      * @return
      */
-    @SneakyThrows
     public WebResponse renderText(String text) {
         if (text == null) {
             throw new IllegalArgumentException("text must not be null");
@@ -185,10 +186,15 @@ public abstract class ControllerBase implements Controller {
      * @param obj
      * @return
      */
-    @SneakyThrows
     public ByteArrayResponse renderJSON(Object obj) {
         ObjectMapper mapper = createObjectMapper();
-        byte[] json = mapper.writeValueAsBytes(obj);
+        byte[] json;
+		try {
+			json = mapper.writeValueAsBytes(obj);
+		} catch (JsonProcessingException e) {
+			// It caused by programming error.
+			throw new RuntimeException(e);
+		}
 
         ByteArrayResponse res = new ByteArrayResponse();
         res.setContentType("application/json; charset=utf-8");
@@ -216,7 +222,6 @@ public abstract class ControllerBase implements Controller {
      * @param context
      * @return
      */
-    @SneakyThrows
     public ByteArrayResponse renderMustache(@NonNull String template,
                                             Object context) {
         Path tmplDir = this.getTemplateDirectory();
@@ -224,7 +229,7 @@ public abstract class ControllerBase implements Controller {
                 tmplDir.toFile());
         Mustache mustache = factory.compile(template);
         StringWriter writer = new StringWriter();
-        mustache.execute(writer, context).flush();
+        mustache.execute(writer, context);
         String bodyString = writer.toString();
         byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
 
@@ -245,7 +250,6 @@ public abstract class ControllerBase implements Controller {
      *
      * @return
      */
-    @SneakyThrows
     public Path getBaseDirectory() {
         return AvansUtil.getBaseDirectory(this.getClass());
     }
@@ -274,17 +278,20 @@ public abstract class ControllerBase implements Controller {
         return; // NOP
     }
 
-    @SneakyThrows
     public void invoke(Method method, HttpServletRequest servletRequest,
                        HttpServletResponse servletResponse, Map<String, String> captured) {
         this.init(servletRequest, servletResponse, captured);
 
         WebResponse response = this.makeResponse(this, method);
         this.AFTER_DISPATCH(response);
-        response.write(servletResponse);
+        try {
+			response.write(servletResponse);
+		} catch (IOException e) {
+			// User can't recovery this exception.
+			throw new RuntimeException(e);
+		}
     }
 
-    @SneakyThrows
     private WebResponse makeResponse(Controller controller, Method method) {
         {
             Optional<WebResponse> maybeResponse = controller.BEFORE_DISPATCH();
@@ -306,7 +313,14 @@ public abstract class ControllerBase implements Controller {
             return this.errorValidationFailed(violationMessages);
         }
 
-        Object res = method.invoke(controller, params);
+        Object res;
+		try {
+			res = method.invoke(controller, params);
+		} catch (IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			// It caused by programming error.
+			throw new RuntimeException(e);
+		}
         if (res instanceof WebResponse) {
             return (WebResponse) res;
         } else if (res == null) {

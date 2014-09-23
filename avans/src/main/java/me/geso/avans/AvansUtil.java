@@ -1,12 +1,12 @@
 package me.geso.avans;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
-import lombok.SneakyThrows;
 import me.geso.webscrew.Parameters;
 
 import org.apache.commons.collections4.MapUtils;
@@ -20,7 +20,6 @@ public class AvansUtil {
 	 * 
 	 * @return
 	 */
-	@SneakyThrows
 	public static Path getBaseDirectory(Class<?> klass) {
 		String baseDirectory = klass.getProtectionDomain()
 				.getCodeSource().getLocation().getPath();
@@ -34,9 +33,8 @@ public class AvansUtil {
 		return path;
 	}
 
-	@SneakyThrows
 	public static Parameters parseQueryString(String queryString,
-			String encoding) {
+			String encoding) throws UnsupportedEncodingException {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		MultiValueMap<String, String> query =
 				MapUtils.multiValueMap(new LinkedHashMap(), LinkedHashSet.class);
