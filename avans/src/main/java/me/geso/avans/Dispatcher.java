@@ -27,6 +27,20 @@ public class Dispatcher {
 	public Dispatcher() {
 	}
 
+	/**
+	 * Register classes in the package to dispatcher.
+	 * 
+	 * @param pkg
+	 */
+	public void registerPackage(Package pkg) {
+		this.registerPackage(pkg.getName());
+	}
+
+	/**
+	 * Register classes in the package to dispatcher.
+	 * 
+	 * @param packageName
+	 */
 	public void registerPackage(String packageName) {
 		logger.info("Registering package: {}", packageName);
 		ClassLoader contextClassLoader = Thread.currentThread()
@@ -51,6 +65,11 @@ public class Dispatcher {
 		}
 	}
 
+	/**
+	 * Register class to dispatcher.
+	 * 
+	 * @param klass
+	 */
 	public void registerClass(Class<? extends Controller> klass) {
 		try {
 			logger.info("Registering class: {}", klass);
