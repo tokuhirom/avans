@@ -1,17 +1,12 @@
 package me.geso.avans;
 
-import lombok.Data;
-import lombok.SneakyThrows;
-import me.geso.avans.annotation.*;
-import me.geso.mech.MechJettyServlet;
-import me.geso.mech.MechResponse;
-import me.geso.tinyvalidator.constraints.NotNull;
-import me.geso.webscrew.request.WebRequestUpload;
-import me.geso.webscrew.response.CallbackResponse;
-import me.geso.webscrew.response.WebResponse;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -19,15 +14,25 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.OptionalInt;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import lombok.Data;
+import lombok.SneakyThrows;
+import me.geso.avans.annotation.GET;
+import me.geso.avans.annotation.JsonParam;
+import me.geso.avans.annotation.POST;
+import me.geso.avans.annotation.PathParam;
+import me.geso.avans.annotation.QueryParam;
+import me.geso.avans.annotation.UploadFile;
+import me.geso.mech.MechJettyServlet;
+import me.geso.mech.MechResponse;
+import me.geso.tinyvalidator.constraints.NotNull;
+import me.geso.webscrew.request.WebRequestUpload;
+import me.geso.webscrew.response.CallbackResponse;
+import me.geso.webscrew.response.WebResponse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AvansWebApplicationTest {
 
@@ -38,6 +43,7 @@ public class AvansWebApplicationTest {
 			dispatcher.registerClass(MyController.class);
 		}
 
+		@Override
 		public void service(ServletRequest req, ServletResponse resp)
 				throws ServletException, IOException {
 			dispatcher.handler((HttpServletRequest) req,
@@ -45,54 +51,45 @@ public class AvansWebApplicationTest {
 		}
 	}
 
-	public static class MyControllerBase extends ControllerBase {
-
-		@Override
-		public Path getBaseDirectory() {
-			return Paths.get(System.getProperty("user.dir"),
-					"src/test/resources/");
-		}
-	}
-
-	public static class MyController extends MyControllerBase {
+	public static class MyController extends ControllerBase {
 
 		@GET("/")
 		public WebResponse root() {
-			APIResponse<String> res = new APIResponse<>("hoge");
+			final APIResponse<String> res = new APIResponse<>("hoge");
 			return this.renderJSON(res);
 		}
 
 		@GET("/intarg/{id}")
 		public WebResponse intarg() {
-			APIResponse<String> res = new APIResponse<>("INTARG:"
+			final APIResponse<String> res = new APIResponse<>("INTARG:"
 					+ this.getPathParameters().getInt("id"));
 			return this.renderJSON(res);
 		}
 
 		@GET("/longarg/{id}")
 		public WebResponse longarg() {
-			APIResponse<String> res = new APIResponse<>("LONGARG:"
+			final APIResponse<String> res = new APIResponse<>("LONGARG:"
 					+ this.getPathParameters().getInt("id"));
 			return this.renderJSON(res);
 		}
 
 		@POST("/json")
 		public WebResponse json() {
-			Foo f = this.getRequest().readJSON(Foo.class);
-			APIResponse<String> res = new APIResponse<>("name:"
+			final Foo f = this.getRequest().readJSON(Foo.class);
+			final APIResponse<String> res = new APIResponse<>("name:"
 					+ f.name);
 			return this.renderJSON(res);
 		}
 
 		@GET("/jsonEasy")
 		public APIResponse<String> jsonEasy() {
-			APIResponse<String> res = new APIResponse<>("It's easy!");
+			final APIResponse<String> res = new APIResponse<>("It's easy!");
 			return res;
 		}
 
 		@POST("/jsonParam")
 		public WebResponse jsonParam(@JsonParam Foo f) {
-			APIResponse<String> res = new APIResponse<>("name:"
+			final APIResponse<String> res = new APIResponse<>("name:"
 					+ f.name);
 			return this.renderJSON(res);
 		}
@@ -107,28 +104,21 @@ public class AvansWebApplicationTest {
 
 		@GET("/query")
 		public WebResponse query() {
-			String text = "name:"
+			final String text = "name:"
 					+ this.getRequest().getQueryParams().get("name");
 			return this.renderText(text);
 		}
 
-		@GET("/mustache")
-		public WebResponse mustache() {
-			Foo foo = new Foo();
-			foo.setName("John");
-			return this.renderMustache("mustache.mustache", foo);
-		}
-
 		@POST("/postForm")
 		public WebResponse postForm() {
-			String text = "(postform)name:"
+			final String text = "(postform)name:"
 					+ this.getRequest().getBodyParams().get("name");
 			return this.renderText(text);
 		}
 
 		@POST("/postMultipart")
 		public WebResponse postMultipart() {
-			String text = "(postform)name:"
+			final String text = "(postform)name:"
 					+ this.getRequest().getBodyParams().get("name")
 					+ ":"
 					+ this.getRequest().getFileItem("tmpl").get().getString("UTF-8");
@@ -138,26 +128,26 @@ public class AvansWebApplicationTest {
 		@GET("/queryParamAnnotation")
 		public WebResponse queryParamAnnotation(@QueryParam("a") String a,
 				@QueryParam("b") OptionalInt b, @QueryParam("c") OptionalInt c) {
-			String text = "a:" + a + ",b:" + b + ",c:" + c;
+			final String text = "a:" + a + ",b:" + b + ",c:" + c;
 			return this.renderText(text);
 		}
 
 		@GET("/pathParamAnnotation/{a}")
 		public WebResponse pathParamAnnotation(@PathParam("a") String a) {
-			String text = "a:" + a;
+			final String text = "a:" + a;
 			return this.renderText(text);
 		}
 
 		@GET("/optionalString")
 		public WebResponse optionalString(@QueryParam("a") Optional<String> a) {
-			String text = "a:" + a;
+			final String text = "a:" + a;
 			return this.renderText(text);
 		}
 
 		@POST("/uploadFile")
 		@SneakyThrows
 		public WebResponse uploadFile(@UploadFile("a") WebRequestUpload a) {
-			String text = "a:" + a.getString("UTF-8");
+			final String text = "a:" + a.getString("UTF-8");
 			return this.renderText(text);
 		}
 
@@ -177,9 +167,9 @@ public class AvansWebApplicationTest {
 		@POST("/uploadFileArray")
 		@SneakyThrows
 		public WebResponse uploadFileArray(@UploadFile("a") WebRequestUpload[] a) {
-			StringBuilder builder = new StringBuilder();
+			final StringBuilder builder = new StringBuilder();
 			builder.append("a:");
-			for (WebRequestUpload item : a) {
+			for (final WebRequestUpload item : a) {
 				builder.append(item.getString("UTF-8"));
 				builder.append(",");
 			}
@@ -209,14 +199,14 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void test() throws Exception {
-		try (MechResponse res = mech.get("/").execute()) {
+		try (MechResponse res = this.mech.get("/").execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentType().getMimeType(), "application/json");
 			assertEquals(res.getContentString(),
 					"{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
 		}
 
-		try (MechResponse res = mech.get("/intarg/5963").execute()) {
+		try (MechResponse res = this.mech.get("/intarg/5963").execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentType().getMimeType(), "application/json");
 			assertEquals(res.getContentType().getCharset().displayName(),
@@ -225,7 +215,7 @@ public class AvansWebApplicationTest {
 					"{\"code\":200,\"messages\":[],\"data\":\"INTARG:5963\"}");
 		}
 
-		try (MechResponse res = mech.get("/longarg/5963").execute()) {
+		try (MechResponse res = this.mech.get("/longarg/5963").execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentType().getMimeType(), "application/json");
 			assertEquals(res.getContentType().getCharset().displayName(),
@@ -235,9 +225,9 @@ public class AvansWebApplicationTest {
 		}
 
 		{
-			Foo foo = new Foo();
+			final Foo foo = new Foo();
 			foo.setName("iyan");
-			try (MechResponse res = mech.postJSON("/json", foo).execute()) {
+			try (MechResponse res = this.mech.postJSON("/json", foo).execute()) {
 				assertEquals(res.getStatusCode(), 200);
 				assertEquals(res.getContentType().getMimeType(),
 						"application/json");
@@ -245,6 +235,7 @@ public class AvansWebApplicationTest {
 						"UTF-8");
 
 				@SuppressWarnings("unchecked")
+				final
 				APIResponse<String> data = res
 						.readJSON(APIResponse.class);
 				assertEquals(data.code, 200);
@@ -253,7 +244,7 @@ public class AvansWebApplicationTest {
 		}
 
 		{
-			try (MechResponse res = mech.get("/").execute()) {
+			try (MechResponse res = this.mech.get("/").execute()) {
 				assertEquals(res.getStatusCode(), 200);
 				assertEquals(res.getContentType().getMimeType(),
 						"application/json");
@@ -263,7 +254,7 @@ public class AvansWebApplicationTest {
 			}
 		}
 
-		try (MechResponse res = mech.get("/cb").execute()) {
+		try (MechResponse res = this.mech.get("/cb").execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentType().getMimeType(),
 					"text/plain");
@@ -272,7 +263,7 @@ public class AvansWebApplicationTest {
 			assertTrue(res.getContentString().contains("いぇーい"));
 		}
 
-		try (MechResponse res = mech.get("/query?name=%E3%81%8A%E3%81%BB")
+		try (MechResponse res = this.mech.get("/query?name=%E3%81%8A%E3%81%BB")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertTrue(res.getContentString().contains("name:おほ"));
@@ -281,20 +272,9 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testMustache() {
-		try (MechResponse res = mech.get("/mustache").execute()) {
-			assertEquals(res.getStatusCode(), 200);
-			assertEquals(res.getContentType().getMimeType(), "text/html");
-			assertEquals(res.getContentType().getCharset().displayName(),
-					"UTF-8");
-			assertEquals(res.getContentString(), "Hi, John!\n");
-		}
-	}
-
-	@Test
 	public void testPostForm() {
 		try (
-				MechResponse res = mech.post("/postForm")
+				MechResponse res = this.mech.post("/postForm")
 						.param("name", "田中")
 						.execute()) {
 			assertEquals(res.getStatusCode(), 200);
@@ -304,9 +284,9 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testJson() {
-		Foo foo = new Foo();
+		final Foo foo = new Foo();
 		foo.setName("iyan");
-		try (MechResponse res = mech.postJSON("/json", foo).execute()) {
+		try (MechResponse res = this.mech.postJSON("/json", foo).execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentType().getMimeType(),
 					"application/json");
@@ -319,7 +299,7 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testJsonEasy() {
-		try (MechResponse res = mech.get("/jsonEasy").execute()) {
+		try (MechResponse res = this.mech.get("/jsonEasy").execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentString(),
 					"{\"code\":200,\"messages\":[],\"data\":\"It's easy!\"}");
@@ -331,9 +311,9 @@ public class AvansWebApplicationTest {
 		System.setProperty("org.jboss.logging.provider", "slf4j");
 		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
 		{
-			Foo foo = new Foo();
+			final Foo foo = new Foo();
 			foo.setName("iyan");
-			try (MechResponse res = mech.postJSON("/jsonParam", foo).execute()) {
+			try (MechResponse res = this.mech.postJSON("/jsonParam", foo).execute()) {
 				assertEquals(res.getStatusCode(), 200);
 				assertEquals(res.getContentType().getMimeType(),
 						"application/json");
@@ -350,9 +330,9 @@ public class AvansWebApplicationTest {
 	public void testJsonParamValidationFailed() {
 		// validation failed.
 		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
-		Foo foo = new Foo();
+		final Foo foo = new Foo();
 		foo.setName(null);
-		try (MechResponse res = mech.postJSON("/jsonParam", foo).execute()) {
+		try (MechResponse res = this.mech.postJSON("/jsonParam", foo).execute()) {
 			assertEquals(200, res.getStatusCode());
 			assertEquals(res.getContentType().getMimeType(),
 					"application/json");
@@ -366,12 +346,12 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testPostMultipart() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.postMultipart("/postMultipart")
 				.param("name", "田中")
 				.file("tmpl",
 						new File(
-								"src/test/resources/templates/mustache.mustache"))
+								"src/test/resources/hello.txt"))
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertTrue(res.getContentString().contains("(postform)name:田中"));
@@ -380,14 +360,14 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testQueryParamAnnotation() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.get("/queryParamAnnotation?a=b")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals("a:b,b:OptionalInt.empty,c:OptionalInt.empty",
 					res.getContentString());
 		}
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.get("/queryParamAnnotation?a=b&b=4&c=5")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
@@ -398,7 +378,7 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testPathParamAnnotation() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.get("/pathParamAnnotation/b")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
@@ -408,14 +388,14 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testOptionalString() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.get("/optionalString?a=b")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals("a:Optional[b]", res.getContentString());
 		}
 
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.get("/optionalString")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
@@ -425,7 +405,7 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testUploadFile() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.postMultipart("/uploadFile")
 				.file("a", new File("src/test/resources/hello.txt"))
 				.execute()) {
@@ -436,7 +416,7 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testUploadOptionalFile() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.postMultipart("/uploadOptionalFile")
 				.file("a", new File("src/test/resources/hello.txt"))
 				.execute()) {
@@ -445,7 +425,7 @@ public class AvansWebApplicationTest {
 		}
 
 		// missing
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.postMultipart("/uploadOptionalFile")
 				.execute()) {
 			assertEquals(res.getStatusCode(), 200);
@@ -455,7 +435,7 @@ public class AvansWebApplicationTest {
 
 	@Test
 	public void testUploadFileArray() throws Exception {
-		try (MechResponse res = mech
+		try (MechResponse res = this.mech
 				.postMultipart("/uploadFileArray")
 				.file("a", new File("src/test/resources/hello.txt"))
 				.file("a", new File("src/test/resources/hello.txt"))

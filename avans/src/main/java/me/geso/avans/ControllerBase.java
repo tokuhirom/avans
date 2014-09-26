@@ -29,7 +29,6 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.jackson.JacksonJsonView;
-import me.geso.avans.mustache.MustacheView;
 import me.geso.avans.trigger.BeforeDispatchTrigger;
 import me.geso.avans.trigger.HTMLFilter;
 import me.geso.avans.trigger.ResponseFilter;
@@ -51,8 +50,8 @@ import org.apache.commons.collections4.map.MultiValueMap;
  *
  * @author tokuhirom
  */
-public abstract class ControllerBase implements Controller, MustacheView,
-		JacksonJsonView {
+public abstract class ControllerBase implements Controller,
+		JacksonJsonView, HTMLFilterProvider {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;

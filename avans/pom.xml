@@ -71,16 +71,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.14.4</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>routes</artifactId>
 			<version>0.3.8</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.spullara.mustache.java</groupId>
-			<artifactId>compiler</artifactId>
-			<version>0.8.16</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
@@ -119,6 +115,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
 			<version>4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
 		</dependency>
 		<!-- running jetty server -->
 		<dependency>
