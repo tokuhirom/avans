@@ -39,12 +39,13 @@ class AvansSetup
       import org.eclipse.jetty.server.Server;
 
       import me.geso.avans.jetty.JettyServerBuilder;
+      import #{@pkg}.controller.RootController;
 
       public class Main {
         public static void main(String[] args) throws Exception {
           Server server = new JettyServerBuilder()
               .setPort(21110)
-              .registerPackage("#{@pkg}.controller")
+              .registerPackage(RootController.class.getPackage())
               .build();
           server.start();
           server.join();
@@ -55,14 +56,14 @@ class AvansSetup
 
     File.open("#{javaDir}/controller/RootController.java", 'w') do |f|
       f.puts <<-"...".squish
-      package #{@pkg};
+      package #{@pkg}.controller;
 
       import me.geso.avans.ControllerBase;
       import me.geso.avans.annotation.GET;
       import me.geso.avans.mustache.MustacheView;
       import me.geso.webscrew.response.WebResponse;
 
-      public static class RootController extends ControllerBase
+      public class RootController extends ControllerBase
           implements MustacheView {
         @GET("/")
         public WebResponse index() {
@@ -191,7 +192,7 @@ EOH
 
       ## debug run
 
-          mvn exec:java -DmainClass=#{@pkg}.Main
+          mvn exec:java -Dexec.mainClass=#{@pkg}.Main
 
       ## make jar
 
