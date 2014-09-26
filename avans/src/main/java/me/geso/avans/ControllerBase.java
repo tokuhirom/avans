@@ -1,7 +1,6 @@
 package me.geso.avans;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,6 +28,8 @@ import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.jackson.JacksonJsonView;
+import me.geso.avans.mustache.MustacheView;
 import me.geso.avans.trigger.BeforeDispatchTrigger;
 import me.geso.avans.trigger.HTMLFilter;
 import me.geso.avans.trigger.ResponseFilter;
@@ -45,18 +46,13 @@ import me.geso.webscrew.response.WebResponse;
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-
 /**
  * You should create this object per HTTP request.
  *
  * @author tokuhirom
  */
-public abstract class ControllerBase implements Controller {
+public abstract class ControllerBase implements Controller, MustacheView,
+		JacksonJsonView {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
@@ -164,8 +160,7 @@ public abstract class ControllerBase implements Controller {
 		final APIResponse<String> apires = new APIResponse<>(code, message,
 				null);
 
-		final ByteArrayResponse res = this.renderJSON(apires);
-		res.setStatus(code);
+		final WebResponse res = this.renderJSON(code, apires);
 		return res;
 	}
 
@@ -197,78 +192,17 @@ public abstract class ControllerBase implements Controller {
 		return res;
 	}
 
-	/**
-	 * Rendering JSON by jackson.
-	 *
-	 * @param obj
-	 * @return
-	 */
 	@Override
-	public ByteArrayResponse renderJSON(Object obj) {
-		final ObjectMapper mapper = this.createObjectMapper();
-		byte[] json;
-		try {
-			json = mapper.writeValueAsBytes(obj);
-		} catch (final JsonProcessingException e) {
-			// It caused by programming error.
-			throw new RuntimeException(e);
-		}
-
-		final ByteArrayResponse res = new ByteArrayResponse();
-		res.setContentType("application/json; charset=utf-8");
-		res.setContentLength(json.length);
-		res.setBody(json);
-		return res;
-	}
-
-	/**
-	 * Create new ObjectMapper instance. You can override this method for
-	 * customizing.
-	 *
-	 * @return
-	 */
-	protected ObjectMapper createObjectMapper() {
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
-		return mapper;
-	}
-
-	/**
-	 * Create a response object by mustache template engine.
-	 *
-	 * @param template
-	 * @param context
-	 * @return
-	 */
-	public ByteArrayResponse renderMustache(@NonNull String template,
-			Object context) {
-		final Path tmplDir = this.getTemplateDirectory();
-		final DefaultMustacheFactory factory = new DefaultMustacheFactory(
-				tmplDir.toFile());
-		final Mustache mustache = factory.compile(template);
-		final StringWriter writer = new StringWriter();
-		mustache.execute(writer, context);
-		String bodyString = writer.toString();
+	public String filterHTML(String html) {
 		for (final Method filter : this.getFilters().getHtmlFilters()) {
 			try {
-				bodyString = (String) filter.invoke(this, bodyString);
+				html = (String) filter.invoke(this, html);
 			} catch (IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new RuntimeException(e);
 			}
 		}
-
-		final byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
-
-		final ByteArrayResponse res = new ByteArrayResponse();
-		res.setContentType("text/html; charset=utf-8");
-		res.setContentLength(body.length);
-		res.setBody(body);
-		return res;
-	}
-
-	public Path getTemplateDirectory() {
-		return this.getBaseDirectory().resolve("templates");
+		return html;
 	}
 
 	/**
@@ -277,6 +211,7 @@ public abstract class ControllerBase implements Controller {
 	 *
 	 * @return
 	 */
+	@Override
 	public Path getBaseDirectory() {
 		return AvansUtil.getBaseDirectory(this.getClass());
 	}

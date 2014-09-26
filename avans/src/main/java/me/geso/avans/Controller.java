@@ -1,6 +1,7 @@
 package me.geso.avans;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,4 +32,6 @@ public interface Controller extends AutoCloseable {
 	 * @return
 	 */
 	public Map<String, Object> getPluginStash();
+
+	public Path getBaseDirectory();
 }
