@@ -5,7 +5,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +56,6 @@ public abstract class ControllerBase implements Controller, MustacheView,
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
-	private static final Charset UTF8 = Charset.forName("UTF-8");
 	private final Map<String, Object> pluginStash = new HashMap<>();
 
 	@Override
@@ -184,7 +183,7 @@ public abstract class ControllerBase implements Controller, MustacheView,
 		if (text == null) {
 			throw new IllegalArgumentException("text must not be null");
 		}
-		final byte[] bytes = text.getBytes(UTF8);
+		final byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
 
 		final ByteArrayResponse res = new ByteArrayResponse();
 		res.setContentType("text/plain; charset=utf-8");
