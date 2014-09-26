@@ -1,21 +1,23 @@
 package com.example.kitchen.controller;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import me.geso.avans.APIResponse;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.QueryParam;
+import me.geso.avans.mustache.MustacheView;
 import me.geso.webscrew.response.WebResponse;
 
-public class RootController extends ControllerBase {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class RootController extends ControllerBase implements MustacheView {
 	@GET("/")
 	public WebResponse root() {
 		// This code render tmpl/root.mustache.
 
-		TmplParams params = new TmplParams();
+		final TmplParams params = new TmplParams();
 		params.setName("太郎");
 		return this.renderMustache("root.mustache", params);
 	}
@@ -46,4 +48,5 @@ public class RootController extends ControllerBase {
 			this.name = name;
 		}
 	}
+
 }
