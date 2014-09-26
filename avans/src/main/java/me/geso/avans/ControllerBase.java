@@ -291,20 +291,9 @@ public abstract class ControllerBase implements Controller {
 	 *
 	 * @return
 	 */
-	@Override
-	public Optional<WebResponse> BEFORE_DISPATCH() {
+	protected Optional<WebResponse> BEFORE_DISPATCH() {
 		// override me.
 		return Optional.empty();
-	}
-
-	/**
-	 * This is a hook point. You can override this method.
-	 *
-	 * @param res
-	 */
-	@Override
-	public void AFTER_DISPATCH(WebResponse res) {
-		return; // NOP
 	}
 
 	@Override
@@ -403,6 +392,13 @@ public abstract class ControllerBase implements Controller {
 	}
 
 	private WebResponse makeResponse(Controller controller, Method method) {
+		{
+			final Optional<WebResponse> maybeResponse = this.BEFORE_DISPATCH();
+			if (maybeResponse.isPresent()) {
+				return maybeResponse.get();
+			}
+		}
+
 		for (final Method filter : this.getFilters()
 				.getBeforeDispatchTriggers()) {
 			try {
@@ -415,14 +411,6 @@ public abstract class ControllerBase implements Controller {
 			} catch (IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new RuntimeException(e);
-			}
-		}
-
-		{
-			final Optional<WebResponse> maybeResponse = controller
-					.BEFORE_DISPATCH();
-			if (maybeResponse.isPresent()) {
-				return maybeResponse.get();
 			}
 		}
 
