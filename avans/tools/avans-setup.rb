@@ -59,9 +59,11 @@ class AvansSetup
 
       import me.geso.avans.ControllerBase;
       import me.geso.avans.annotation.GET;
+      import me.geso.avans.mustache.MustacheView;
       import me.geso.webscrew.response.WebResponse;
 
-      public static class RootController extends ControllerBase {
+      public static class RootController extends ControllerBase
+          implements MustacheView {
         @GET("/")
         public WebResponse index() {
           return this.renderMustache("index.mustache", null);
@@ -115,7 +117,12 @@ EOH
           <dependency>
             <groupId>me.geso</groupId>
             <artifactId>avans</artifactId>
-            <version>0.15.1</version>
+            <version>0.19.0</version>
+          </dependency>
+          <dependency>
+            <groupId>me.geso</groupId>
+            <artifactId>avans-mustache</artifactId>
+            <version>0.0.2</version>
           </dependency>
           <dependency>
             <groupId>org.slf4j</groupId>
