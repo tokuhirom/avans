@@ -17,6 +17,7 @@ public interface Controller extends AutoCloseable {
 			Map<String, String> captured);
 
 	public Optional<WebResponse> BEFORE_DISPATCH();
+
 	public void AFTER_DISPATCH(WebResponse res);
 
 	public WebRequest getRequest();
@@ -25,6 +26,14 @@ public interface Controller extends AutoCloseable {
 
 	public WebResponse renderJSON(Object obj);
 
-	public void invoke(Method method, HttpServletRequest request, HttpServletResponse response, Map<String, String> captured);
+	public void invoke(Method method, HttpServletRequest request,
+			HttpServletResponse response, Map<String, String> captured);
 
+	/**
+	 * Stash space for the plugins. You can store the plugin specific data into
+	 * here.
+	 * 
+	 * @return
+	 */
+	public Map<String, Object> getPluginStash();
 }

@@ -9,6 +9,8 @@ import java.lang.reflect.Parameter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +29,9 @@ import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.trigger.BeforeDispatchTrigger;
+import me.geso.avans.trigger.HTMLFilter;
+import me.geso.avans.trigger.ResponseFilter;
 import me.geso.tinyvalidator.ConstraintViolation;
 import me.geso.tinyvalidator.Validator;
 import me.geso.webscrew.Parameters;
@@ -55,7 +61,9 @@ public abstract class ControllerBase implements Controller {
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private static final Charset UTF8 = Charset.forName("UTF-8");
+	private final Map<String, Object> pluginStash = new HashMap<>();
 
+	@Override
 	public void init(HttpServletRequest servletRequest,
 			HttpServletResponse servletResponse,
 			Map<String, String> captured) {
@@ -64,8 +72,8 @@ public abstract class ControllerBase implements Controller {
 		this.servletResponse = servletResponse;
 		this.setDefaultCharacterEncoding();
 
-		MultiMap<String, String> pathParameters = new MultiValueMap<String, String>();
-		for (Entry<String, String> entry : captured.entrySet()) {
+		final MultiMap<String, String> pathParameters = new MultiValueMap<String, String>();
+		for (final Entry<String, String> entry : captured.entrySet()) {
 			pathParameters.put(entry.getKey(), entry.getValue());
 		}
 		this.pathParameters = new Parameters(pathParameters);
@@ -99,6 +107,7 @@ public abstract class ControllerBase implements Controller {
 		this.request.setCharacterEncoding("UTF-8");
 	}
 
+	@Override
 	public WebRequest getRequest() {
 		return this.request;
 	}
@@ -108,6 +117,7 @@ public abstract class ControllerBase implements Controller {
 	 *
 	 * @return
 	 */
+	@Override
 	public Parameters getPathParameters() {
 		return this.pathParameters;
 	}
@@ -151,9 +161,10 @@ public abstract class ControllerBase implements Controller {
 	 * @return
 	 */
 	protected WebResponse renderError(int code, @NonNull String message) {
-		APIResponse<String> apires = new APIResponse<>(code, message, null);
+		final APIResponse<String> apires = new APIResponse<>(code, message,
+				null);
 
-		ByteArrayResponse res = this.renderJSON(apires);
+		final ByteArrayResponse res = this.renderJSON(apires);
 		res.setStatus(code);
 		return res;
 	}
@@ -178,9 +189,9 @@ public abstract class ControllerBase implements Controller {
 		if (text == null) {
 			throw new IllegalArgumentException("text must not be null");
 		}
-		byte[] bytes = text.getBytes(UTF8);
+		final byte[] bytes = text.getBytes(UTF8);
 
-		ByteArrayResponse res = new ByteArrayResponse();
+		final ByteArrayResponse res = new ByteArrayResponse();
 		res.setContentType("text/plain; charset=utf-8");
 		res.setBody(bytes);
 		return res;
@@ -192,17 +203,18 @@ public abstract class ControllerBase implements Controller {
 	 * @param obj
 	 * @return
 	 */
+	@Override
 	public ByteArrayResponse renderJSON(Object obj) {
-		ObjectMapper mapper = createObjectMapper();
+		final ObjectMapper mapper = this.createObjectMapper();
 		byte[] json;
 		try {
 			json = mapper.writeValueAsBytes(obj);
-		} catch (JsonProcessingException e) {
+		} catch (final JsonProcessingException e) {
 			// It caused by programming error.
 			throw new RuntimeException(e);
 		}
 
-		ByteArrayResponse res = new ByteArrayResponse();
+		final ByteArrayResponse res = new ByteArrayResponse();
 		res.setContentType("application/json; charset=utf-8");
 		res.setContentLength(json.length);
 		res.setBody(json);
@@ -216,7 +228,7 @@ public abstract class ControllerBase implements Controller {
 	 * @return
 	 */
 	protected ObjectMapper createObjectMapper() {
-		ObjectMapper mapper = new ObjectMapper();
+		final ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
 		return mapper;
 	}
@@ -230,16 +242,25 @@ public abstract class ControllerBase implements Controller {
 	 */
 	public ByteArrayResponse renderMustache(@NonNull String template,
 			Object context) {
-		Path tmplDir = this.getTemplateDirectory();
-		DefaultMustacheFactory factory = new DefaultMustacheFactory(
+		final Path tmplDir = this.getTemplateDirectory();
+		final DefaultMustacheFactory factory = new DefaultMustacheFactory(
 				tmplDir.toFile());
-		Mustache mustache = factory.compile(template);
-		StringWriter writer = new StringWriter();
+		final Mustache mustache = factory.compile(template);
+		final StringWriter writer = new StringWriter();
 		mustache.execute(writer, context);
 		String bodyString = writer.toString();
-		byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
+		for (final Method filter : this.getFilters().getHtmlFilters()) {
+			try {
+				bodyString = (String) filter.invoke(this, bodyString);
+			} catch (IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
-		ByteArrayResponse res = new ByteArrayResponse();
+		final byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
+
+		final ByteArrayResponse res = new ByteArrayResponse();
 		res.setContentType("text/html; charset=utf-8");
 		res.setContentLength(body.length);
 		res.setBody(body);
@@ -270,6 +291,7 @@ public abstract class ControllerBase implements Controller {
 	 *
 	 * @return
 	 */
+	@Override
 	public Optional<WebResponse> BEFORE_DISPATCH() {
 		// override me.
 		return Optional.empty();
@@ -280,38 +302,136 @@ public abstract class ControllerBase implements Controller {
 	 *
 	 * @param res
 	 */
+	@Override
 	public void AFTER_DISPATCH(WebResponse res) {
 		return; // NOP
 	}
 
+	@Override
 	public void invoke(Method method, HttpServletRequest servletRequest,
 			HttpServletResponse servletResponse, Map<String, String> captured) {
 		this.init(servletRequest, servletResponse, captured);
 
-		WebResponse response = this.makeResponse(this, method);
-		this.AFTER_DISPATCH(response);
+		final WebResponse response = this.makeResponse(this, method);
+		for (final Method filter : this.getFilters().getResponseFilters()) {
+			try {
+				filter.invoke(this, response);
+			} catch (IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		try {
 			response.write(servletResponse);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// User can't recovery this exception.
 			throw new RuntimeException(e);
 		}
 	}
 
+	final ConcurrentHashMap<Class<?>, Filters> responseFilters = new ConcurrentHashMap<>();
+
+	private Filters getFilters() {
+		return this.responseFilters
+				.computeIfAbsent(
+						this.getClass(),
+						(klass) -> {
+							// LinkedList じゃなくてもっとうまいやり方あると思う｡
+							final LinkedList<Class<?>> linearIsa = new LinkedList<>();
+							while (klass != null
+									&& klass != ControllerBase.class) {
+								linearIsa.addFirst(klass);
+								klass = klass.getSuperclass();
+							}
+							final List<Method> responseFilters = new ArrayList<>();
+							final List<Method> htmlFilters = new ArrayList<>();
+							final List<Method> beforeDispatchTriggers = new ArrayList<>();
+							for (final Class<?> k : linearIsa) {
+								for (final Class<?> interfac : k
+										.getInterfaces()) {
+									for (final Method method : interfac
+											.getMethods()) {
+										if (method
+												.getAnnotation(BeforeDispatchTrigger.class) != null) {
+											beforeDispatchTriggers.add(method);
+										}
+										if (method
+												.getAnnotation(HTMLFilter.class) != null) {
+											htmlFilters.add(method);
+										}
+										if (method
+												.getAnnotation(ResponseFilter.class) != null) {
+											responseFilters.add(method);
+										}
+									}
+								}
+							}
+							return new Filters(
+									beforeDispatchTriggers,
+									htmlFilters,
+									responseFilters
+							);
+						});
+	}
+
+	private static class Filters {
+		private final List<Method> responseFilters;
+		private final List<Method> beforeDispatchTriggers;
+		private final List<Method> htmlFilters;
+
+		public Filters(
+				List<Method> beforeDispatchTriggers,
+				List<Method> htmlFilters,
+				List<Method> responseFilters) {
+			this.responseFilters = responseFilters;
+			this.beforeDispatchTriggers = beforeDispatchTriggers;
+			this.htmlFilters = htmlFilters;
+		}
+
+		public List<Method> getResponseFilters() {
+			return this.responseFilters;
+		}
+
+		public List<Method> getBeforeDispatchTriggers() {
+			return this.beforeDispatchTriggers;
+		}
+
+		public List<Method> getHtmlFilters() {
+			return this.htmlFilters;
+		}
+
+	}
+
 	private WebResponse makeResponse(Controller controller, Method method) {
+		for (final Method filter : this.getFilters()
+				.getBeforeDispatchTriggers()) {
+			try {
+				@SuppressWarnings("unchecked")
+				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
+						.invoke(this);
+				if (webResponse.isPresent()) {
+					return webResponse.get();
+				}
+			} catch (IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		{
-			Optional<WebResponse> maybeResponse = controller.BEFORE_DISPATCH();
+			final Optional<WebResponse> maybeResponse = controller
+					.BEFORE_DISPATCH();
 			if (maybeResponse.isPresent()) {
 				return maybeResponse.get();
 			}
 		}
 
-		Parameter[] parameters = method.getParameters();
-		Object[] params = new Object[parameters.length];
-		List<String> violationMessages = new ArrayList<>();
+		final Parameter[] parameters = method.getParameters();
+		final Object[] params = new Object[parameters.length];
+		final List<String> violationMessages = new ArrayList<>();
 		for (int i = 0; i < parameters.length; ++i) {
-			Parameter parameter = parameters[i];
-			Object value = this.getParameterValue(parameter);
+			final Parameter parameter = parameters[i];
+			final Object value = this.getParameterValue(parameter);
 			this.validateParameter(parameter, value, violationMessages);
 			params[i] = value;
 		}
@@ -343,25 +463,25 @@ public abstract class ControllerBase implements Controller {
 
 	protected void validateParameter(Parameter parameter, Object value,
 			List<String> violationMessages) {
-		Validator validator = new Validator();
-		Annotation[] annotations = parameter.getAnnotations();
-		for (Annotation annotation : annotations) {
+		final Validator validator = new Validator();
+		final Annotation[] annotations = parameter.getAnnotations();
+		for (final Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
-				List<ConstraintViolation> validate = validator
+				final List<ConstraintViolation> validate = validator
 						.validate(value);
 				validate.stream().forEach(
 						violation -> {
-							String message = violation.getName() + " "
+							final String message = violation.getName() + " "
 									+ violation.getMessage();
 							violationMessages.add(message);
 						}
 						);
 			} else {
-				Optional<ConstraintViolation> constraintViolationOptional = validator
+				final Optional<ConstraintViolation> constraintViolationOptional = validator
 						.validateByAnnotation(annotation, parameter.getName(),
 								value);
 				if (constraintViolationOptional.isPresent()) {
-					ConstraintViolation constraintViolation = constraintViolationOptional
+					final ConstraintViolation constraintViolation = constraintViolationOptional
 							.get();
 					violationMessages.add(constraintViolation.getName() + " "
 							+ constraintViolation.getMessage());
@@ -378,29 +498,32 @@ public abstract class ControllerBase implements Controller {
 
 		final Annotation[] annotations = parameter.getAnnotations();
 		final Class<?> type = parameter.getType();
-		for (Annotation annotation : annotations) {
+		for (final Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
-				Object value = this.getRequest().readJSON(type);
+				final Object value = this.getRequest().readJSON(type);
 				return value;
 			} else if (annotation instanceof QueryParam) {
-				String name = ((QueryParam) annotation).value();
-				return getObjectFromParameterObject(annotation, name, type,
+				final String name = ((QueryParam) annotation).value();
+				return this.getObjectFromParameterObject(annotation, name,
+						type,
 						this.getRequest()
 								.getQueryParams());
 			} else if (annotation instanceof BodyParam) {
-				String name = ((BodyParam) annotation).value();
-				return getObjectFromParameterObject(annotation, name, type,
+				final String name = ((BodyParam) annotation).value();
+				return this.getObjectFromParameterObject(annotation, name,
+						type,
 						this.getRequest()
 								.getBodyParams());
 			} else if (annotation instanceof PathParam) {
-				String name = ((PathParam) annotation).value();
-				return getObjectFromParameterObject(annotation, name, type,
+				final String name = ((PathParam) annotation).value();
+				return this.getObjectFromParameterObject(annotation, name,
+						type,
 						this.getPathParameters());
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
-				String name = ((UploadFile) annotation).value();
+				final String name = ((UploadFile) annotation).value();
 				if (type == WebRequestUpload.class) {
-					Optional<WebRequestUpload> maybeFileItem = this
+					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFileItem(name);
 					if (maybeFileItem.isPresent()) {
@@ -410,13 +533,13 @@ public abstract class ControllerBase implements Controller {
 								"Missing mandatory file: %s", name));
 					}
 				} else if (type == WebRequestUpload[].class) {
-					WebRequestUpload[] items = this.getRequest()
+					final WebRequestUpload[] items = this.getRequest()
 							.getFileItems(name)
 							.toArray(new WebRequestUpload[0]);
 					return items;
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
-					Optional<WebRequestUpload> maybeFileItem = this
+					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFileItem(name);
 					return maybeFileItem;
@@ -498,7 +621,13 @@ public abstract class ControllerBase implements Controller {
 		}
 	}
 
+	@Override
 	public void close() {
+	}
+
+	@Override
+	public Map<String, Object> getPluginStash() {
+		return this.pluginStash;
 	}
 
 }
