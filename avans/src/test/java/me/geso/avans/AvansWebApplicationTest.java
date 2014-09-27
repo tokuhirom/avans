@@ -272,7 +272,7 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testPostForm() {
+	public void testPostForm() throws IOException {
 		try (
 				MechResponse res = this.mech.post("/postForm")
 						.param("name", "田中")
@@ -283,7 +283,7 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testJson() {
+	public void testJson() throws IOException {
 		final Foo foo = new Foo();
 		foo.setName("iyan");
 		try (MechResponse res = this.mech.postJSON("/json", foo).execute()) {
@@ -298,7 +298,7 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testJsonEasy() {
+	public void testJsonEasy() throws IOException {
 		try (MechResponse res = this.mech.get("/jsonEasy").execute()) {
 			assertEquals(res.getStatusCode(), 200);
 			assertEquals(res.getContentString(),
@@ -307,7 +307,7 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testJsonParam() {
+	public void testJsonParam() throws IOException {
 		System.setProperty("org.jboss.logging.provider", "slf4j");
 		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
 		{
@@ -327,7 +327,7 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testJsonParamValidationFailed() {
+	public void testJsonParamValidationFailed() throws IOException {
 		// validation failed.
 		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
 		final Foo foo = new Foo();

@@ -32,7 +32,8 @@ public class NoncePluginTest {
 				assertThat(res.getStatusCode(), is(200));
 				System.out.println(res
 						.getFirstHeader("Content-Security-Policy"));
-				assertTrue(res.getFirstHeader("Content-Security-Policy").matches(
+				assertTrue(res.getFirstHeader("Content-Security-Policy").get()
+						.matches(
 								"\\Aunsafe-inline; script-src 'nonce-.+'\\z"));
 				assertTrue(res.getContentString().matches(
 						"\\ANONCE:.+\\z"));
