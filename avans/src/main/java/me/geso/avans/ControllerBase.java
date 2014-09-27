@@ -51,16 +51,16 @@ import org.apache.commons.collections4.map.MultiValueMap;
  * @author tokuhirom
  */
 public abstract class ControllerBase implements Controller,
-		JacksonJsonView, HTMLFilterProvider {
+JacksonJsonView, HTMLFilterProvider {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
 
 	@Override
-	public void init(HttpServletRequest servletRequest,
-			HttpServletResponse servletResponse,
-			Map<String, String> captured) {
+	public void init(final HttpServletRequest servletRequest,
+			final HttpServletResponse servletResponse,
+			final Map<String, String> captured) {
 		this.BEFORE_INIT();
 		this.request = this.createWebReqeust(servletRequest);
 		this.servletResponse = servletResponse;
@@ -74,7 +74,7 @@ public abstract class ControllerBase implements Controller,
 		this.AFTER_INIT();
 	}
 
-	public WebRequest createWebReqeust(HttpServletRequest servletRequest) {
+	public WebRequest createWebReqeust(final HttpServletRequest servletRequest) {
 		return new DefaultWebRequest(servletRequest);
 	}
 
@@ -134,7 +134,7 @@ public abstract class ControllerBase implements Controller,
 		return this.errorForbidden("Forbidden");
 	}
 
-	public WebResponse errorForbidden(String message) {
+	public WebResponse errorForbidden(final String message) {
 		return this.renderError(403, message);
 	}
 
@@ -154,7 +154,8 @@ public abstract class ControllerBase implements Controller,
 	 * @param message
 	 * @return
 	 */
-	protected WebResponse renderError(int code, @NonNull String message) {
+	protected WebResponse renderError(final int code,
+			@NonNull final String message) {
 		final APIResponse<String> apires = new APIResponse<>(code, message,
 				null);
 
@@ -168,7 +169,7 @@ public abstract class ControllerBase implements Controller,
 	 * @param location
 	 * @return
 	 */
-	public RedirectResponse redirect(@NonNull String location) {
+	public RedirectResponse redirect(@NonNull final String location) {
 		return new RedirectResponse(location);
 	}
 
@@ -178,7 +179,7 @@ public abstract class ControllerBase implements Controller,
 	 * @param text
 	 * @return
 	 */
-	public WebResponse renderText(String text) {
+	public WebResponse renderText(final String text) {
 		if (text == null) {
 			throw new IllegalArgumentException("text must not be null");
 		}
@@ -230,8 +231,10 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	@Override
-	public void invoke(Method method, HttpServletRequest servletRequest,
-			HttpServletResponse servletResponse, Map<String, String> captured) {
+	public void invoke(final Method method,
+			final HttpServletRequest servletRequest,
+			final HttpServletResponse servletResponse,
+			final Map<String, String> captured) {
 		this.init(servletRequest, servletResponse, captured);
 
 		final WebResponse response = this.makeResponse(this, method);
@@ -292,7 +295,7 @@ public abstract class ControllerBase implements Controller,
 									beforeDispatchTriggers,
 									htmlFilters,
 									responseFilters
-							);
+									);
 						});
 	}
 
@@ -302,9 +305,9 @@ public abstract class ControllerBase implements Controller,
 		private final List<Method> htmlFilters;
 
 		public Filters(
-				List<Method> beforeDispatchTriggers,
-				List<Method> htmlFilters,
-				List<Method> responseFilters) {
+				final List<Method> beforeDispatchTriggers,
+				final List<Method> htmlFilters,
+				final List<Method> responseFilters) {
 			this.responseFilters = responseFilters;
 			this.beforeDispatchTriggers = beforeDispatchTriggers;
 			this.htmlFilters = htmlFilters;
@@ -324,7 +327,8 @@ public abstract class ControllerBase implements Controller,
 
 	}
 
-	private WebResponse makeResponse(Controller controller, Method method) {
+	private WebResponse makeResponse(final Controller controller,
+			final Method method) {
 		{
 			final Optional<WebResponse> maybeResponse = this.BEFORE_DISPATCH();
 			if (maybeResponse.isPresent()) {
@@ -337,7 +341,7 @@ public abstract class ControllerBase implements Controller,
 			try {
 				@SuppressWarnings("unchecked")
 				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
-						.invoke(this);
+				.invoke(this);
 				if (webResponse.isPresent()) {
 					return webResponse.get();
 				}
@@ -378,12 +382,14 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
-	private WebResponse errorValidationFailed(List<String> violationMessages) {
+	private WebResponse errorValidationFailed(
+			final List<String> violationMessages) {
 		return this.renderJSON(new APIResponse<>(403, violationMessages, null));
 	}
 
-	protected void validateParameter(Parameter parameter, Object value,
-			List<String> violationMessages) {
+	protected void validateParameter(final Parameter parameter,
+			final Object value,
+			final List<String> violationMessages) {
 		final Validator validator = new Validator();
 		final Annotation[] annotations = parameter.getAnnotations();
 		for (final Annotation annotation : annotations) {
@@ -411,7 +417,7 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
-	private Object getParameterValue(Parameter parameter) {
+	private Object getParameterValue(final Parameter parameter) {
 		final Optional<Object> objectOptional = this.GET_PARAMETER(parameter);
 		if (objectOptional.isPresent()) {
 			return objectOptional.get();
@@ -428,13 +434,13 @@ public abstract class ControllerBase implements Controller,
 				return this.getObjectFromParameterObject(annotation, name,
 						type,
 						this.getRequest()
-								.getQueryParams());
+						.getQueryParams());
 			} else if (annotation instanceof BodyParam) {
 				final String name = ((BodyParam) annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
 						type,
 						this.getRequest()
-								.getBodyParams());
+						.getBodyParams());
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam) annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
@@ -479,10 +485,10 @@ public abstract class ControllerBase implements Controller,
 				parameter.getName()));
 	}
 
-	private Object getObjectFromParameterObject(Annotation annotation,
-			String name,
-			Class<?> type,
-			Parameters params) {
+	private Object getObjectFromParameterObject(final Annotation annotation,
+			final String name,
+			final Class<?> type,
+			final Parameters params) {
 		if (type.equals(String.class)) {
 			if (!params.containsKey(name)) {
 				throw new RuntimeException(String.format(
@@ -526,12 +532,13 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
-	protected Optional<Object> GET_PARAMETER(Parameter parameter) {
+	protected Optional<Object> GET_PARAMETER(final Parameter parameter) {
 		return Optional.empty();
 	}
 
 	// You can hook this.
-	protected WebResponse convertResponse(Controller controller, Object res) {
+	protected WebResponse convertResponse(final Controller controller,
+			final Object res) {
 		if (res instanceof APIResponse) {
 			// Rendering APIResponse with Jackson by default.
 			return controller.renderJSON(res);

@@ -1,8 +1,5 @@
 package me.geso.avans.session;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -20,11 +17,13 @@ import me.geso.mech.MechResponse;
 import me.geso.mech.PrintRequestListener;
 import me.geso.webscrew.response.WebResponse;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class SessionMixinTest {
 	public static class MyController extends ControllerBase implements
-			SessionMixin {
+	SessionMixin {
 		@GET("/")
 		public WebResponse root() {
 			final OptionalLong currentCounter = this.getSession().getLong(
@@ -60,7 +59,7 @@ public class SessionMixinTest {
 				return new DefaultWebSessionManager(
 						"avans_session_id",
 						this.getRequest(),
-						store,
+						MyController.store,
 						mac);
 			} catch (final InvalidKeyException | NoSuchAlgorithmException e) {
 				throw new RuntimeException(e);
@@ -77,32 +76,41 @@ public class SessionMixinTest {
 			try (MechResponse res = mech.get("/").execute()) {
 				Arrays.stream(res.getResponse().getHeaders(
 						"Cookie")).forEach(it -> System.out.println(it));
-				assertThat(res.getHeaders("Set-Cookie").size(), is(2));
+				Assert.assertThat(res.getHeaders("Set-Cookie").size(),
+						CoreMatchers.is(2));
 				System.out.println(res.getHeaders("Set-Cookie").get(0));
-				assertThat(
+				Assert.assertThat(
 						res.getHeaders("Set-Cookie").get(0)
-								.startsWith("avans_session_id="), is(true));
-				assertThat(
+						.startsWith("avans_session_id="),
+						CoreMatchers.is(true));
+				Assert.assertThat(
 						res.getHeaders("Set-Cookie").get(1)
-								.startsWith("XSRF-TOKEN="), is(true));
-				assertThat(res.getContentString(), is("counter:1"));
+						.startsWith("XSRF-TOKEN="),
+						CoreMatchers.is(true));
+				Assert.assertThat(res.getContentString(),
+						CoreMatchers.is("counter:1"));
 			}
 			mech.getCookieStore().getCookies().stream()
-					.forEach(cookie -> System.out.println(cookie));
+			.forEach(cookie -> System.out.println(cookie));
 			try (MechResponse res = mech.get("/").execute()) {
-				assertThat(res.getContentString(), is("counter:2"));
+				Assert.assertThat(res.getContentString(),
+						CoreMatchers.is("counter:2"));
 			}
 			try (MechResponse res = mech.get("/").execute()) {
-				assertThat(res.getContentString(), is("counter:3"));
+				Assert.assertThat(res.getContentString(),
+						CoreMatchers.is("counter:3"));
 			}
 			try (MechResponse res = mech.get("/expire").execute()) {
-				assertThat(res.getContentString(), is("expired."));
+				Assert.assertThat(res.getContentString(),
+						CoreMatchers.is("expired."));
 			}
 			try (MechResponse res = mech.get("/").execute()) {
-				assertThat(res.getContentString(), is("counter:1"));
+				Assert.assertThat(res.getContentString(),
+						CoreMatchers.is("counter:1"));
 			}
 			try (MechResponse res = mech.get("/").execute()) {
-				assertThat(res.getContentString(), is("counter:2"));
+				Assert.assertThat(res.getContentString(),
+						CoreMatchers.is("counter:2"));
 			}
 		}
 	}

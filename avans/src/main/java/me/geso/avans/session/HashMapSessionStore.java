@@ -11,12 +11,12 @@ public class HashMapSessionStore implements WebSessionStore {
 	private final Map<String, Map<String, Object>> storage = new HashMap<>();
 
 	@Override
-	public void save(String sessionId, Map<String, Object> data) {
+	public void save(final String sessionId, final Map<String, Object> data) {
 		this.storage.put(sessionId, data);
 	}
 
 	@Override
-	public Optional<Map<String, Object>> load(String sessionId) {
+	public Optional<Map<String, Object>> load(final String sessionId) {
 		final Map<String, Object> map = this.storage.get(sessionId);
 		if (map == null) {
 			return Optional.empty();
@@ -26,7 +26,7 @@ public class HashMapSessionStore implements WebSessionStore {
 	}
 
 	@Override
-	public void remove(String sessionId) {
+	public void remove(final String sessionId) {
 		this.storage.remove(sessionId);
 	}
 

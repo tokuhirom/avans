@@ -13,17 +13,19 @@ import me.geso.webscrew.response.WebResponse;
 
 public interface Controller extends AutoCloseable {
 
-	void init(HttpServletRequest request, HttpServletResponse response,
-			Map<String, String> captured);
+	void init(final HttpServletRequest request,
+			final HttpServletResponse response,
+			final Map<String, String> captured);
 
 	public WebRequest getRequest();
 
 	Parameters getPathParameters();
 
-	public WebResponse renderJSON(Object obj);
+	public WebResponse renderJSON(final Object obj);
 
-	public void invoke(Method method, HttpServletRequest request,
-			HttpServletResponse response, Map<String, String> captured);
+	public void invoke(final Method method, final HttpServletRequest request,
+			final HttpServletResponse response,
+			final Map<String, String> captured);
 
 	/**
 	 * Stash space for the plugins. You can store the plugin specific data into

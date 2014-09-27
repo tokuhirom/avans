@@ -25,17 +25,18 @@ public class JettyServerBuilder {
 		this.servlet = new AvansServlet();
 	}
 
-	public JettyServerBuilder setPort(int port) {
+	public JettyServerBuilder setPort(final int port) {
 		this.port = port;
 		return this;
 	}
 
-	public JettyServerBuilder registerPackage(Package pkg) {
+	public JettyServerBuilder registerPackage(final Package pkg) {
 		this.servlet.registerPackage(pkg);
 		return this;
 	}
 
-	public JettyServerBuilder registerClass(Class<? extends Controller> klass) {
+	public JettyServerBuilder registerClass(
+			final Class<? extends Controller> klass) {
 		this.servlet.registerClass(klass);
 		return this;
 	}
@@ -46,20 +47,20 @@ public class JettyServerBuilder {
 	}
 
 	public Server build() {
-		QueuedThreadPool queuedThreadPool = new QueuedThreadPool(
+		final QueuedThreadPool queuedThreadPool = new QueuedThreadPool(
 				this.minThreads, this.maxThreads);
-		Server server = new Server(queuedThreadPool);
+		final Server server = new Server(queuedThreadPool);
 		if (this.accessLogEnabled) {
-			RequestLogHandler requestLogHandler = new RequestLogHandler();
+			final RequestLogHandler requestLogHandler = new RequestLogHandler();
 			requestLogHandler.setRequestLog(new Slf4jRequestLog());
 			server.setHandler(requestLogHandler);
 		}
 
-		ServerConnector serverConnector = new ServerConnector(server);
-		serverConnector.setPort(port);
+		final ServerConnector serverConnector = new ServerConnector(server);
+		serverConnector.setPort(this.port);
 		server.addConnector(serverConnector);
-		ServletHolder servletHolder = new ServletHolder(this.servlet);
-		ServletContextHandler context = new ServletContextHandler(
+		final ServletHolder servletHolder = new ServletHolder(this.servlet);
+		final ServletContextHandler context = new ServletContextHandler(
 				server,
 				"/",
 				ServletContextHandler.SESSIONS
@@ -69,12 +70,12 @@ public class JettyServerBuilder {
 		return server;
 	}
 
-	public JettyServerBuilder setMaxThreads(int maxThreads) {
+	public JettyServerBuilder setMaxThreads(final int maxThreads) {
 		this.maxThreads = maxThreads;
 		return this;
 	}
 
-	public JettyServerBuilder setMinThreads(int minThreads) {
+	public JettyServerBuilder setMinThreads(final int minThreads) {
 		this.minThreads = minThreads;
 		return this;
 	}

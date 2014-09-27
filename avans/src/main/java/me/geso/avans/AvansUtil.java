@@ -20,8 +20,8 @@ public class AvansUtil {
 	 * 
 	 * @return
 	 */
-	public static Path getBaseDirectory(Class<?> klass) {
-		String baseDirectory = klass.getProtectionDomain()
+	public static Path getBaseDirectory(final Class<?> klass) {
+		final String baseDirectory = klass.getProtectionDomain()
 				.getCodeSource().getLocation().getPath();
 		Path path = Paths.get(baseDirectory);
 		// base/target/Foo-0.0.1-SNAPSHOT.jar
@@ -33,22 +33,23 @@ public class AvansUtil {
 		return path;
 	}
 
-	public static Parameters parseQueryString(String queryString,
-			String encoding) throws UnsupportedEncodingException {
+	public static Parameters parseQueryString(final String queryString,
+			final String encoding) throws UnsupportedEncodingException {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		MultiValueMap<String, String> query =
-				MapUtils.multiValueMap(new LinkedHashMap(), LinkedHashSet.class);
+		final MultiValueMap<String, String> query =
+		MapUtils.multiValueMap(new LinkedHashMap(), LinkedHashSet.class);
 		if (queryString != null) {
-			for (String pair : queryString.split("&")) {
-				int eq = pair.indexOf("=");
+			for (final String pair : queryString.split("&")) {
+				final int eq = pair.indexOf("=");
 				if (eq < 0) {
 					// key with no value
 					query.put(URLDecoder.decode(pair, encoding), "");
 				} else {
 					// key=value
-					String key = URLDecoder.decode(pair.substring(0, eq),
+					final String key = URLDecoder.decode(pair.substring(0, eq),
 							encoding);
-					String value = URLDecoder.decode(pair.substring(eq + 1),
+					final String value = URLDecoder.decode(
+							pair.substring(eq + 1),
 							encoding);
 					query.put(key, value);
 				}

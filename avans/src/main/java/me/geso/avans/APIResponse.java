@@ -39,7 +39,7 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Create new instance with the data. Default status code is 200.
 	 */
-	public APIResponse(T data) {
+	public APIResponse(final T data) {
 		this.code = 200;
 		this.messages = new ArrayList<>();
 		this.data = data;
@@ -48,7 +48,7 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Create new instance.
 	 */
-	public APIResponse(int code, String message, T data) {
+	public APIResponse(final int code, final String message, final T data) {
 		this.code = code;
 		this.messages = new ArrayList<>();
 		if (message != null) {
@@ -57,7 +57,7 @@ public class APIResponse<T extends Object> {
 		this.data = data;
 	}
 
-	public APIResponse(int code, List<String> messages, T data) {
+	public APIResponse(final int code, final List<String> messages, final T data) {
 		this.code = code;
 		this.messages = messages;
 		this.data = data;
@@ -66,7 +66,7 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Set message. Current message will remove.
 	 */
-	public void setMessage(String message) {
+	public void setMessage(final String message) {
 		this.messages = new ArrayList<>();
 		this.messages.add(message);
 	}
@@ -74,7 +74,7 @@ public class APIResponse<T extends Object> {
 	/**
 	 * Set messages. Current message will remove.
 	 */
-	public void setMessages(List<String> messages) {
+	public void setMessages(final List<String> messages) {
 		this.messages = messages;
 	}
 

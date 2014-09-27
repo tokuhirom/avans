@@ -32,7 +32,7 @@ public class Dispatcher {
 	 * 
 	 * @param pkg
 	 */
-	public void registerPackage(Package pkg) {
+	public void registerPackage(final Package pkg) {
 		this.registerPackage(pkg.getName());
 	}
 
@@ -41,26 +41,26 @@ public class Dispatcher {
 	 * 
 	 * @param packageName
 	 */
-	public void registerPackage(String packageName) {
-		logger.info("Registering package: {}", packageName);
-		ClassLoader contextClassLoader = Thread.currentThread()
+	public void registerPackage(final String packageName) {
+		Dispatcher.logger.info("Registering package: {}", packageName);
+		final ClassLoader contextClassLoader = Thread.currentThread()
 				.getContextClassLoader();
 		ImmutableSet<ClassInfo> topLevelClasses;
 		try {
 			topLevelClasses = ClassPath.from(
 					contextClassLoader).getTopLevelClasses(packageName);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// It caused by programming error.
 			throw new RuntimeException(e);
 		}
-		for (ClassInfo classInfo : topLevelClasses) {
-			Class<?> klass = classInfo.load();
+		for (final ClassInfo classInfo : topLevelClasses) {
+			final Class<?> klass = classInfo.load();
 			if (Controller.class.isAssignableFrom(klass)) {
-				Class<? extends Controller> pagesClass = klass
+				final Class<? extends Controller> pagesClass = klass
 						.asSubclass(Controller.class);
 				this.registerClass(pagesClass);
 			} else {
-				logger.info("{} is not a Controller", klass);
+				Dispatcher.logger.info("{} is not a Controller", klass);
 			}
 		}
 	}
@@ -70,39 +70,40 @@ public class Dispatcher {
 	 * 
 	 * @param klass
 	 */
-	public void registerClass(Class<? extends Controller> klass) {
+	public void registerClass(final Class<? extends Controller> klass) {
 		try {
-			logger.info("Registering class: {}", klass);
-			for (Method method : klass.getMethods()) {
+			Dispatcher.logger.info("Registering class: {}", klass);
+			for (final Method method : klass.getMethods()) {
 				{
-					POST post = method.getAnnotation(POST.class);
+					final POST post = method.getAnnotation(POST.class);
 					if (post != null) {
-						String path = post.value();
-						Action action = new Action(klass, method);
-						logger.info("POST {}", path);
-						router.post(path, action);
+						final String path = post.value();
+						final Action action = new Action(klass, method);
+						Dispatcher.logger.info("POST {}", path);
+						this.router.post(path, action);
 					}
 				}
 				{
-					GET get = method.getAnnotation(GET.class);
+					final GET get = method.getAnnotation(GET.class);
 					if (get != null) {
-						String path = get.value();
-						Action action = new Action(klass, method);
-						logger.info("GET {}", path);
-						router.get(path, action);
+						final String path = get.value();
+						final Action action = new Action(klass, method);
+						Dispatcher.logger.info("GET {}", path);
+						this.router.get(path, action);
 					}
 				}
 			}
-		} catch (SecurityException e) {
+		} catch (final SecurityException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void handler(HttpServletRequest request, HttpServletResponse response) {
-		String method = request.getMethod();
-		String path = request.getPathInfo();
+	public void handler(final HttpServletRequest request,
+			final HttpServletResponse response) {
+		final String method = request.getMethod();
+		final String path = request.getPathInfo();
 		// log.debug("{} {}", method, path);
-		RoutingResult<Action> match = router.match(
+		final RoutingResult<Action> match = this.router.match(
 				method, path);
 		if (match == null) {
 			this.writeNotFoundErrorPage(request, response);
@@ -114,45 +115,48 @@ public class Dispatcher {
 			return;
 		}
 
-		Map<String, String> captured = match.getCaptured();
-		Action action = match.getDestination();
+		final Map<String, String> captured = match.getCaptured();
+		final Action action = match.getDestination();
 		this.runController(action.getControllerClass(), action.getMethod(),
 				request, response, captured);
 	}
 
 	// You can replace this method by concrete code in your sub class.
-	public void runController(Class<? extends Controller> controllerClass,
-			Method method, HttpServletRequest request,
-			HttpServletResponse response, Map<String, String> captured) {
+	public void runController(
+			final Class<? extends Controller> controllerClass,
+			final Method method, final HttpServletRequest request,
+			final HttpServletResponse response,
+			final Map<String, String> captured) {
 		try (Controller controller = controllerClass.newInstance()) {
 			controller.invoke(method, request, response, captured);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void writeMethodNotAllowedErrorPage(HttpServletRequest request,
-			HttpServletResponse response) {
+	private void writeMethodNotAllowedErrorPage(
+			final HttpServletRequest request,
+			final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(405);
 		response.setContentType("text/html; charset=utf-8");
 		try {
 			response.getWriter()
-					.write("<!doctype html><html><div style='font-size: 400%'>405 Method Not Allowed</div></html>");
-		} catch (Exception e) {
+			.write("<!doctype html><html><div style='font-size: 400%'>405 Method Not Allowed</div></html>");
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void writeNotFoundErrorPage(HttpServletRequest request,
-			HttpServletResponse response) {
+	public void writeNotFoundErrorPage(final HttpServletRequest request,
+			final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(404);
 		response.setContentType("text/html; charset=utf-8");
 		try {
 			response.getWriter()
-					.write("<!doctype html><html><div style='font-size: 400%'>404 Not Found</div></html>");
-		} catch (Exception e) {
+			.write("<!doctype html><html><div style='font-size: 400%'>404 Not Found</div></html>");
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -162,17 +166,18 @@ public class Dispatcher {
 	}
 
 	public static class Action {
-		public Action(Class<? extends Controller> controllerClass, Method method) {
+		public Action(final Class<? extends Controller> controllerClass,
+				final Method method) {
 			this.controllerClass = controllerClass;
 			this.method = method;
 		}
 
 		public Class<? extends Controller> getControllerClass() {
-			return controllerClass;
+			return this.controllerClass;
 		}
 
 		public Method getMethod() {
-			return method;
+			return this.method;
 		}
 
 		private final Class<? extends Controller> controllerClass;

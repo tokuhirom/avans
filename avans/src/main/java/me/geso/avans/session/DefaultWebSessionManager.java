@@ -16,7 +16,7 @@ import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
 
 public class DefaultWebSessionManager implements
-		WebSessionManager {
+WebSessionManager {
 	private final String sessionCookieName;
 	private final WebRequest request;
 	private final WebSessionStore sessionStore;
@@ -28,10 +28,10 @@ public class DefaultWebSessionManager implements
 	private final Mac xsrfTokenMac;
 	private boolean expired;
 
-	public DefaultWebSessionManager(@NonNull String sessionCookieName,
-			@NonNull WebRequest request,
-			@NonNull WebSessionStore sessionStore,
-			@NonNull Mac xsrfTokenMac) {
+	public DefaultWebSessionManager(@NonNull final String sessionCookieName,
+			@NonNull final WebRequest request,
+			@NonNull final WebSessionStore sessionStore,
+			@NonNull final Mac xsrfTokenMac) {
 		this.sessionCookieName = sessionCookieName;
 		this.request = request;
 		this.sessionStore = sessionStore;
@@ -99,27 +99,27 @@ public class DefaultWebSessionManager implements
 	}
 
 	@Override
-	public void setString(String key, String value) {
+	public void setString(final String key, final String value) {
 		this.getSessionData().setString(key, value);
 	}
 
 	@Override
-	public void setLong(String key, long value) {
+	public void setLong(final String key, final long value) {
 		this.getSessionData().setLong(key, value);
 	}
 
 	@Override
-	public Optional<String> getString(String key) {
+	public Optional<String> getString(final String key) {
 		return this.getSessionData().getString(key);
 	}
 
 	@Override
-	public OptionalLong getLong(String key) {
+	public OptionalLong getLong(final String key) {
 		return this.getSessionData().getLong(key);
 	}
 
 	@Override
-	public void remove(String key) {
+	public void remove(final String key) {
 		this.getSessionData().remove(key);
 	}
 
@@ -129,14 +129,15 @@ public class DefaultWebSessionManager implements
 		private final boolean isFresh;
 		private boolean isDirty;
 
-		SessionData(String sessionId, @NonNull Map<String, Object> data,
-				boolean isFresh) {
+		SessionData(final String sessionId,
+				@NonNull final Map<String, Object> data,
+				final boolean isFresh) {
 			this.sessionId = sessionId;
 			this.data = data;
 			this.isFresh = isFresh;
 		}
 
-		public static SessionData startNewSession(String sessionId) {
+		public static SessionData startNewSession(final String sessionId) {
 			return new SessionData(
 					sessionId,
 					new HashMap<>(),
@@ -147,7 +148,7 @@ public class DefaultWebSessionManager implements
 			return this.sessionId;
 		}
 
-		public Optional<String> getString(String key) {
+		public Optional<String> getString(final String key) {
 			if (this.data.containsKey(key)) {
 				final Object value = this.data.get(key);
 				if (value instanceof String) {
@@ -160,7 +161,7 @@ public class DefaultWebSessionManager implements
 			}
 		}
 
-		public OptionalLong getLong(String key) {
+		public OptionalLong getLong(final String key) {
 			if (this.getData().containsKey(key)) {
 				final Object value = this.data.get(key);
 				if (value instanceof Long) {
@@ -173,17 +174,17 @@ public class DefaultWebSessionManager implements
 			}
 		}
 
-		public void setLong(String key, long value) {
+		public void setLong(final String key, final long value) {
 			this.isDirty = true;
 			this.getData().put(key, value);
 		}
 
-		public void setString(String key, String value) {
+		public void setString(final String key, final String value) {
 			this.isDirty = true;
 			this.getData().put(key, value);
 		}
 
-		public void remove(String key) {
+		public void remove(final String key) {
 			this.getData().remove(key);
 			this.isDirty = true;
 		}
@@ -207,7 +208,7 @@ public class DefaultWebSessionManager implements
 	}
 
 	@Override
-	public void responseFilter(WebResponse response) {
+	public void responseFilter(final WebResponse response) {
 		if (this.sessionData != null
 				&& (this.sessionData.isDirty() || this.sessionData
 						.isFresh())) {
@@ -250,7 +251,7 @@ public class DefaultWebSessionManager implements
 		return this.sessionCookieHttpOnly;
 	}
 
-	public void setSessionCookieHttpOnly(boolean sessionCookieHttpOnly) {
+	public void setSessionCookieHttpOnly(final boolean sessionCookieHttpOnly) {
 		this.sessionCookieHttpOnly = sessionCookieHttpOnly;
 	}
 
@@ -258,7 +259,7 @@ public class DefaultWebSessionManager implements
 		return this.sessionCookieSecure;
 	}
 
-	public void setSessionCookieSecure(boolean sessionCookieSecure) {
+	public void setSessionCookieSecure(final boolean sessionCookieSecure) {
 		this.sessionCookieSecure = sessionCookieSecure;
 	}
 
@@ -270,11 +271,11 @@ public class DefaultWebSessionManager implements
 		return this.xsrfTokenCookieSecure;
 	}
 
-	public void setXsrfTokenCookieSecure(boolean xsrfTokenCookieSecure) {
+	public void setXsrfTokenCookieSecure(final boolean xsrfTokenCookieSecure) {
 		this.xsrfTokenCookieSecure = xsrfTokenCookieSecure;
 	}
 
-	public void setSessionCookieMaxAge(int sessionCookieMaxAge) {
+	public void setSessionCookieMaxAge(final int sessionCookieMaxAge) {
 		this.sessionCookieMaxAge = sessionCookieMaxAge;
 	}
 

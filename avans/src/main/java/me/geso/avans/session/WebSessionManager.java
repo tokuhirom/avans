@@ -7,17 +7,17 @@ import me.geso.webscrew.response.WebResponse;
 
 public interface WebSessionManager {
 
-	public void remove(String key);
+	public void remove(final String key);
 
-	public void responseFilter(WebResponse response);
+	public void responseFilter(final WebResponse response);
 
-	public Optional<String> getString(String key);
+	public Optional<String> getString(final String key);
 
-	public OptionalLong getLong(String key);
+	public OptionalLong getLong(final String key);
 
-	public void setLong(String key, long value);
+	public void setLong(final String key, final long value);
 
-	void setString(String key, String value);
+	void setString(final String key, final String value);
 
 	void expire();
 

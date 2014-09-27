@@ -8,10 +8,10 @@ public interface SessionMixin extends Controller {
 	static final String stashKey = "Session:session";
 
 	public default WebSessionManager getSession() {
-		Object session = this.getPluginStash().get(stashKey);
+		Object session = this.getPluginStash().get(SessionMixin.stashKey);
 		if (session == null) {
 			session = this.buildSessionManager();
-			this.getPluginStash().put(stashKey, session);
+			this.getPluginStash().put(SessionMixin.stashKey, session);
 		}
 		return (WebSessionManager) session;
 	}
@@ -19,8 +19,8 @@ public interface SessionMixin extends Controller {
 	public WebSessionManager buildSessionManager();
 
 	@ResponseFilter
-	public default void responseFilter(WebResponse response) {
-		final Object session = this.getPluginStash().get(stashKey);
+	public default void responseFilter(final WebResponse response) {
+		final Object session = this.getPluginStash().get(SessionMixin.stashKey);
 		if (session != null) {
 			if (session instanceof WebSessionManager) {
 				((WebSessionManager) session).responseFilter(response);

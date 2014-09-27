@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface JacksonJsonView extends Controller {
 
-	public default WebResponse renderJSON(int statusCode, Object obj) {
+	public default WebResponse renderJSON(final int statusCode, final Object obj) {
 		final ObjectMapper mapper = this.createObjectMapper();
 		byte[] json;
 		try {
@@ -35,7 +35,7 @@ public interface JacksonJsonView extends Controller {
 	 * @return
 	 */
 	@Override
-	public default WebResponse renderJSON(Object obj) {
+	public default WebResponse renderJSON(final Object obj) {
 		return this.renderJSON(200, obj);
 	}
 

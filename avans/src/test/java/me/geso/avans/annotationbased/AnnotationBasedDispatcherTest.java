@@ -1,7 +1,5 @@
 package me.geso.avans.annotationbased;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,13 +12,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import me.geso.avans.AvansServlet;
-import me.geso.avans.Dispatcher;
 import me.geso.avans.ControllerBase;
+import me.geso.avans.Dispatcher;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.webscrew.response.WebResponse;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,13 +30,15 @@ public class AnnotationBasedDispatcherTest {
 
 		static final Dispatcher dispatcher = new Dispatcher();
 		static {
-			dispatcher.registerPackage("me.geso.avans.annotationbased");
-			System.out.println(dispatcher.getRouter().toString());
+			MyServlet.dispatcher
+					.registerPackage("me.geso.avans.annotationbased");
+			System.out.println(MyServlet.dispatcher.getRouter().toString());
 		}
 
-		public void service(ServletRequest req, ServletResponse res)
+		@Override
+		public void service(final ServletRequest req, final ServletResponse res)
 				throws ServletException, IOException {
-			dispatcher.handler(
+			MyServlet.dispatcher.handler(
 					(HttpServletRequest) req,
 					(HttpServletResponse) res);
 		}
@@ -45,7 +46,7 @@ public class AnnotationBasedDispatcherTest {
 
 	@FunctionalInterface
 	public static interface BasicAction {
-		public WebResponse run(ControllerBase web);
+		public WebResponse run(final ControllerBase web);
 	}
 
 	public static class MyApplication extends ControllerBase {
@@ -62,7 +63,7 @@ public class AnnotationBasedDispatcherTest {
 
 	@Before
 	public void before() {
-		AvansServlet servlet = new AvansServlet();
+		final AvansServlet servlet = new AvansServlet();
 		servlet.registerPackage(MyController.class.getPackage());
 		this.mech = new MechJettyServlet(servlet);
 	}
@@ -77,7 +78,7 @@ public class AnnotationBasedDispatcherTest {
 	@Test
 	public void test() throws Exception {
 		try (MechResponse res = this.mech.get("/").execute()) {
-			assertEquals(res.getContentString(),
+			Assert.assertEquals(res.getContentString(),
 					"{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
 		}
 	}
@@ -86,7 +87,7 @@ public class AnnotationBasedDispatcherTest {
 	public void testPostForm() throws Exception {
 		try (MechResponse res = this.mech.post("/postForm")
 				.param("name", "John").execute()) {
-			assertEquals(res.getContentString(), "(postform)name:John");
+			Assert.assertEquals(res.getContentString(), "(postform)name:John");
 		}
 	}
 

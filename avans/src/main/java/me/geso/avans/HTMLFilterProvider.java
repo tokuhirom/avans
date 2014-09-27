@@ -1,5 +1,5 @@
 package me.geso.avans;
 
 public interface HTMLFilterProvider {
-	public String filterHTML(String bodyString);
+	public String filterHTML(final String bodyString);
 }

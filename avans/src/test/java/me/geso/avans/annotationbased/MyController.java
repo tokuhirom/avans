@@ -11,14 +11,14 @@ public class MyController extends ControllerBase {
 
 	@GET("/")
 	public WebResponse root() {
-		APIResponse<String> res = new APIResponse<>("hoge");
-		return renderJSON(res);
+		final APIResponse<String> res = new APIResponse<>("hoge");
+		return this.renderJSON(res);
 	}
 
 	@POST("/postForm")
-	public WebResponse postForm(@BodyParam("name") String name) {
-		String text = "(postform)name:" + name;
-		return renderText(text);
+	public WebResponse postForm(@BodyParam("name") final String name) {
+		final String text = "(postform)name:" + name;
+		return this.renderText(text);
 	}
 
 }

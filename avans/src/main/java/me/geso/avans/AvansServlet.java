@@ -22,7 +22,7 @@ public class AvansServlet extends HttpServlet {
 	 * 
 	 * @param packageName
 	 */
-	public void registerPackage(String packageName) {
+	public void registerPackage(final String packageName) {
 		this.dispatcher.registerPackage(packageName);
 	}
 
@@ -31,7 +31,7 @@ public class AvansServlet extends HttpServlet {
 	 * 
 	 * @param pkg
 	 */
-	public void registerPackage(Package pkg) {
+	public void registerPackage(final Package pkg) {
 		this.dispatcher.registerPackage(pkg.getName());
 	}
 
@@ -40,7 +40,7 @@ public class AvansServlet extends HttpServlet {
 	 * 
 	 * @param klass
 	 */
-	public void registerClass(Class<? extends Controller> klass) {
+	public void registerClass(final Class<? extends Controller> klass) {
 		this.dispatcher.registerClass(klass);
 	}
 
@@ -50,15 +50,16 @@ public class AvansServlet extends HttpServlet {
 	 * @return dispatcher object.
 	 */
 	public Dispatcher getDispatcher() {
-		return dispatcher;
+		return this.dispatcher;
 	}
 
 	/**
 	 * Do service.
 	 */
-	public void service(ServletRequest req, ServletResponse res)
+	@Override
+	public void service(final ServletRequest req, final ServletResponse res)
 			throws ServletException, IOException {
-		dispatcher.handler(
+		this.dispatcher.handler(
 				(HttpServletRequest) req,
 				(HttpServletResponse) res);
 	}
