@@ -1,16 +1,7 @@
 package me.geso.avans;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-
-import me.geso.webscrew.Parameters;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.collections4.map.MultiValueMap;
 
 public class AvansUtil {
 
@@ -31,31 +22,6 @@ public class AvansUtil {
 			path = path.getParent().getParent();
 		}
 		return path;
-	}
-
-	public static Parameters parseQueryString(final String queryString,
-			final String encoding) throws UnsupportedEncodingException {
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		final MultiValueMap<String, String> query =
-		MapUtils.multiValueMap(new LinkedHashMap(), LinkedHashSet.class);
-		if (queryString != null) {
-			for (final String pair : queryString.split("&")) {
-				final int eq = pair.indexOf("=");
-				if (eq < 0) {
-					// key with no value
-					query.put(URLDecoder.decode(pair, encoding), "");
-				} else {
-					// key=value
-					final String key = URLDecoder.decode(pair.substring(0, eq),
-							encoding);
-					final String value = URLDecoder.decode(
-							pair.substring(eq + 1),
-							encoding);
-					query.put(key, value);
-				}
-			}
-		}
-		return new Parameters(query);
 	}
 
 }
