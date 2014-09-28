@@ -11,8 +11,8 @@ public interface NoncePlugin extends Controller {
 	static final int nonceLength = 64;
 
 	public default String getNonce() {
-		final String nonce = (String) this.getPluginStash().computeIfAbsent(
-				"NoncePlugin#nonce", (key) -> {
+		final String nonce = (String) this.computePluginStashIfAbsent(
+				this.getClass(), "nonce", () -> {
 					final SecureRandom random = new SecureRandom();
 					final byte[] bytes = new byte[NoncePlugin.nonceLength];
 					random.nextBytes(bytes);

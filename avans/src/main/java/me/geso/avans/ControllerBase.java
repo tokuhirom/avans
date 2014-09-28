@@ -20,6 +20,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -589,9 +590,30 @@ public abstract class ControllerBase implements Controller,
 	public void close() {
 	}
 
+	private String generatePluginStashKey(Class<?> pluginClass, String key) {
+		return pluginClass.getName() + "#" + key;
+	}
+
 	@Override
-	public Map<String, Object> getPluginStash() {
-		return this.pluginStash;
+	public Optional<Object> getPluginStashValue(Class<?> pluginClass, String key) {
+		final Object object = this.pluginStash.get(this.generatePluginStashKey(
+				pluginClass, key));
+		return Optional.ofNullable(object);
+	}
+
+	@Override
+	public void setPluginStashValue(Class<?> pluginClass, String key,
+			Object value) {
+		this.pluginStash.put(this.generatePluginStashKey(pluginClass, key),
+				value);
+	}
+
+	@Override
+	public Object computePluginStashIfAbsent(Class<?> pluginClass, String key,
+			Supplier<?> supplier) {
+		return this.pluginStash.computeIfAbsent(
+				this.generatePluginStashKey(pluginClass, key),
+				(fullKey) -> supplier.get());
 	}
 
 }
