@@ -199,16 +199,17 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	@Override
-	public String filterHTML(String html) {
+	public String filterHTML(final String html) {
+		String h = html;
 		for (final Method filter : this.getFilters().getHtmlFilters()) {
 			try {
-				html = (String) filter.invoke(this, html);
+				h = (String) filter.invoke(this, h);
 			} catch (IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new RuntimeException(e);
 			}
 		}
-		return html;
+		return h;
 	}
 
 	/**
