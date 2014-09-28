@@ -33,20 +33,18 @@ public interface Controller extends AutoCloseable {
 	 * Set value for stash space for the plugins. You can store the plugin
 	 * specific data into here.
 	 * 
-	 * @return
 	 */
 	public void setPluginStashValue(Class<?> pluginClass, String key,
 			Object value);
 
 	/**
 	 * Get plugin stash value.
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
 	 */
 	public Optional<Object> getPluginStashValue(Class<?> pluginClass, String key);
 
+	/**
+	 * Get plugin stash value. Compute if absent with callback.
+	 */
 	public Object computePluginStashIfAbsent(Class<?> pluginClass, String key,
 			Supplier<?> supplier);
 
