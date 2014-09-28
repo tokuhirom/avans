@@ -23,19 +23,20 @@ public class JettyServerBuilderTest {
 	@Test
 	public void test() throws Exception {
 		final Server server = new JettyServerBuilder()
-		.setPort(0)
-		.registerClass(Foo.class)
-		.build();
+				.setPort(0)
+				.registerClass(Foo.class)
+				.build();
 		server.start();
 
 		final ServerConnector connector = (ServerConnector) server
 				.getConnectors()[0];
 		final int port = connector.getLocalPort();
 		final String baseURL = "http://127.0.0.1:" + port;
-		final Mech mech = new Mech(baseURL);
-		try (MechResponse res = mech.get("/").execute()) {
-			Assert.assertEquals(res.getStatusCode(), 200);
-			Assert.assertEquals(res.getContentString(), "HOGE");
+		try (final Mech mech = new Mech(baseURL)) {
+			try (MechResponse res = mech.get("/").execute()) {
+				Assert.assertEquals(res.getStatusCode(), 200);
+				Assert.assertEquals(res.getContentString(), "HOGE");
+			}
 		}
 
 		server.stop();

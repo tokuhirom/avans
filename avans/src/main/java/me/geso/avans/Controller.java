@@ -19,7 +19,7 @@ public interface Controller extends AutoCloseable {
 
 	public WebRequest getRequest();
 
-	Parameters getPathParameters();
+	public Parameters getPathParameters();
 
 	public WebResponse renderJSON(final Object obj);
 

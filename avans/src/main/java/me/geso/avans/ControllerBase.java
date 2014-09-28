@@ -1,6 +1,8 @@
 package me.geso.avans;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,13 +39,14 @@ import me.geso.tinyvalidator.Validator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.request.WebRequestUpload;
+import me.geso.webscrew.request.impl.DefaultParameters;
+import me.geso.webscrew.request.impl.DefaultParameters.Builder;
 import me.geso.webscrew.request.impl.DefaultWebRequest;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import org.apache.commons.collections4.MultiMap;
-import org.apache.commons.collections4.map.MultiValueMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * You should create this object per HTTP request.
@@ -51,11 +54,12 @@ import org.apache.commons.collections4.map.MultiValueMap;
  * @author tokuhirom
  */
 public abstract class ControllerBase implements Controller,
-JacksonJsonView, HTMLFilterProvider {
+		JacksonJsonView, HTMLFilterProvider {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
@@ -66,16 +70,20 @@ JacksonJsonView, HTMLFilterProvider {
 		this.servletResponse = servletResponse;
 		this.setDefaultCharacterEncoding();
 
-		final MultiMap<String, String> pathParameters = new MultiValueMap<String, String>();
+		final Builder pathParameters = DefaultParameters.builder();
 		for (final Entry<String, String> entry : captured.entrySet()) {
 			pathParameters.put(entry.getKey(), entry.getValue());
 		}
-		this.pathParameters = new Parameters(pathParameters);
+		this.pathParameters = pathParameters.build();
 		this.AFTER_INIT();
 	}
 
 	public WebRequest createWebReqeust(final HttpServletRequest servletRequest) {
-		return new DefaultWebRequest(servletRequest);
+		try {
+			return new DefaultWebRequest(servletRequest, StandardCharsets.UTF_8);
+		} catch (final UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	protected void BEFORE_INIT() {
@@ -96,9 +104,8 @@ JacksonJsonView, HTMLFilterProvider {
 		return this.servletResponse;
 	}
 
-	public void setDefaultCharacterEncoding() {
+	private void setDefaultCharacterEncoding() {
 		this.servletResponse.setCharacterEncoding("UTF-8");
-		this.request.setCharacterEncoding("UTF-8");
 	}
 
 	@Override
@@ -185,9 +192,8 @@ JacksonJsonView, HTMLFilterProvider {
 		}
 		final byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
 
-		final ByteArrayResponse res = new ByteArrayResponse();
+		final ByteArrayResponse res = new ByteArrayResponse(200, bytes);
 		res.setContentType("text/plain; charset=utf-8");
-		res.setBody(bytes);
 		return res;
 	}
 
@@ -295,7 +301,7 @@ JacksonJsonView, HTMLFilterProvider {
 									beforeDispatchTriggers,
 									htmlFilters,
 									responseFilters
-									);
+							);
 						});
 	}
 
@@ -341,7 +347,7 @@ JacksonJsonView, HTMLFilterProvider {
 			try {
 				@SuppressWarnings("unchecked")
 				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
-				.invoke(this);
+						.invoke(this);
 				if (webResponse.isPresent()) {
 					return webResponse.get();
 				}
@@ -427,20 +433,25 @@ JacksonJsonView, HTMLFilterProvider {
 		final Class<?> type = parameter.getType();
 		for (final Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
-				final Object value = this.getRequest().readJSON(type);
-				return value;
+				try {
+					final InputStream is = this.getRequest().getInputStream();
+					final Object value = this.objectMapper.readValue(is, type);
+					return value;
+				} catch (final IOException e) {
+					throw new RuntimeException(e);
+				}
 			} else if (annotation instanceof QueryParam) {
 				final String name = ((QueryParam) annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
 						type,
 						this.getRequest()
-						.getQueryParams());
+								.getQueryParams());
 			} else if (annotation instanceof BodyParam) {
 				final String name = ((BodyParam) annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
 						type,
 						this.getRequest()
-						.getBodyParams());
+								.getBodyParams());
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam) annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
@@ -452,7 +463,7 @@ JacksonJsonView, HTMLFilterProvider {
 				if (type == WebRequestUpload.class) {
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
-							.getFileItem(name);
+							.getFirstFileItem(name);
 					if (maybeFileItem.isPresent()) {
 						return maybeFileItem.get();
 					} else {
@@ -461,14 +472,14 @@ JacksonJsonView, HTMLFilterProvider {
 					}
 				} else if (type == WebRequestUpload[].class) {
 					final WebRequestUpload[] items = this.getRequest()
-							.getFileItems(name)
+							.getAllFileItems(name)
 							.toArray(new WebRequestUpload[0]);
 					return items;
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
-							.getFileItem(name);
+							.getFirstFileItem(name);
 					return maybeFileItem;
 				} else {
 					throw new RuntimeException(
@@ -490,42 +501,67 @@ JacksonJsonView, HTMLFilterProvider {
 			final Class<?> type,
 			final Parameters params) {
 		if (type.equals(String.class)) {
-			if (!params.containsKey(name)) {
+			final Optional<String> value = params.getFirst(name);
+			if (!value.isPresent()) {
 				throw new RuntimeException(String.format(
 						"Missing mandatory parameter '%s' by %s", name,
 						annotation.getClass().getName()));
 			}
-			return params.get(name);
+			return value.get();
 		} else if (type.equals(int.class)) {
-			if (!params.containsKey(name)) {
+			final Optional<String> value = params.getFirst(name);
+			if (!value.isPresent()) {
 				throw new RuntimeException(String.format(
 						"Missing mandatory parameter '%s' by %s", name,
 						annotation.getClass().getName()));
 			}
-			return params.getInt(name);
+			return Integer.parseInt(value.get());
 		} else if (type.equals(long.class)) {
-			if (!params.containsKey(name)) {
+			final Optional<String> value = params.getFirst(name);
+			if (!value.isPresent()) {
 				throw new RuntimeException(String.format(
 						"Missing mandatory parameter '%s' by %s", name,
 						annotation.getClass().getName()));
 			}
-			return params.getLong(name);
+			return Long.parseLong(value.get());
 		} else if (type.equals(double.class)) {
-			if (!params.containsKey(name)) {
+			final Optional<String> value = params.getFirst(name);
+			if (!value.isPresent()) {
 				throw new RuntimeException(String.format(
 						"Missing mandatory parameter '%s' by %s", name,
 						annotation.getClass().getName()));
 			}
-			return params.getDouble(name);
+			return Double.parseDouble(value.get());
 		} else if (type.equals(OptionalInt.class)) {
-			return params.getOptionalInt(name);
+			final Optional<String> value = params.getFirst(name);
+			if (value.isPresent()) {
+				return OptionalInt.of(Integer.parseInt(value.get()));
+			} else {
+				return OptionalInt.empty();
+			}
 		} else if (type.equals(OptionalLong.class)) {
-			return params.getOptionalLong(name);
+			final Optional<String> value = params.getFirst(name);
+			if (value.isPresent()) {
+				return OptionalLong.of(Long.parseLong(value.get()));
+			} else {
+				return OptionalLong.empty();
+			}
 		} else if (type.equals(OptionalDouble.class)) {
-			return params.getOptionalDouble(name);
+			final Optional<String> value = params.getFirst(name);
+			if (value.isPresent()) {
+				return OptionalDouble.of(Double.parseDouble(value.get()));
+			} else {
+				return OptionalDouble.empty();
+			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
-			return params.getOptional(name);
+			// TODO: type parameter check
+			final Optional<String> value = params.getFirst(name);
+			if (value.isPresent()) {
+				return Optional.of(value.get());
+			} else {
+				return Optional.empty();
+			}
 		} else {
 			throw new RuntimeException(String.format(
 					"Unknown parameter type '%s' for '%s'", type, name));

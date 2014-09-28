@@ -20,11 +20,9 @@ public interface JacksonJsonView extends Controller {
 			throw new RuntimeException(e);
 		}
 
-		final ByteArrayResponse res = new ByteArrayResponse();
-		res.setStatus(statusCode);
+		final ByteArrayResponse res = new ByteArrayResponse(statusCode, json);
 		res.setContentType("application/json; charset=utf-8");
 		res.setContentLength(json.length);
-		res.setBody(json);
 		return res;
 	}
 
