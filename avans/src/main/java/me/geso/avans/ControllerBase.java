@@ -609,7 +609,8 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	@Override
-	public Object computePluginStashIfAbsent(Class<?> pluginClass, String key,
+	public Object computePluginStashValueIfAbsent(Class<?> pluginClass,
+			String key,
 			Supplier<?> supplier) {
 		return this.pluginStash.computeIfAbsent(
 				this.generatePluginStashKey(pluginClass, key),

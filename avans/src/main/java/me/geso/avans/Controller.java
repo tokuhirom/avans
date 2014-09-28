@@ -45,7 +45,8 @@ public interface Controller extends AutoCloseable {
 	/**
 	 * Get plugin stash value. Compute if absent with callback.
 	 */
-	public Object computePluginStashIfAbsent(Class<?> pluginClass, String key,
+	public Object computePluginStashValueIfAbsent(Class<?> pluginClass,
+			String key,
 			Supplier<?> supplier);
 
 	public Path getBaseDirectory();

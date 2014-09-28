@@ -10,7 +10,8 @@ public interface SessionMixin extends Controller {
 	static final String stashKey = "session";
 
 	public default WebSessionManager getSession() {
-		final Object session = this.computePluginStashIfAbsent(this.getClass(),
+		final Object session = this.computePluginStashValueIfAbsent(
+				this.getClass(),
 				stashKey, () -> {
 					return this.buildSessionManager();
 				});
