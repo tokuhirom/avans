@@ -1,5 +1,7 @@
 # avans
 
+[![Build Status](https://travis-ci.org/tokuhirom/avans.svg?branch=master)](https://travis-ci.org/tokuhirom/avans)
+
 Tiny and thin web application framework for Java 8.
 
 ## Motivation
