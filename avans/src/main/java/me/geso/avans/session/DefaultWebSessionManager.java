@@ -291,7 +291,7 @@ WebSessionManager {
 	}
 
 	@Override
-	public void regenerateSessionId() {
+	public void changeSessionId() {
 		final Optional<SessionData> currentSession = this.loadSession();
 		Map<String, Object> data;
 		if (currentSession.isPresent()) {

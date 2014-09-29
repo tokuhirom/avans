@@ -6,6 +6,12 @@ import java.util.Optional;
 
 import lombok.ToString;
 
+/**
+ * In memory hash session storage for testing/debugging.
+ * 
+ * @author tokuhirom
+ *
+ */
 @ToString
 public class HashMapSessionStore implements WebSessionStore {
 	private final Map<String, Map<String, Object>> storage = new HashMap<>();
