@@ -16,7 +16,7 @@ import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
 
 public class DefaultWebSessionManager implements
-WebSessionManager {
+		WebSessionManager {
 	private final String sessionCookieName;
 	private final WebRequest request;
 	private final WebSessionStore sessionStore;
@@ -166,8 +166,13 @@ WebSessionManager {
 				final Object value = this.data.get(key);
 				if (value instanceof Long) {
 					return OptionalLong.of((Long) value);
+				} else if (value instanceof Integer) {
+					final Integer i = (Integer) value;
+					return OptionalLong.of(i.longValue());
 				} else {
-					throw new RuntimeException();
+					throw new RuntimeException(String.format(
+							"value for '%s' should be long. But: %s", key,
+							value.getClass()));
 				}
 			} else {
 				return OptionalLong.empty();
