@@ -22,12 +22,12 @@ HTTP はステートレスなプロトコルですから､リクエストをま
   public class MyController extends MyBaseController {
     @GET("/")
     public WebResponse add() {
-      Optional<Long> currentCounter = this.getSession().get("counter", Long.class);
+      Optional<Long> currentCounter = this.getSession().getLong("counter", Long.class);
       long counter = currentCounter.orElse(1);
       counter++;
-      this.getSession().set("counter", counter);
+      this.getSession().setLong("counter", counter);
       return this.renderTEXT("count:" + counter);
     }
   }
 
-`this.getSession()`
+`this.getSession()` でセッションオブジェクトを取得できます｡
