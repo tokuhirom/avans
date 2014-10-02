@@ -254,7 +254,7 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private void logException(Throwable e) {
-		final Throwable root = this.getRootCause(e);
+		final Throwable root = this.unwrapRuntimeException(e);
 		// Logging root cause in the log.
 		exceptionRootCauseLogger.error("{}: {}", root.getClass(),
 				root.getMessage());
@@ -269,8 +269,8 @@ public abstract class ControllerBase implements Controller,
 		return this.renderError(500, "Internal Server Error");
 	}
 
-	private Throwable getRootCause(Throwable e) {
-		while (e.getCause() != null) {
+	private Throwable unwrapRuntimeException(Throwable e) {
+		while ((e instanceof RuntimeException) && e.getCause() != null) {
 			e = e.getCause();
 		}
 		return e;
