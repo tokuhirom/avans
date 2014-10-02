@@ -1,5 +1,6 @@
 package me.geso.avans.session;
 
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -235,8 +236,13 @@ public class DefaultWebSessionManager implements
 	}
 
 	public Cookie buildXsrfTokenCookie() {
-		final byte[] token = this.getXsrfTokenMac()
-				.doFinal(this.sessionData.sessionId.getBytes());
+		byte[] token;
+		try {
+			token = this.getXsrfTokenMac()
+					.doFinal(this.sessionData.sessionId.getBytes("UTF-8"));
+		} catch (IllegalStateException | UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 		final Cookie cookie = new Cookie(
 				"XSRF-TOKEN", Base64.getEncoder().encodeToString(token)
 				);
