@@ -1,7 +1,7 @@
 package me.geso.avans.jackson;
 
 import me.geso.avans.Controller;
-import me.geso.avans.JsonRendererProvider;
+import me.geso.avans.JSONRendererProvider;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.WebResponse;
 
@@ -9,8 +9,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public interface JacksonJsonView extends Controller, JsonRendererProvider {
+public interface JacksonJsonView extends Controller, JSONRendererProvider {
 
+	@Override
 	public default WebResponse renderJSON(final int statusCode, final Object obj) {
 		final ObjectMapper mapper = this.createObjectMapper();
 		byte[] json;
@@ -33,7 +34,6 @@ public interface JacksonJsonView extends Controller, JsonRendererProvider {
 	 * @param obj
 	 * @return
 	 */
-	@Override
 	public default WebResponse renderJSON(final Object obj) {
 		return this.renderJSON(200, obj);
 	}

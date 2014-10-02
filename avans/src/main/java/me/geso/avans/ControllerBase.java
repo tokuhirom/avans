@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author tokuhirom
  */
 public abstract class ControllerBase implements Controller,
-		JacksonJsonView, HTMLFilterProvider {
+		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
@@ -132,6 +132,16 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	/**
+	 * Create new redirect response. You can use relative url here.
+	 *
+	 * @param location
+	 * @return
+	 */
+	public RedirectResponse redirect(@NonNull final String location) {
+		return new RedirectResponse(location);
+	}
+
+	/**
 	 * Create new "405 Method Not Allowed" response in JSON.
 	 *
 	 * @return
@@ -160,32 +170,6 @@ public abstract class ControllerBase implements Controller,
 	 */
 	public WebResponse errorNotFound() {
 		return this.renderError(404, "Not Found");
-	}
-
-	/**
-	 * Render the error response.
-	 *
-	 * @param code
-	 * @param message
-	 * @return
-	 */
-	protected WebResponse renderError(final int code,
-			@NonNull final String message) {
-		final APIResponse<String> apires = new APIResponse<>(code, message,
-				null);
-
-		final WebResponse res = this.renderJSON(code, apires);
-		return res;
-	}
-
-	/**
-	 * Create new redirect response. You can use relative url here.
-	 *
-	 * @param location
-	 * @return
-	 */
-	public RedirectResponse redirect(@NonNull final String location) {
-		return new RedirectResponse(location);
 	}
 
 	/**
@@ -416,7 +400,7 @@ public abstract class ControllerBase implements Controller,
 			throw new RuntimeException(
 					"dispatch method must not return NULL");
 		} else {
-			return this.convertResponse(controller, res);
+			return this.convertResponse(res);
 		}
 	}
 
@@ -605,15 +589,14 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	// You can hook this.
-	protected WebResponse convertResponse(final Controller controller,
-			final Object res) {
+	protected WebResponse convertResponse(final Object res) {
 		if (res instanceof APIResponse) {
-			// Rendering APIResponse with Jackson by default.
-			return controller.renderJSON(res);
+			// Rendering APIResponse for JSON by default.
+			return this.renderJSON(200, res);
 		} else {
 			throw new RuntimeException(String.format(
 					"Unknown return value from action: %s(%s)", Object.class,
-					controller.getRequest().getPathInfo()));
+					this.getRequest().getPathInfo()));
 		}
 	}
 
