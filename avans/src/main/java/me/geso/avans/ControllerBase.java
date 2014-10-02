@@ -47,6 +47,9 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -61,6 +64,10 @@ public abstract class ControllerBase implements Controller,
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
 	private final ObjectMapper objectMapper = new ObjectMapper();
+	private static final Logger exceptionRootCauseLogger = LoggerFactory
+			.getLogger("avans.exception.rootCause");
+	private static final Logger exceptionStackTraceLogger = LoggerFactory
+			.getLogger("avans.exception.StackTrace");
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
@@ -243,23 +250,46 @@ public abstract class ControllerBase implements Controller,
 			final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse,
 			final Map<String, String> captured) {
-		this.init(servletRequest, servletResponse, captured);
+		try {
+			this.init(servletRequest, servletResponse, captured);
 
-		final WebResponse response = this.makeResponse(this, method);
-		for (final Method filter : this.getFilters().getResponseFilters()) {
-			try {
+			final WebResponse response = this.makeResponse(this, method);
+			for (final Method filter : this.getFilters().getResponseFilters()) {
 				filter.invoke(this, response);
-			} catch (IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException e) {
-				throw new RuntimeException(e);
+			}
+			response.write(servletResponse);
+		} catch (final Throwable e) {
+			final WebResponse response = this.handleException(e);
+			try {
+				response.write(servletResponse);
+			} catch (final IOException ioe) {
+				this.logException(ioe);
+				throw new RuntimeException(ioe);
 			}
 		}
-		try {
-			response.write(servletResponse);
-		} catch (final IOException e) {
-			// User can't recovery this exception.
-			throw new RuntimeException(e);
+	}
+
+	private void logException(Throwable e) {
+		final Throwable root = this.getRootCause(e);
+		// Logging root cause in the log.
+		exceptionRootCauseLogger.error("{}: {}", root.getClass(),
+				root.getMessage());
+		// Logging all messages in the fat log.
+		exceptionStackTraceLogger.error("{}, {}\n{}", e.getCause(),
+				e.getMessage(), e.getStackTrace());
+	}
+
+	// You can override me.
+	public WebResponse handleException(Throwable e) {
+		this.logException(e);
+		return this.renderError(500, "Internal Server Error");
+	}
+
+	private Throwable getRootCause(Throwable e) {
+		while (e.getCause() != null) {
+			e = e.getCause();
 		}
+		return e;
 	}
 
 	final ConcurrentHashMap<Class<?>, Filters> responseFilters = new ConcurrentHashMap<>();
