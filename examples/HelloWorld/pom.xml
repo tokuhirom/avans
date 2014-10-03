@@ -8,6 +8,8 @@
 	<name>HelloWorld</name>
 	<description>HelloWorld</description>
 
+  <packaging>war</packaging>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -67,6 +69,16 @@
                 <maxIdleTime>60000</maxIdleTime>
               </connector>
             </connectors>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.tomcat.maven</groupId>
+          <artifactId>tomcat7-maven-plugin</artifactId>
+          <version>2.2</version>
+          <configuration>
+            <url>http://127.0.0.1:8080/manager/text</url>
+            <server>LocalTomcat</server>
+            <path>/HelloWorld</path>
           </configuration>
         </plugin>
 			</plugins>
