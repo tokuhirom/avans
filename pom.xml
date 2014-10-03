@@ -16,6 +16,19 @@
         <module>examples</module>
     </modules>
 
+
+      <repositories>
+          <repository>
+              <id>tokuhirom</id>
+              <url>https://tokuhirom.github.io/maven/releases/</url>
+          </repository>
+          <repository>
+              <id>tokuhirom-snapshots</id>
+              <url>https://tokuhirom.github.io/maven/snapshots/</url>
+          </repository>
+      </repositories>
+
+
     <scm>
       <url>https://github.com/tokuhirom/avans/</url>
       <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>

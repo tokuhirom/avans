@@ -19,6 +19,13 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
+  <repositories>
+    <repository>
+      <id>tokuhirom</id>
+      <url>https://tokuhirom.github.io/maven/releases/</url>
+    </repository>
+  </repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
