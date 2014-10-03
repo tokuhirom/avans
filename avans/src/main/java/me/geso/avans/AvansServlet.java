@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Servlet for Avans.
  */
@@ -17,6 +20,8 @@ public class AvansServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private final Dispatcher dispatcher = new Dispatcher();
+	private static final Logger logger = LoggerFactory
+			.getLogger(AvansServlet.class);
 
 	/**
 	 * You can register classes by web.xml. You can write web.xml as
@@ -29,6 +34,7 @@ public class AvansServlet extends HttpServlet {
 		final String pkg = servletConfig.getInitParameter("package");
 		if (pkg != null) {
 			for (final String p : pkg.split(",")) {
+				logger.info("Registering package: {}", p);
 				this.registerPackage(p);
 			}
 		}
@@ -36,6 +42,7 @@ public class AvansServlet extends HttpServlet {
 		final String classCsv = servletConfig.getInitParameter("class");
 		if (classCsv != null) {
 			for (final String className : classCsv.split(",")) {
+				logger.info("Registering class: {}", className);
 				this.registerPackage(className);
 			}
 		}
