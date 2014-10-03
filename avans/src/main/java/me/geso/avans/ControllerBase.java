@@ -256,11 +256,28 @@ public abstract class ControllerBase implements Controller,
 	private void logException(Throwable e) {
 		final Throwable root = this.unwrapRuntimeException(e);
 		// Logging root cause in the log.
-		exceptionRootCauseLogger.error("{}: {}", root.getClass(),
-				root.getMessage());
+		{
+			final StackTraceElement[] stackTrace = root.getStackTrace();
+			if (stackTrace.length > 0) {
+				final StackTraceElement ste = stackTrace[0];
+				exceptionRootCauseLogger.error("{}: {} in {} at {} line {}",
+						root.getClass(),
+						root.getMessage(),
+						ste.getMethodName(),
+						ste.getFileName(),
+						ste.getLineNumber()
+						);
+			} else {
+				exceptionRootCauseLogger.error("{}: {}",
+						root.getClass(),
+						root.getMessage()
+						);
+			}
+		}
 		// Logging all messages in the fat log.
 		exceptionStackTraceLogger.error("{}, {}\n{}", e.getCause(),
 				e.getMessage(), e.getStackTrace());
+		e.printStackTrace();
 	}
 
 	// You can override me.
