@@ -33,10 +33,6 @@ That's all.
 
 No there isn't. You should do it with JavaScript.
 
-## TODO
-
- * Add XSRF protection support.
-
 ## LICENSE
 
   The MIT License (MIT)
