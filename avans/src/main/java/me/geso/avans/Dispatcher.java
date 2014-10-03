@@ -21,6 +21,8 @@ import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 
 public class Dispatcher implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private static final Logger logger = LoggerFactory
 			.getLogger(Dispatcher.class);
 	private final WebRouter<Action> router = new WebRouter<>();
