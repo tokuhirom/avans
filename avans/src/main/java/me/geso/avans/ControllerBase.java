@@ -65,7 +65,7 @@ public abstract class ControllerBase implements Controller,
 	private final Map<String, Object> pluginStash = new HashMap<>();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
-			.getLogger("avans.exception.rootCause");
+			.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
 			.getLogger("avans.exception.StackTrace");
 
