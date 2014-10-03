@@ -1,6 +1,7 @@
 package me.geso.avans;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 
-public class Dispatcher {
+public class Dispatcher implements Serializable {
 	private static final Logger logger = LoggerFactory
 			.getLogger(Dispatcher.class);
 	private final WebRouter<Action> router = new WebRouter<>();
