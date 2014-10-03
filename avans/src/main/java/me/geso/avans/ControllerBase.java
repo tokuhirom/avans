@@ -261,7 +261,7 @@ public abstract class ControllerBase implements Controller,
 			if (stackTrace.length > 0) {
 				final StackTraceElement ste = stackTrace[0];
 				exceptionRootCauseLogger.error(
-						"{}, {}, {}, {}, {}: {} in {} at {} line {}",
+						"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
 						this.getRequest().getMethod(),
 						this.getRequest().getPathInfo(),
 						this.getRequest().getUserAgent(),
@@ -269,6 +269,7 @@ public abstract class ControllerBase implements Controller,
 						root.getClass(),
 						//
 						root.getMessage(),
+						ste.getClassName(),
 						ste.getMethodName(),
 						ste.getFileName(),
 						ste.getLineNumber()
