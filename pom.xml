@@ -5,7 +5,7 @@
     <artifactId>avans-project</artifactId>
     <packaging>pom</packaging>
 
-    <version>0.27.4</version>
+    <version>0.27.5-SNAPSHOT</version>
 
     <name>avans :: parent</name>
 
@@ -33,7 +33,7 @@
       <url>https://github.com/tokuhirom/avans/</url>
       <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
       <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-      <tag>avans-project-0.27.4</tag>
+      <tag>avans-project-0.27.0</tag>
   </scm>
 
     <build>
