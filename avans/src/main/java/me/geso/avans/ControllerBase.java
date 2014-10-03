@@ -298,7 +298,8 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private Throwable unwrapRuntimeException(Throwable e) {
-		while ((e instanceof RuntimeException) && e.getCause() != null) {
+		while ((e instanceof RuntimeException || e instanceof InvocationTargetException)
+				&& e.getCause() != null) {
 			e = e.getCause();
 		}
 		return e;
