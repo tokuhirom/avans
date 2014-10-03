@@ -3,7 +3,7 @@
   <parent>
     <groupId>me.geso</groupId>
     <artifactId>avans-project</artifactId>
-    <version>0.27.0</version>
+    <version>0.27.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>me.geso.avans.examples</groupId>
@@ -27,4 +27,8 @@
     <module>HelloWorld</module>
     <module>kitchen</module>
   </modules>
+
+  <scm>
+    <tag>avans-project-0.27.1</tag>
+  </scm>
 </project>
