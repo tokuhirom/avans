@@ -30,7 +30,13 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>0.26.8</version>
+			<version>0.26.10</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

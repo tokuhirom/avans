@@ -119,8 +119,8 @@
 			<version>9.2.2.v20140723</version>
 			<exclusions>
 				<exclusion>
-					<artifactId>servlet-api</artifactId>
 					<groupId>javax.servlet</groupId>
+					<artifactId>javax.servlet-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
