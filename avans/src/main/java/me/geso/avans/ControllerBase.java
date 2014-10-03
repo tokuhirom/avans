@@ -260,16 +260,27 @@ public abstract class ControllerBase implements Controller,
 			final StackTraceElement[] stackTrace = root.getStackTrace();
 			if (stackTrace.length > 0) {
 				final StackTraceElement ste = stackTrace[0];
-				exceptionRootCauseLogger.error("{}: {} in {} at {} line {}",
+				exceptionRootCauseLogger.error(
+						"{}, {}, {}, {}, {}: {} in {} at {} line {}",
+						this.getRequest().getMethod(),
+						this.getRequest().getPathInfo(),
+						this.getRequest().getUserAgent(),
+						this.getRequest().getRemoteAddr(),
 						root.getClass(),
+						//
 						root.getMessage(),
 						ste.getMethodName(),
 						ste.getFileName(),
 						ste.getLineNumber()
 						);
 			} else {
-				exceptionRootCauseLogger.error("{}: {}",
+				exceptionRootCauseLogger.error("{}, {}, {}, {}, {}: {}",
+						this.getRequest().getMethod(),
+						this.getRequest().getPathInfo(),
+						this.getRequest().getUserAgent(),
+						this.getRequest().getRemoteAddr(),
 						root.getClass(),
+						//
 						root.getMessage()
 						);
 			}
