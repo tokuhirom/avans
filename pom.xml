@@ -4,17 +4,23 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.geso</groupId>
-    <artifactId>avans-all</artifactId>
+    <artifactId>avans-project</artifactId>
     <packaging>pom</packaging>
 
-    <version>1.0-SNAPSHOT</version>
+    <version>0.27.0-SNAPSHOT</version>
 
-    <name>avans-all</name>
+    <name>avans :: parent</name>
 
     <modules>
-        <module>avans/</module>
-        <module>examples/kitchen</module>
+        <module>avans</module>
+        <module>examples</module>
     </modules>
+
+    <scm>
+      <url>https://github.com/tokuhirom/avans/</url>
+      <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
+      <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
+    </scm>
 
     <build>
         <plugins>
