@@ -5,7 +5,7 @@
     <servlet-class>me.geso.avans.AvansServlet</servlet-class>
     <init-param>
       <param-name>class</param-name> 
-      <param-value>com.example.helloworld.Main.Foo</param-value> 
+      <param-value>com.example.helloworld.Main$Foo</param-value> 
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

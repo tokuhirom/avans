@@ -40,6 +40,12 @@ public class AvansServlet extends HttpServlet {
 			}
 		}
 
+		/**
+		 * If you are using inner static class, please
+		 * 
+		 * @see <a
+		 *      href="http://stackoverflow.com/questions/7007831/instantiate-nested-static-class-using-class-forname">here</a>
+		 */
 		final String classCsv = servletConfig.getInitParameter("class");
 		if (classCsv != null) {
 			for (final String className : classCsv.split(",")) {

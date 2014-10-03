@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>0.26.4</version>
+			<version>0.26.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
