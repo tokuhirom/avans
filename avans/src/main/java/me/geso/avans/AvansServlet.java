@@ -29,6 +29,7 @@ public class AvansServlet extends HttpServlet {
 	 * or
 	 * {@code <init-param><param-name>class</param-name><param-value>pkg1,pkg2</param-value></init-param>}
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		final String pkg = servletConfig.getInitParameter("package");
@@ -43,7 +44,13 @@ public class AvansServlet extends HttpServlet {
 		if (classCsv != null) {
 			for (final String className : classCsv.split(",")) {
 				logger.info("Registering class: {}", className);
-				this.registerPackage(className);
+				try {
+					final Class<?> klass = Class.forName(className);
+					this.registerClass((Class<? extends Controller>) klass);
+				} catch (final ClassNotFoundException e) {
+					logger.error("AvansServlet can't load class: {}", className);
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
