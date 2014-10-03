@@ -54,7 +54,7 @@ public class SpyMemcachedSessionStore implements WebSessionStore {
 	 * @param expirationTime
 	 */
 	public SpyMemcachedSessionStore(
-			@NonNull MemcachedClient memcachedClient,
+			MemcachedClient memcachedClient,
 			int expirationTime) {
 		this(memcachedClient, defaultObjectMapper, expirationTime);
 	}
