@@ -30,13 +30,17 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>0.26.10</version>
+			<version>0.26.12</version>
+      <!--
+           tomcat:run requires following exclusion. But it breaks Main class.
+
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>javax.servlet-api</artifactId>
         </exclusion>
       </exclusions>
+      -->
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
