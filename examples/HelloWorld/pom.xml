@@ -3,7 +3,7 @@
   <parent>
     <groupId>me.geso.avans.examples</groupId>
     <artifactId>examples-parent</artifactId>
-    <version>0.27.2</version>
+    <version>0.27.7</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
