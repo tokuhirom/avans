@@ -3,13 +3,14 @@
   <parent>
     <groupId>me.geso</groupId>
     <artifactId>avans-project</artifactId>
-    <version>0.27.5</version>
+    <version>0.27.6-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.geso</groupId>
 	<artifactId>avans-session-spymemcached</artifactId>
+  <version>0.27.2</version>
 	<name>avans-session-spymemcached</name>
 	<description>spymemcached as session storage</description>
 
@@ -21,7 +22,7 @@
 		<url>https://github.com/tokuhirom/avans/</url>
 		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
 		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-		<tag>avans-project-0.27.5</tag>
+		<tag>avans-project-0.27.2</tag>
 	</scm>
 
 	<dependencies>
