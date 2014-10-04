@@ -3,14 +3,14 @@
   <parent>
     <groupId>me.geso</groupId>
     <artifactId>avans-project</artifactId>
-    <version>0.27.8-SNAPSHOT</version>
+    <version>0.27.8</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.geso</groupId>
 	<artifactId>avans-mustache</artifactId>
-  <version>0.27.2</version>
+  <version>0.27.8</version>
 	<name>avans-mustache</name>
 	<description>Mustache binding for avans web application framework</description>
 
@@ -30,7 +30,7 @@
 		<url>https://github.com/tokuhirom/avans/</url>
 		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
 		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-		<tag>avans-project-0.27.2</tag>
+		<tag>avans-project-0.27.8</tag>
 	</scm>
 
 	<dependencies>
