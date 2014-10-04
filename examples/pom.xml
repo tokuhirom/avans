@@ -3,12 +3,12 @@
   <parent>
     <groupId>me.geso</groupId>
     <artifactId>avans-project</artifactId>
-    <version>0.27.6-SNAPSHOT</version>
+    <version>0.27.6</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>me.geso.avans.examples</groupId>
   <artifactId>examples-parent</artifactId>
-  <version>0.27.2</version>
+  <version>0.27.6</version>
   <name>Avans Examples :: Parent</name>
   <packaging>pom</packaging>
   <build>
