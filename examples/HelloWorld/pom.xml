@@ -8,7 +8,6 @@
   </parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>me.geso.avans.examples</groupId>
 	<artifactId>HelloWorld</artifactId>
 	<name>HelloWorld</name>
 	<description>HelloWorld</description>
@@ -56,6 +55,12 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.geso</groupId>
+			<artifactId>mech</artifactId>
+			<version>0.11.0</version>
 			<scope>test</scope>
 		</dependency>
 
