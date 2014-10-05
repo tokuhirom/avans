@@ -1,30 +1,18 @@
 # Avans::Setup
 
-TODO: Write a gem description
+Setup script for avans.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'avans-setup'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install avans-setup
+    $ rake install
 
 ## Usage
 
-TODO: Write usage instructions here
+Run `avans_setup` command.
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/avans-setup/fork )
+1. Fork it ( https://github.com/tokuhirom/avans/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

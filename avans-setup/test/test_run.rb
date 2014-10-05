@@ -8,7 +8,7 @@ class TestMeme < MiniTest::Test
     tmpdir = Dir.mktmpdir
 
     Dir.chdir(tmpdir) do
-      system(RbConfig.ruby, "#{projdir}/bin/avans-setup", 'com.example.foo') \
+      system(RbConfig.ruby, "#{projdir}/bin/avans_setup", 'com.example.foo') \
           or raise "Missing ruby"
       Dir.chdir('foo') do
         IO.popen(['mvn', 'exec:java', '-Dexec.mainClass=com.example.foo.Main', :err=>[:child, :out]]) do |io|

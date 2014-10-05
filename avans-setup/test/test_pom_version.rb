@@ -11,7 +11,7 @@ class TestMeme < MiniTest::Test
     xml = response.body
     if xml =~ /<release>([^<>]+)<\/release>/
       version = $1
-      assert File.read('./bin/avans-setup') =~ /#{version}/, "bin/avans-setup doesn't contains '#{version}'"
+      assert File.read('./bin/avans_setup') =~ /#{version}/, "bin/avans_setup doesn't contains '#{version}'"
     else
       puts "maven-metadata.xml doesn't contains release tag."
     end
