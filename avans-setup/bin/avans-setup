@@ -2,6 +2,8 @@
 
 require 'fileutils'
 
+AVANS_VERSION='0.27.4'
+
 class String
   def squish
     self.gsub(/^ {6}/, '')
@@ -118,12 +120,12 @@ EOH
           <dependency>
             <groupId>me.geso</groupId>
             <artifactId>avans</artifactId>
-            <version>0.19.0</version>
+            <version>#{AVANS_VERSION}</version>
           </dependency>
           <dependency>
             <groupId>me.geso</groupId>
             <artifactId>avans-mustache</artifactId>
-            <version>0.0.2</version>
+            <version>#{AVANS_VERSION}</version>
           </dependency>
           <dependency>
             <groupId>org.slf4j</groupId>
