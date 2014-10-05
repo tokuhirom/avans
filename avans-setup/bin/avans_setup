@@ -9,7 +9,6 @@ AVANS_VERSION = '0.27.9'
 # Setup application class
 class AvansSetup
   def initialize(pkg)
-    @pkg = pkg # XXX Remove this
     @package = pkg
     if pkg =~ /\A(.*)\.(.*?)\z/
       @groupId = $1
@@ -37,7 +36,7 @@ class AvansSetup
       fail "Directory is already exists: #{@project}/"
     end
 
-    java_dir = "#{@project}/src/main/java/#{@pkg.gsub(/\./, '/')}"
+    java_dir = "#{@project}/src/main/java/#{@package.gsub(/\./, '/')}"
 
     FileUtils.mkdir_p("#{java_dir}/controller/")
     FileUtils.mkdir_p("#{@project}/src/main/resources/")
@@ -49,7 +48,7 @@ class AvansSetup
       File.file?(it)
     end.each do |file|
       destpath = Pathname.new(file).relative_path_from(Pathname.new(template_dir))
-      destpath = destpath.to_s.gsub(/PACKAGE/, @pkg.gsub(/\./, '/'))
+      destpath = destpath.to_s.gsub(/PACKAGE/, @package.gsub(/\./, '/'))
       render_file("#{@project}/#{destpath}", file)
     end
 

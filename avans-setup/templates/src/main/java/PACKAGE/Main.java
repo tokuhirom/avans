@@ -1,9 +1,9 @@
-package <%= @pkg %>;
+package <%= @package %>;
 
 import org.eclipse.jetty.server.Server;
 
 import me.geso.avans.jetty.JettyServerBuilder;
-import <%= @pkg %>.controller.RootController;
+import <%= @package %>.controller.RootController;
 
 public class Main {
     public static void main(String[] args) throws Exception {

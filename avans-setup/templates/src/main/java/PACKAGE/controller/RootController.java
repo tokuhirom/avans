@@ -1,4 +1,4 @@
-package <%= @pkg %>.controller;
+package <%= @package %>.controller;
 
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.GET;

@@ -2,7 +2,7 @@
 
 ## debug run
 
-    mvn exec:java -Dexec.mainClass=<%= @pkg %>.Main
+    mvn exec:java -Dexec.mainClass=<%= @package %>.Main
 
 ## make jar
 
