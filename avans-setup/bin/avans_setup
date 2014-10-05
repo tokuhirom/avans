@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'erb'
+
+AVANS_VERSION = '0.27.4'
+
+# Setup application class
+class AvansSetup
+  def initialize(pkg)
+    @pkg = pkg
+    if pkg =~ /\A(.*)\.(.*?)\z/
+      @groupId = $1
+      @artifactId = $2
+      @project = $2
+    else
+      fail "Invalid package name: #{pkg}"
+    end
+  end
+
+  def render(path)
+    fullpath = File.join(File.dirname(File.expand_path(__FILE__)),
+                         "../templates/#{path}")
+    erb = ERB.new(File.read(fullpath))
+    result = erb.result(binding)
+    result
+  end
+
+  def render_file(dest_path, template_file)
+    File.write(dest_path, render(template_file))
+  end
+
+  def run
+    if File.directory?(@project)
+      fail "Directory is already exists: #{@project}/"
+    end
+
+    java_dir = "#{@project}/src/main/java/#{@pkg.gsub(/\./, '/')}"
+
+    FileUtils.mkdir_p(java_dir)
+    FileUtils.mkdir_p("#{java_dir}/controller/")
+    FileUtils.mkdir_p("#{@project}/src/main/resources/")
+    FileUtils.mkdir_p("#{@project}/templates/")
+
+    render_file("#{java_dir}/Main.java", 'Main.java')
+    render_file("#{java_dir}/controller/RootController.java",
+                'controller/RootController.java')
+    render_file("#{@project}/templates/index.mustache",
+                'templates/index.mustache')
+    render_file("#{@project}/pom.xml", 'pom.xml')
+    render_file("#{@project}/README.md", 'README.md')
+
+    Dir.chdir(@project)
+    system('mvn package')
+
+    puts File.read('README.md')
+  end
+end
+
+if ARGV.length != 1
+  puts 'Usage: avans-setup.rb package.name'
+  exit
+end
+
+package_name = ARGV[0]
+
+setup = AvansSetup.new(package_name)
+setup.run
