@@ -3,7 +3,7 @@
 require 'fileutils'
 require 'erb'
 
-AVANS_VERSION = '0.27.4'
+AVANS_VERSION = '0.27.9'
 
 # Setup application class
 class AvansSetup
