@@ -8,7 +8,8 @@ AVANS_VERSION = '0.27.9'
 # Setup application class
 class AvansSetup
   def initialize(pkg)
-    @pkg = pkg
+    @pkg = pkg # XXX Remove this
+    @package = pkg
     if pkg =~ /\A(.*)\.(.*?)\z/
       @groupId = $1
       @artifactId = $2
@@ -27,6 +28,7 @@ class AvansSetup
   end
 
   def render_file(dest_path, template_file)
+    FileUtils.mkdir_p(File.dirname(dest_path))
     File.write(dest_path, render(template_file))
   end
 
@@ -42,9 +44,13 @@ class AvansSetup
     FileUtils.mkdir_p("#{@project}/src/main/resources/")
     FileUtils.mkdir_p("#{@project}/templates/")
 
-    render_file("#{java_dir}/Main.java", 'Main.java')
+    # TODO better rendering structure
+    render_file("#{java_dir}/Main.java",
+                'src/main/java/PACKAGE/Main.java')
     render_file("#{java_dir}/controller/RootController.java",
-                'controller/RootController.java')
+                'src/main/java/PACKAGE/controller/RootController.java')
+    render_file("#{@project}/src/test/java/#{@pkg.gsub(/\./, '/')}/RootControllerTest.java",
+                "src/test/java/PACKAGE/RootControllerTest.java")
     render_file("#{@project}/templates/index.mustache",
                 'templates/index.mustache')
     render_file("#{@project}/pom.xml", 'pom.xml')

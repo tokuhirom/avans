@@ -5,7 +5,7 @@ require 'thread'
 class TestMeme < MiniTest::Test
   def test_run
     projdir = Dir.pwd
-    tmpdir = Dir.mktmpdir
+    tmpdir = ENV['TEST_RUN_TMPDIR'] || Dir.mktmpdir
 
     Dir.chdir(tmpdir) do
       system(RbConfig.ruby, "#{projdir}/bin/avans_setup", 'com.example.foo') \
@@ -25,6 +25,7 @@ class TestMeme < MiniTest::Test
             end
           end
         end
+				assert system('mvn', 'test'), 'mvn test'
       end
     end
   end
