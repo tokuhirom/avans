@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
-import me.geso.webscrew.response.WebResponse;
 
 public interface Controller extends AutoCloseable {
 
@@ -22,8 +21,6 @@ public interface Controller extends AutoCloseable {
 	public WebRequest getRequest();
 
 	public Parameters getPathParameters();
-
-	public WebResponse renderJSON(final Object obj);
 
 	public void invoke(final Method method, final HttpServletRequest request,
 			final HttpServletResponse response,
