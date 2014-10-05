@@ -1,19 +1,14 @@
-# Avans::Setup
+# foo
 
-Setup script for avans.
+## debug run
 
-## Installation
+    mvn exec:java -Dexec.mainClass=com.example.foo.Main
 
-    $ rake install
+## make jar
 
-## Usage
+    mvn package
 
-Run `avans_setup` command.
+## run program
 
-## Contributing
+    java -jar target/foo-0.0.1-SNAPSHOT.jar
 
-1. Fork it ( https://github.com/tokuhirom/avans/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
