@@ -1,18 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <parent>
-    <groupId>me.geso</groupId>
-    <artifactId>avans-project</artifactId>
-    <version>0.29.4-SNAPSHOT</version>
+	<parent>
+		<groupId>me.geso</groupId>
+		<artifactId>avans-project</artifactId>
+		<version>0.29.4-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
-  </parent>
+	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>HelloWorld</artifactId>
 	<name>HelloWorld</name>
 	<description>HelloWorld</description>
 
-  <packaging>war</packaging>
+	<packaging>war</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,27 +25,22 @@
 			<id>tokuhirom-snapshot</id>
 			<url>https://tokuhirom.github.io/maven/snapshot/</url>
 		</repository>
-        <repository>
-            <id>tokuhirom-release</id>
-            <url>https://tokuhirom.github.io/maven/releases/</url>
-        </repository>
+		<repository>
+			<id>tokuhirom-release</id>
+			<url>https://tokuhirom.github.io/maven/releases/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-      <version>${project.version}</version>
-      <!--
-           tomcat:run requires following exclusion. But it breaks Main class.
-
-      <exclusions>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-        </exclusion>
-      </exclusions>
-      -->
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>me.geso</groupId>
+			<artifactId>avans-jetty</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -77,38 +73,38 @@
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
-        <plugin>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>maven-jetty-plugin</artifactId>
-          <version>6.1.10</version>
-          <configuration>
-            <scanIntervalSeconds>10</scanIntervalSeconds>
-            <connectors>
-              <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-                <port>8080</port>
-                <maxIdleTime>60000</maxIdleTime>
-              </connector>
-            </connectors>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.tomcat.maven</groupId>
-          <artifactId>tomcat7-maven-plugin</artifactId>
-          <version>2.2</version>
-          <configuration>
-            <url>http://127.0.0.1:8080/manager/text</url>
-            <server>LocalTomcat</server>
-            <path>/HelloWorld</path>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <configuration>
-            <!-- DO NOT DEPLOY (or Release) -->
-            <skip>true</skip>
-          </configuration>
-        </plugin>
+				<plugin>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>maven-jetty-plugin</artifactId>
+					<version>6.1.10</version>
+					<configuration>
+						<scanIntervalSeconds>10</scanIntervalSeconds>
+						<connectors>
+							<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+								<port>8080</port>
+								<maxIdleTime>60000</maxIdleTime>
+							</connector>
+						</connectors>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.tomcat.maven</groupId>
+					<artifactId>tomcat7-maven-plugin</artifactId>
+					<version>2.2</version>
+					<configuration>
+						<url>http://127.0.0.1:8080/manager/text</url>
+						<server>LocalTomcat</server>
+						<path>/HelloWorld</path>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<configuration>
+						<!-- DO NOT DEPLOY (or Release) -->
+						<skip>true</skip>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

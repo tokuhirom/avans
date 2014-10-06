@@ -7,12 +7,14 @@ import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.mustache.MustacheView;
+import me.geso.avans.mustache.MustacheViewMixin;
 import me.geso.webscrew.response.WebResponse;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.mustachejava.DefaultMustacheFactory;
 
-public class RootController extends ControllerBase implements MustacheView {
+public class RootController extends ControllerBase implements MustacheViewMixin {
 	@GET("/")
 	public WebResponse root() {
 		// This code render tmpl/root.mustache.
@@ -47,6 +49,17 @@ public class RootController extends ControllerBase implements MustacheView {
 		public MyObject(@JsonProperty("name") String name) {
 			this.name = name;
 		}
+	}
+
+	@Override
+	public MustacheView getMustacheView() {
+		return new MustacheView(new DefaultMustacheFactory("templates"));
+	}
+
+	@Override
+	public String filterHTML(String bodyString) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
