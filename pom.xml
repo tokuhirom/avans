@@ -5,13 +5,14 @@
     <artifactId>avans-project</artifactId>
     <packaging>pom</packaging>
 
-    <version>0.29.1-SNAPSHOT</version>
+    <version>0.29.1</version>
 
     <name>avans :: parent</name>
 
     <modules>
         <module>avans</module>
         <module>avans-mustache</module>
+        <module>avans-freemarker</module>
         <module>avans-session-spymemcached</module>
 				<module>examples/HelloWorld</module>
 				<module>examples/kitchen</module>
