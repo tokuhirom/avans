@@ -9,7 +9,7 @@ public class Main {
 		new Main().doMain();
 	}
 
-	final int port = 8080;
+	private static final int port = 8080;
 
 	private void doMain() throws Exception {
 		Server server = new JettyServerBuilder()
