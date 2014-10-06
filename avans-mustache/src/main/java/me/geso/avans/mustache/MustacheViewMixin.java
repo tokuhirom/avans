@@ -9,9 +9,8 @@ import me.geso.webscrew.response.WebResponse;
  * Mustache view for Avans web application framework.
  * 
  * History:<br>
- * At 0.27.2, I removed getMustacheTemplateDirectory method.<br>
+ * At 0.28.0, I renamed MustacheView as MustacheViewMixin.<br>
  * 
- * @return
  */
 public interface MustacheViewMixin extends Controller, HTMLFilterProvider {
 
