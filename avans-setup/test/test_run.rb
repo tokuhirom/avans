@@ -17,7 +17,7 @@ class TestMeme < MiniTest::Test
 
     Dir.mktmpdir() do |tmpdir|
       Dir.chdir(tmpdir) do
-        assert runit(RbConfig.ruby, "#{projdir}/bin/avans_setup", 'com.example.foo')
+        runit(RbConfig.ruby, "#{projdir}/bin/avans_setup", 'com.example.foo')
         Dir.chdir('foo') do
           IO.popen(['mvn', 'exec:java', '-Dexec.mainClass=com.example.foo.Main', :err=>[:child, :out]]) do |io|
             io.each_line do |line|
