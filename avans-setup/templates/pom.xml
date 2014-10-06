@@ -11,6 +11,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <avans.version><%= AVANS_VERSION %></avans.version>
   </properties>
 
   <repositories>
@@ -37,12 +38,17 @@
     <dependency>
       <groupId>me.geso</groupId>
       <artifactId>avans</artifactId>
-      <version><%= AVANS_VERSION %></version>
+      <version>${avans.version}</version>
     </dependency>
     <dependency>
       <groupId>me.geso</groupId>
       <artifactId>avans-mustache</artifactId>
-      <version><%= AVANS_VERSION %></version>
+      <version>${avans.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>me.geso</groupId>
+      <artifactId>avans-jetty</artifactId>
+      <version>${avans.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
