@@ -1,19 +1,34 @@
 package me.geso.avans.mustache;
 
 import java.io.StringWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 
 import lombok.NonNull;
-import me.geso.avans.Controller;
 import me.geso.avans.HTMLFilterProvider;
 import me.geso.webscrew.response.ByteArrayResponse;
+import me.geso.webscrew.response.WebResponse;
 
-import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
-public interface MustacheView extends Controller, HTMLFilterProvider {
+/**
+ * Build {@code MustacheFactory} instance.<br>
+ * <br>
+ * Example:<br>
+ * {@code
+ * final String fileBase = this.getBaseDirectory().resolve("src/main/resources/templates").toString();
+ * return new FallbackMustacheFactory("templates", new File(fileBase));
+	 * } <br>
+ * You should cache this instance.
+ * 
+ */
+public class MustacheView {
+	private final MustacheFactory mustacheFactory;
 
+	public MustacheView(MustacheFactory mustacheFactory) {
+		this.mustacheFactory = mustacheFactory;
+	}
+	
 	/**
 	 * Create a response object by mustache template engine.
 	 *
@@ -21,18 +36,16 @@ public interface MustacheView extends Controller, HTMLFilterProvider {
 	 * @param context
 	 * @return
 	 */
-	public default ByteArrayResponse renderMustache(@NonNull String template,
+	public WebResponse render(@NonNull HTMLFilterProvider controller,
+			@NonNull String template,
 			Object context) {
-		final Path tmplDir = this.getMustacheTemplateDirectory();
-		final DefaultMustacheFactory factory = new DefaultMustacheFactory(
-				tmplDir.toFile());
-		final Mustache mustache = factory.compile(template);
+		final Mustache mustache = mustacheFactory.compile(template);
 		final StringWriter writer = new StringWriter();
 		mustache.execute(writer, context);
 		String bodyString = writer.toString();
-		bodyString = this.filterHTML(bodyString);
+		bodyString = controller.filterHTML(bodyString);
 
-		final byte[] body = bodyString.getBytes(Charset.forName("UTF-8"));
+		final byte[] body = bodyString.getBytes(StandardCharsets.UTF_8);
 
 		final ByteArrayResponse res = new ByteArrayResponse(200, body);
 		res.setContentType("text/html; charset=utf-8");
@@ -40,7 +53,4 @@ public interface MustacheView extends Controller, HTMLFilterProvider {
 		return res;
 	}
 
-	public default Path getMustacheTemplateDirectory() {
-		return this.getBaseDirectory().resolve("templates");
-	}
 }

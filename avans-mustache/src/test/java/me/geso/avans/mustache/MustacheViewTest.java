@@ -3,8 +3,7 @@ package me.geso.avans.mustache;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
@@ -14,6 +13,8 @@ import me.geso.mech.MechResponse;
 import me.geso.webscrew.response.WebResponse;
 
 import org.junit.Test;
+
+import com.github.mustachejava.DefaultMustacheFactory;
 
 public class MustacheViewTest {
 
@@ -30,7 +31,7 @@ public class MustacheViewTest {
 	}
 
 	public static class MyController extends ControllerBase implements
-			MustacheView {
+			MustacheViewMixin {
 		@GET("/mustache")
 		public WebResponse mustache() {
 			final Foo foo = new Foo();
@@ -39,8 +40,8 @@ public class MustacheViewTest {
 		}
 
 		@Override
-		public Path getMustacheTemplateDirectory() {
-			return Paths.get("src/test/resources/templates/");
+		public MustacheView getMustacheView() {
+			return new MustacheView(new DefaultMustacheFactory(new File("src/test/resources/templates/")));
 		}
 	}
 

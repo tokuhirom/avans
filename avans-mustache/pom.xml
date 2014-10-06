@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <parent>
-    <groupId>me.geso</groupId>
-    <artifactId>avans-project</artifactId>
-    <version>0.27.10-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+	<parent>
+		<groupId>me.geso</groupId>
+		<artifactId>avans-project</artifactId>
+		<version>0.27.10-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>avans-mustache</artifactId>
@@ -17,12 +18,12 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
-  <repositories>
-    <repository>
-      <id>tokuhirom</id>
-      <url>https://tokuhirom.github.io/maven/releases/</url>
-    </repository>
-  </repositories>
+	<repositories>
+		<repository>
+			<id>tokuhirom</id>
+			<url>https://tokuhirom.github.io/maven/releases/</url>
+		</repository>
+	</repositories>
 
 	<scm>
 		<url>https://github.com/tokuhirom/avans/</url>
@@ -42,7 +43,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-      <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
