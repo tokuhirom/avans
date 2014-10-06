@@ -13,6 +13,13 @@
 	<name>avans-freemarker</name>
 	<description>avans-freemarker</description>
 
+    <scm>
+      <url>https://github.com/tokuhirom/avans/</url>
+      <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
+      <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
+      <tag>avans-project-0.27.2</tag>
+  </scm>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
