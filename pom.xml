@@ -13,7 +13,8 @@
         <module>avans</module>
         <module>avans-mustache</module>
         <module>avans-session-spymemcached</module>
-        <module>examples</module>
+				<module>examples/HelloWorld</module>
+				<module>examples/kitchen</module>
     </modules>
 
 
