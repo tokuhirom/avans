@@ -56,10 +56,4 @@ public class RootController extends ControllerBase implements MustacheViewMixin 
 		return new MustacheView(new DefaultMustacheFactory("templates"));
 	}
 
-	@Override
-	public String filterHTML(String bodyString) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
