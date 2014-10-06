@@ -17,6 +17,12 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
+    <scm>
+      <url>https://github.com/tokuhirom/avans/</url>
+      <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
+      <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
+  </scm>
+
 	<repositories>
 		<repository>
 			<id>tokuhirom</id>
