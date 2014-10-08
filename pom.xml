@@ -5,7 +5,7 @@
     <artifactId>avans-project</artifactId>
     <packaging>pom</packaging>
 
-    <version>0.30.2-SNAPSHOT</version>
+    <version>0.31.0</version>
 
     <name>avans :: parent</name>
 
