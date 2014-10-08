@@ -1,7 +1,6 @@
 package me.geso.avans.session;
 
 import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
@@ -32,6 +31,7 @@ public class DefaultWebSessionManager implements
 	private boolean expired;
 	private String sessionCookiePath;
 	private String xsrfTokenCookiePath;
+	private SecureRandom sessionIdSecureRandom;
 
 	public DefaultWebSessionManager(@NonNull final String sessionCookieName,
 			@NonNull final WebRequest request,
@@ -49,6 +49,8 @@ public class DefaultWebSessionManager implements
 		this.xsrfTokenCookiePath = "/";
 		this.xsrfTokenCookieSecure = false;
 		this.xsrfTokenMac = xsrfTokenMac;
+
+		this.sessionIdSecureRandom = new SecureRandom();
 
 		this.expired = false;
 	}
@@ -94,15 +96,8 @@ public class DefaultWebSessionManager implements
 
 	private String generateSessionId() {
 		// create session
-		SecureRandom secureRandom;
-		try {
-			secureRandom = SecureRandom
-					.getInstanceStrong();
-		} catch (final NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
 		final byte[] bytes = new byte[32];
-		secureRandom.nextBytes(bytes);
+		this.sessionIdSecureRandom.nextBytes(bytes);
 		final String sessionId = Base64.getEncoder().encodeToString(
 				bytes);
 		return sessionId;
@@ -345,6 +340,14 @@ public class DefaultWebSessionManager implements
 
 	public void setXsrfTokenCookiePath(String xsrfTokenCookiePath) {
 		this.xsrfTokenCookiePath = xsrfTokenCookiePath;
+	}
+
+	public SecureRandom getSessionIdSecureRandom() {
+		return this.sessionIdSecureRandom;
+	}
+
+	public void setSessionIdSecureRandom(SecureRandom sessionIdSecureRandom) {
+		this.sessionIdSecureRandom = sessionIdSecureRandom;
 	}
 
 }
