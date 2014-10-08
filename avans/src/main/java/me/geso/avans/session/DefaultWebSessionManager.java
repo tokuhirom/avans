@@ -13,9 +13,11 @@ import javax.crypto.Mac;
 import javax.servlet.http.Cookie;
 
 import lombok.NonNull;
+import lombok.ToString;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
 
+@ToString
 public class DefaultWebSessionManager implements
 		WebSessionManager {
 	private final String sessionCookieName;
@@ -28,6 +30,8 @@ public class DefaultWebSessionManager implements
 	private boolean xsrfTokenCookieSecure;
 	private final Mac xsrfTokenMac;
 	private boolean expired;
+	private String sessionCookiePath;
+	private String xsrfTokenCookiePath;
 
 	public DefaultWebSessionManager(@NonNull final String sessionCookieName,
 			@NonNull final WebRequest request,
@@ -36,11 +40,16 @@ public class DefaultWebSessionManager implements
 		this.sessionCookieName = sessionCookieName;
 		this.request = request;
 		this.sessionStore = sessionStore;
+
+		this.sessionCookiePath = "/";
 		this.sessionCookieMaxAge = 24 * 60 * 60;
 		this.sessionCookieHttpOnly = true;
 		this.sessionCookieSecure = false;
+
+		this.xsrfTokenCookiePath = "/";
 		this.xsrfTokenCookieSecure = false;
 		this.xsrfTokenMac = xsrfTokenMac;
+
 		this.expired = false;
 	}
 
@@ -229,6 +238,7 @@ public class DefaultWebSessionManager implements
 		final Cookie cookie = new Cookie(
 				this.sessionCookieName, this.sessionData.sessionId
 				);
+		cookie.setPath(this.getSessionCookiePath());
 		cookie.setHttpOnly(this.isSessionCookieHttpOnly());
 		cookie.setSecure(this.isSessionCookieSecure());
 		cookie.setMaxAge(this.getSessionCookieMaxAge());
@@ -246,6 +256,7 @@ public class DefaultWebSessionManager implements
 		final Cookie cookie = new Cookie(
 				"XSRF-TOKEN", Base64.getEncoder().encodeToString(token)
 				);
+		cookie.setPath(this.getXsrfTokenCookiePath());
 		// I want to read this cookie from java script.
 		cookie.setHttpOnly(false);
 		cookie.setSecure(this.isXsrfTokenCookieSecure());
@@ -318,6 +329,22 @@ public class DefaultWebSessionManager implements
 		this.sessionData = new SessionData(newSessionId,
 				data, true);
 		this.sessionData.setDirty();
+	}
+
+	public String getSessionCookiePath() {
+		return this.sessionCookiePath;
+	}
+
+	public void setSessionCookiePath(String sessionCookiePath) {
+		this.sessionCookiePath = sessionCookiePath;
+	}
+
+	public String getXsrfTokenCookiePath() {
+		return this.xsrfTokenCookiePath;
+	}
+
+	public void setXsrfTokenCookiePath(String xsrfTokenCookiePath) {
+		this.xsrfTokenCookiePath = xsrfTokenCookiePath;
 	}
 
 }
