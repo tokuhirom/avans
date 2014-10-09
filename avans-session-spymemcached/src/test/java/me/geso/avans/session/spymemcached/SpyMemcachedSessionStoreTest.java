@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -18,9 +19,15 @@ import javax.crypto.spec.SecretKeySpec;
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.GET;
+import me.geso.avans.session.DefaultSessionCookieFactory;
 import me.geso.avans.session.DefaultWebSessionManager;
+import me.geso.avans.session.DefaultXSRFTokenCookieFactory;
+import me.geso.avans.session.SecureRandomSessionIDGenerator;
+import me.geso.avans.session.SessionCookieFactory;
+import me.geso.avans.session.SessionIDGenerator;
 import me.geso.avans.session.SessionMixin;
 import me.geso.avans.session.WebSessionManager;
+import me.geso.avans.session.XSRFTokenCookieFactory;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.webscrew.response.WebResponse;
@@ -141,16 +148,29 @@ public class SpyMemcachedSessionStoreTest {
 						memcachedClient, 1024);
 				final Mac xsrfTokenMac = Mac.getInstance("HmacSHA1");
 				xsrfTokenMac.init(signingKey);
+
+				SessionCookieFactory sessionCookieFactory = DefaultSessionCookieFactory
+						.builder()
+						.build();
+
+				XSRFTokenCookieFactory xsrfTokenCookieFactory = DefaultXSRFTokenCookieFactory
+						.builder()
+						.mac(xsrfTokenMac)
+						.build();
+
+				SessionIDGenerator sessionIDGenerator = new SecureRandomSessionIDGenerator(
+						new SecureRandom(), 32);
+
 				return new DefaultWebSessionManager(
-						"avans_session_id",
 						this.getRequest(),
 						sessionStore,
-						xsrfTokenMac);
+						sessionIDGenerator,
+						sessionCookieFactory,
+						xsrfTokenCookieFactory);
 			} catch (final NoSuchAlgorithmException | InvalidKeyException e) {
 				throw new RuntimeException(e);
 			}
 		}
-
 	}
 
 	@Test

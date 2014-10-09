@@ -2,6 +2,7 @@ package me.geso.avans.session;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.OptionalLong;
 
@@ -23,7 +24,7 @@ import org.junit.Test;
 
 public class SessionMixinTest {
 	public static class MyController extends ControllerBase implements
-	SessionMixin {
+			SessionMixin {
 		@GET("/")
 		public WebResponse root() {
 			final OptionalLong currentCounter = this.getSession().getLong(
@@ -56,11 +57,24 @@ public class SessionMixinTest {
 				final Mac mac = Mac.getInstance("HmacSHA1");
 				mac.init(sk);
 
+				final DefaultSessionCookieFactory sessionCookieFactory = DefaultSessionCookieFactory
+						.builder()
+						.name("avans_session_id")
+						.build();
+				final DefaultXSRFTokenCookieFactory xsrfTokenCookieFactory = DefaultXSRFTokenCookieFactory
+						.builder()
+						.mac(mac)
+						.build();
+				final SessionIDGenerator sessionIDGenerator = new SecureRandomSessionIDGenerator(
+						new SecureRandom(),
+						32);
+
 				return new DefaultWebSessionManager(
-						"avans_session_id",
 						this.getRequest(),
 						MyController.store,
-						mac);
+						sessionIDGenerator,
+						sessionCookieFactory,
+						xsrfTokenCookieFactory);
 			} catch (final InvalidKeyException | NoSuchAlgorithmException e) {
 				throw new RuntimeException(e);
 			}
@@ -81,17 +95,17 @@ public class SessionMixinTest {
 				System.out.println(res.getHeaders("Set-Cookie").get(0));
 				Assert.assertThat(
 						res.getHeaders("Set-Cookie").get(0)
-						.startsWith("avans_session_id="),
+								.startsWith("avans_session_id="),
 						CoreMatchers.is(true));
 				Assert.assertThat(
 						res.getHeaders("Set-Cookie").get(1)
-						.startsWith("XSRF-TOKEN="),
+								.startsWith("XSRF-TOKEN="),
 						CoreMatchers.is(true));
 				Assert.assertThat(res.getContentString(),
 						CoreMatchers.is("counter:1"));
 			}
 			mech.getCookieStore().getCookies().stream()
-			.forEach(cookie -> System.out.println(cookie));
+					.forEach(cookie -> System.out.println(cookie));
 			try (MechResponse res = mech.get("/").execute()) {
 				Assert.assertThat(res.getContentString(),
 						CoreMatchers.is("counter:2"));

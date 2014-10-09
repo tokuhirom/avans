@@ -1,59 +1,45 @@
 package me.geso.avans.session;
 
-import java.io.UnsupportedEncodingException;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 
-import javax.crypto.Mac;
 import javax.servlet.http.Cookie;
 
 import lombok.NonNull;
-import lombok.ToString;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
 
-@ToString
 public class DefaultWebSessionManager implements
 		WebSessionManager {
-	private final String sessionCookieName;
+	@NonNull
 	private final WebRequest request;
+	@NonNull
 	private final WebSessionStore sessionStore;
-	private SessionData sessionData;
-	private boolean sessionCookieHttpOnly;
-	private boolean sessionCookieSecure;
-	private int sessionCookieMaxAge;
-	private boolean xsrfTokenCookieSecure;
-	private final Mac xsrfTokenMac;
-	private boolean expired;
-	private String sessionCookiePath;
-	private String xsrfTokenCookiePath;
-	private SecureRandom sessionIdSecureRandom;
+	@NonNull
+	private final SessionCookieFactory sessionCookieFactory;
+	@NonNull
+	private final SessionIDGenerator sessionIDGenerator;
+	@NonNull
+	private final XSRFTokenCookieFactory xsrfTokenCookieFactory;
 
-	public DefaultWebSessionManager(@NonNull final String sessionCookieName,
-			@NonNull final WebRequest request,
-			@NonNull final WebSessionStore sessionStore,
-			@NonNull final Mac xsrfTokenMac) {
-		this.sessionCookieName = sessionCookieName;
+	public DefaultWebSessionManager(WebRequest request,
+			WebSessionStore sessionStore,
+			SessionIDGenerator sessionIDGenerator,
+			SessionCookieFactory sessionCookieFactory,
+			XSRFTokenCookieFactory xsrfTokenCookieFactory
+			) {
 		this.request = request;
 		this.sessionStore = sessionStore;
-
-		this.sessionCookiePath = "/";
-		this.sessionCookieMaxAge = 24 * 60 * 60;
-		this.sessionCookieHttpOnly = true;
-		this.sessionCookieSecure = false;
-
-		this.xsrfTokenCookiePath = "/";
-		this.xsrfTokenCookieSecure = false;
-		this.xsrfTokenMac = xsrfTokenMac;
-
-		this.sessionIdSecureRandom = new SecureRandom();
-
-		this.expired = false;
+		this.sessionIDGenerator = sessionIDGenerator;
+		this.sessionCookieFactory = sessionCookieFactory;
+		this.xsrfTokenCookieFactory = xsrfTokenCookieFactory;
 	}
+
+	private SessionData sessionData;
+
+	private boolean expired = false;
 
 	private SessionData getSessionData() {
 		if (this.expired) {
@@ -79,7 +65,8 @@ public class DefaultWebSessionManager implements
 		final Cookie[] cookies = this.request.getCookies();
 		if (cookies != null) {
 			for (final Cookie cookie : cookies) {
-				if (this.sessionCookieName.equals(cookie.getName())) {
+				if (this.sessionCookieFactory.getName()
+						.equals(cookie.getName())) {
 					final String sessionId = cookie.getValue();
 					final Optional<Map<String, Object>> data = this.sessionStore
 							.load(sessionId);
@@ -95,12 +82,7 @@ public class DefaultWebSessionManager implements
 	}
 
 	private String generateSessionId() {
-		// create session
-		final byte[] bytes = new byte[32];
-		this.sessionIdSecureRandom.nextBytes(bytes);
-		final String sessionId = Base64.getEncoder().encodeToString(
-				bytes);
-		return sessionId;
+		return this.sessionIDGenerator.generate();
 	}
 
 	@Override
@@ -224,80 +206,15 @@ public class DefaultWebSessionManager implements
 						.isFresh())) {
 			this.sessionStore.save(this.sessionData.getSessionId(),
 					this.sessionData.getData());
-			response.addCookie(this.buildSessionCookie());
-			response.addCookie(this.buildXsrfTokenCookie());
+
+			final Cookie sessionCookie = this.sessionCookieFactory
+					.createCookie(this.sessionData.sessionId);
+			response.addCookie(sessionCookie);
+
+			final Cookie xsrfTokenCookie = this.xsrfTokenCookieFactory
+					.createCookie(this.sessionData.sessionId);
+			response.addCookie(xsrfTokenCookie);
 		}
-	}
-
-	public Cookie buildSessionCookie() {
-		final Cookie cookie = new Cookie(
-				this.sessionCookieName, this.sessionData.sessionId
-				);
-		cookie.setPath(this.getSessionCookiePath());
-		cookie.setHttpOnly(this.isSessionCookieHttpOnly());
-		cookie.setSecure(this.isSessionCookieSecure());
-		cookie.setMaxAge(this.getSessionCookieMaxAge());
-		return cookie;
-	}
-
-	public Cookie buildXsrfTokenCookie() {
-		byte[] token;
-		try {
-			token = this.getXsrfTokenMac()
-					.doFinal(this.sessionData.sessionId.getBytes("UTF-8"));
-		} catch (IllegalStateException | UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-		final Cookie cookie = new Cookie(
-				"XSRF-TOKEN", Base64.getEncoder().encodeToString(token)
-				);
-		cookie.setPath(this.getXsrfTokenCookiePath());
-		// I want to read this cookie from java script.
-		cookie.setHttpOnly(false);
-		cookie.setSecure(this.isXsrfTokenCookieSecure());
-		// It should be same as session token's max-age.
-		cookie.setMaxAge(this.getSessionCookieMaxAge());
-		return cookie;
-	}
-
-	protected boolean getSessionCookieHttpOnly() {
-		return this.sessionCookieHttpOnly;
-	}
-
-	public boolean isSessionCookieHttpOnly() {
-		return this.sessionCookieHttpOnly;
-	}
-
-	public void setSessionCookieHttpOnly(final boolean sessionCookieHttpOnly) {
-		this.sessionCookieHttpOnly = sessionCookieHttpOnly;
-	}
-
-	public boolean isSessionCookieSecure() {
-		return this.sessionCookieSecure;
-	}
-
-	public void setSessionCookieSecure(final boolean sessionCookieSecure) {
-		this.sessionCookieSecure = sessionCookieSecure;
-	}
-
-	public int getSessionCookieMaxAge() {
-		return this.sessionCookieMaxAge;
-	}
-
-	public boolean isXsrfTokenCookieSecure() {
-		return this.xsrfTokenCookieSecure;
-	}
-
-	public void setXsrfTokenCookieSecure(final boolean xsrfTokenCookieSecure) {
-		this.xsrfTokenCookieSecure = xsrfTokenCookieSecure;
-	}
-
-	public void setSessionCookieMaxAge(final int sessionCookieMaxAge) {
-		this.sessionCookieMaxAge = sessionCookieMaxAge;
-	}
-
-	public Mac getXsrfTokenMac() {
-		return this.xsrfTokenMac;
 	}
 
 	@Override
@@ -324,30 +241,6 @@ public class DefaultWebSessionManager implements
 		this.sessionData = new SessionData(newSessionId,
 				data, true);
 		this.sessionData.setDirty();
-	}
-
-	public String getSessionCookiePath() {
-		return this.sessionCookiePath;
-	}
-
-	public void setSessionCookiePath(String sessionCookiePath) {
-		this.sessionCookiePath = sessionCookiePath;
-	}
-
-	public String getXsrfTokenCookiePath() {
-		return this.xsrfTokenCookiePath;
-	}
-
-	public void setXsrfTokenCookiePath(String xsrfTokenCookiePath) {
-		this.xsrfTokenCookiePath = xsrfTokenCookiePath;
-	}
-
-	public SecureRandom getSessionIdSecureRandom() {
-		return this.sessionIdSecureRandom;
-	}
-
-	public void setSessionIdSecureRandom(SecureRandom sessionIdSecureRandom) {
-		this.sessionIdSecureRandom = sessionIdSecureRandom;
 	}
 
 }
