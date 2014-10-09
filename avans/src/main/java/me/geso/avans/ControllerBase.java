@@ -308,50 +308,67 @@ public abstract class ControllerBase implements Controller,
 
 	final ConcurrentHashMap<Class<?>, Filters> responseFilters = new ConcurrentHashMap<>();
 
-	private Filters getFilters() {
+	Filters getFilters() {
 		return this.responseFilters
 				.computeIfAbsent(
 						this.getClass(),
 						(klass) -> {
-							// LinkedList じゃなくてもっとうまいやり方あると思う｡
-							final LinkedList<Class<?>> linearIsa = new LinkedList<>();
-							while (klass != null
-									&& klass != ControllerBase.class) {
-								linearIsa.addFirst(klass);
-								klass = klass.getSuperclass();
-							}
-							final List<Method> responseFilters = new ArrayList<>();
-							final List<Method> htmlFilters = new ArrayList<>();
-							final List<Method> beforeDispatchTriggers = new ArrayList<>();
-							for (final Class<?> k : linearIsa) {
-								for (final Class<?> interfac : k
-										.getInterfaces()) {
-									for (final Method method : interfac
-											.getMethods()) {
-										if (method
-												.getAnnotation(BeforeDispatchTrigger.class) != null) {
-											beforeDispatchTriggers.add(method);
-										}
-										if (method
-												.getAnnotation(HTMLFilter.class) != null) {
-											htmlFilters.add(method);
-										}
-										if (method
-												.getAnnotation(ResponseFilter.class) != null) {
-											responseFilters.add(method);
-										}
-									}
-								}
-							}
-							return new Filters(
-									beforeDispatchTriggers,
-									htmlFilters,
-									responseFilters
-							);
+							final FilterScanner scanner = new FilterScanner();
+							scanner.scan(klass);
+							return scanner.build();
 						});
 	}
 
-	private static class Filters {
+	static class FilterScanner {
+		final List<Method> responseFilters = new ArrayList<>();
+		final List<Method> htmlFilters = new ArrayList<>();
+		final List<Method> beforeDispatchTriggers = new ArrayList<>();
+
+		void scanMethod(Method method) {
+			if (method.getAnnotation(BeforeDispatchTrigger.class) != null) {
+				this.beforeDispatchTriggers.add(method);
+			}
+			if (method.getAnnotation(HTMLFilter.class) != null) {
+				this.htmlFilters.add(method);
+			}
+			if (method.getAnnotation(ResponseFilter.class) != null) {
+				this.responseFilters.add(method);
+			}
+		}
+
+		public void scan(Class<?> klass) {
+			// LinkedList じゃなくてもっとうまいやり方あると思う｡
+			final LinkedList<Class<?>> linearIsa = new LinkedList<>();
+			while (klass != null
+					&& klass != ControllerBase.class) {
+				linearIsa.addFirst(klass);
+				klass = klass.getSuperclass();
+			}
+
+			for (final Class<?> k : linearIsa) {
+				// scan annotations in interfaces.
+				for (final Class<?> interfac : k.getInterfaces()) {
+					for (final Method method : interfac.getMethods()) {
+						this.scanMethod(method);
+					}
+				}
+
+				// scan annotations in methods.
+				for (final Method method : k.getMethods()) {
+					this.scanMethod(method);
+				}
+			}
+		}
+
+		Filters build() {
+			return new Filters(
+					this.beforeDispatchTriggers,
+					this.htmlFilters,
+					this.responseFilters);
+		}
+	}
+
+	static class Filters {
 		private final List<Method> responseFilters;
 		private final List<Method> beforeDispatchTriggers;
 		private final List<Method> htmlFilters;
