@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -323,8 +325,13 @@ public abstract class ControllerBase implements Controller,
 		final List<Method> responseFilters = new ArrayList<>();
 		final List<Method> htmlFilters = new ArrayList<>();
 		final List<Method> beforeDispatchTriggers = new ArrayList<>();
+		final Set<Method> seen = new HashSet<>();
 
 		void scanMethod(Method method) {
+			if (this.seen.contains(method)) {
+				return;
+			}
+
 			if (method.getAnnotation(BeforeDispatchTrigger.class) != null) {
 				this.beforeDispatchTriggers.add(method);
 			}
@@ -334,6 +341,8 @@ public abstract class ControllerBase implements Controller,
 			if (method.getAnnotation(ResponseFilter.class) != null) {
 				this.responseFilters.add(method);
 			}
+
+			this.seen.add(method);
 		}
 
 		public void scan(Class<?> klass) {
@@ -344,7 +353,7 @@ public abstract class ControllerBase implements Controller,
 				linearIsa.addFirst(klass);
 				klass = klass.getSuperclass();
 			}
-
+			
 			for (final Class<?> k : linearIsa) {
 				// scan annotations in interfaces.
 				for (final Class<?> interfac : k.getInterfaces()) {
