@@ -66,6 +66,8 @@ public abstract class ControllerBase implements Controller,
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
 	private final ObjectMapper objectMapper = new ObjectMapper();
+	private static final Logger logger = LoggerFactory
+			.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
 			.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
@@ -353,7 +355,7 @@ public abstract class ControllerBase implements Controller,
 				linearIsa.addFirst(klass);
 				klass = klass.getSuperclass();
 			}
-			
+
 			for (final Class<?> k : linearIsa) {
 				// scan annotations in interfaces.
 				for (final Class<?> interfac : k.getInterfaces()) {
@@ -434,9 +436,16 @@ public abstract class ControllerBase implements Controller,
 		final List<String> violationMessages = new ArrayList<>();
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
-			final Object value = this.getParameterValue(parameter);
-			this.validateParameter(parameter, value, violationMessages);
-			params[i] = value;
+			final MaybeParam value = this.getParameterValue(parameter);
+			if (value.isPresent()) {
+				this.validateParameter(parameter, value.get(),
+						violationMessages);
+				params[i] = value.get();
+			} else {
+				violationMessages.add(String.format(
+						"Missing mandatory parameter: %s",
+						value.getName()));
+			}
 		}
 		if (!violationMessages.isEmpty()) {
 			return this.errorValidationFailed(violationMessages);
@@ -448,6 +457,8 @@ public abstract class ControllerBase implements Controller,
 		} catch (IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			// It caused by programming error.
+			logger.error("{}: {}: {}, {}", e, this.request.getPathInfo(),
+					controller, params);
 			throw new RuntimeException(e);
 		}
 		if (res instanceof WebResponse) {
@@ -495,10 +506,47 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
-	private Object getParameterValue(final Parameter parameter) {
+	private static class MaybeParam {
+		@Override
+		public String toString() {
+			return "MaybeParam [o=" + this.o + ", name=" + this.name + "]";
+		}
+
+		private final Optional<Object> o;
+
+		private final Optional<String> name;
+
+		private MaybeParam(Optional<Object> o, Optional<String> name) {
+			this.o = o;
+			this.name = name;
+		}
+
+		public static MaybeParam of(Object o) {
+			return new MaybeParam(Optional.of(o), Optional.empty());
+		}
+
+		public static MaybeParam empty(String name) {
+			return new MaybeParam(Optional.empty(), Optional.of(name));
+		}
+
+		public String getName() {
+			return this.name.get();
+		}
+
+		public boolean isPresent() {
+			return this.o.isPresent();
+		}
+
+		public Object get() {
+			return this.o.get();
+		}
+	}
+
+	private MaybeParam getParameterValue(final Parameter parameter)
+	{
 		final Optional<Object> objectOptional = this.GET_PARAMETER(parameter);
 		if (objectOptional.isPresent()) {
-			return objectOptional.get();
+			return MaybeParam.of(objectOptional.get());
 		}
 
 		final Annotation[] annotations = parameter.getAnnotations();
@@ -508,7 +556,7 @@ public abstract class ControllerBase implements Controller,
 				try {
 					final InputStream is = this.getRequest().getInputStream();
 					final Object value = this.objectMapper.readValue(is, type);
-					return value;
+					return MaybeParam.of(value);
 				} catch (final IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -536,23 +584,18 @@ public abstract class ControllerBase implements Controller,
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFirstFileItem(name);
-					if (maybeFileItem.isPresent()) {
-						return maybeFileItem.get();
-					} else {
-						throw new RuntimeException(String.format(
-								"Missing mandatory file: %s", name));
-					}
+					return MaybeParam.of(maybeFileItem.get());
 				} else if (type == WebRequestUpload[].class) {
 					final WebRequestUpload[] items = this.getRequest()
 							.getAllFileItems(name)
 							.toArray(new WebRequestUpload[0]);
-					return items;
+					return MaybeParam.of(items);
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFirstFileItem(name);
-					return maybeFileItem;
+					return MaybeParam.of(maybeFileItem);
 				} else {
 					throw new RuntimeException(
 							String.format(
@@ -562,77 +605,75 @@ public abstract class ControllerBase implements Controller,
 			}
 		}
 
+		// Programming error. You may forget to specify the annotation.
 		throw new RuntimeException(String.format(
 				"There is no way to create parameter: %s, %s, %s",
 				this.getClass().getName(), this.getRequest().getPathInfo(),
 				parameter.getName()));
 	}
 
-	private Object getObjectFromParameterObject(final Annotation annotation,
+	private MaybeParam getObjectFromParameterObject(
+			final Annotation annotation,
 			final String name,
 			final Class<?> type,
 			final Parameters params) {
 		if (type.equals(String.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				throw new RuntimeException(String.format(
-						"Missing mandatory parameter '%s' by %s", name,
-						annotation.getClass().getName()));
+				return MaybeParam.empty(name);
 			}
-			return value.get();
+			return MaybeParam.of(value.get());
 		} else if (type.equals(int.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				throw new RuntimeException(String.format(
-						"Missing mandatory parameter '%s' by %s", name,
-						annotation.getClass().getName()));
+				return MaybeParam.empty(name);
 			}
-			return Integer.parseInt(value.get());
+			return MaybeParam.of(Integer.parseInt(value.get()));
 		} else if (type.equals(long.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				throw new RuntimeException(String.format(
-						"Missing mandatory parameter '%s' by %s", name,
-						annotation.getClass().getName()));
+				return MaybeParam.empty(name);
 			}
-			return Long.parseLong(value.get());
+			return MaybeParam.of(Long.parseLong(value.get()));
 		} else if (type.equals(double.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				throw new RuntimeException(String.format(
-						"Missing mandatory parameter '%s' by %s", name,
-						annotation.getClass().getName()));
+				return MaybeParam.empty(name);
 			}
-			return Double.parseDouble(value.get());
+			return MaybeParam.of(Double.parseDouble(value.get()));
 		} else if (type.equals(OptionalInt.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return OptionalInt.of(Integer.parseInt(value.get()));
+				return MaybeParam
+						.of(OptionalInt.of(Integer.parseInt(value.get())));
 			} else {
-				return OptionalInt.empty();
+				return MaybeParam.of(OptionalInt.empty());
 			}
 		} else if (type.equals(OptionalLong.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return OptionalLong.of(Long.parseLong(value.get()));
+				return MaybeParam
+						.of(OptionalLong.of(Long.parseLong(value.get())));
 			} else {
-				return OptionalLong.empty();
+				return MaybeParam.of(OptionalLong.empty());
 			}
 		} else if (type.equals(OptionalDouble.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return OptionalDouble.of(Double.parseDouble(value.get()));
+				return MaybeParam.of(OptionalDouble.of(Double
+						.parseDouble(value
+						.get())));
 			} else {
-				return OptionalDouble.empty();
+				return MaybeParam.of(OptionalDouble.empty());
 			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
 			// TODO: type parameter check
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return Optional.of(value.get());
+				return MaybeParam.of(Optional.of(value.get()));
 			} else {
-				return Optional.empty();
+				return MaybeParam.of(Optional.empty());
 			}
 		} else {
 			throw new RuntimeException(String.format(
