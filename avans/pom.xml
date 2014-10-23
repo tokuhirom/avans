@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>webscrew</artifactId>
-			<version>0.5.0</version>
+			<version>0.6.2</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
