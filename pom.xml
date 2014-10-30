@@ -4,6 +4,7 @@
     <groupId>me.geso</groupId>
     <artifactId>avans-project</artifactId>
     <packaging>pom</packaging>
+		<description>parent project for avans</description>
 		<url>http://github.com/tokuhirom/avans</url>
 
     <version>0.34.3-SNAPSHOT</version>
