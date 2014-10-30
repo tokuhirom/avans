@@ -2,7 +2,7 @@
 set -e
 set -x
 
-mvn test
+mvn install -DskipTests=true -Dgpg.skip=true
 
 cd avans-setup
 gem install bundler
