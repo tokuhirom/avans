@@ -20,17 +20,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>tokuhirom-snapshot</id>
-			<url>https://tokuhirom.github.io/maven/snapshot/</url>
-		</repository>
-		<repository>
-			<id>tokuhirom-release</id>
-			<url>https://tokuhirom.github.io/maven/releases/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>me.geso</groupId>
@@ -56,7 +45,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>mech</artifactId>
-			<version>0.11.0</version>
+			<version>0.11.8</version>
 			<scope>test</scope>
 		</dependency>
 

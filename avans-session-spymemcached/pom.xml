@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>mech</artifactId>
-			<version>0.11.0</version>
+			<version>0.11.8</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

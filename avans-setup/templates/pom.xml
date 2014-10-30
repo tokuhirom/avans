@@ -14,13 +14,6 @@
     <avans.version><%= AVANS_VERSION %></avans.version>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>tokuhirom</id>
-      <url>https://tokuhirom.github.io/maven/releases/</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -31,7 +24,7 @@
     <dependency>
       <groupId>me.geso</groupId>
       <artifactId>mech</artifactId>
-      <version>0.11.0</version>
+      <version>0.11.8</version>
 			<scope>test</scope>
     </dependency>
 
