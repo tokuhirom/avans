@@ -17,8 +17,6 @@
         <module>avans-freemarker</module>
         <module>avans-jetty</module>
         <module>avans-session-spymemcached</module>
-				<module>examples/HelloWorld</module>
-				<module>examples/kitchen</module>
     </modules>
 
     <scm>
