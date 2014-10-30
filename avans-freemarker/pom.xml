@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>me.geso</groupId>
 		<artifactId>avans-project</artifactId>
-		<version>0.34.3-SNAPSHOT</version>
+		<version>0.34.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -16,7 +16,7 @@
       <url>https://github.com/tokuhirom/avans/</url>
       <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
       <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-      <tag>avans-project-0.27.2</tag>
+      <tag>avans-project-0.34.3</tag>
   </scm>
 
 	<properties>
