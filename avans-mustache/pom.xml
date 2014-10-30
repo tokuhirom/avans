@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<parent>
 		<groupId>me.geso</groupId>
 		<artifactId>avans-project</artifactId>
-		<version>0.34.2-SNAPSHOT</version>
+		<version>0.34.2</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -22,7 +21,7 @@
 		<url>https://github.com/tokuhirom/avans/</url>
 		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
 		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-		<tag>avans-project-0.27.2</tag>
+		<tag>avans-project-0.34.2</tag>
 	</scm>
 
 	<dependencies>
@@ -54,6 +53,12 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.7</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.14.4</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
