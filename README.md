@@ -27,6 +27,11 @@ That's all.
  * testmech - testing framework for web applications
  * tinyorm - Tiny O/R Mapper library
 
+### INSTALLATION
+
+avans was uploaded on maven central.
+Please look maven central site: http://search.maven.org/#search%7Cga%7C1%7Cavans
+
 ## FAQ
 
 ### Is there a HTML::FillInForm support?
