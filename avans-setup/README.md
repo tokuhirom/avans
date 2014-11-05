@@ -1,14 +1,5 @@
-# foo
+# avans-setup
 
-## debug run
+This is a skelton generator for avans project.
 
-    mvn exec:java -Dexec.mainClass=com.example.foo.Main
-
-## make jar
-
-    mvn package
-
-## run program
-
-    java -jar target/foo-0.0.1-SNAPSHOT.jar
-
+You can create new skelton for writing web application using avans framework.

@@ -1,14 +1,10 @@
 # <%= @project %>
 
-## debug run
+## Start the server
 
-    mvn exec:java -Dexec.mainClass=<%= @package %>.Main
+    mvn tomcat7:run
 
-## make jar
+## Creating war file
 
     mvn package
-
-## run program
-
-    java -jar target/<%= @project %>-0.0.1-SNAPSHOT.jar
 
