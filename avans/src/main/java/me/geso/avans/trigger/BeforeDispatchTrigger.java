@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * <code>public class MyController extends ControllerBase {
- *   @BeforeDispatchTrigger
+ *   &#064;BeforeDispatchTrigger
  *   public Optional&gt;WebResponse&lt; beforeDispatch {
  *     return Optional.empty();
  *   }
