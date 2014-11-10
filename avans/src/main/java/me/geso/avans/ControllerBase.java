@@ -422,6 +422,10 @@ public abstract class ControllerBase implements Controller,
 				@SuppressWarnings("unchecked")
 				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
 						.invoke(this);
+				if (webResponse == null) {
+					throw new NullPointerException(
+							"@BeforeDispatchTrigger shouldn't returned null. It should return `Optional<WebResponse>`.");
+				}
 				if (webResponse.isPresent()) {
 					return webResponse.get();
 				}
