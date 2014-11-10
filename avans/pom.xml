@@ -94,6 +94,18 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>me.geso</groupId>
+			<artifactId>mech2</artifactId>
+			<version>0.2.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.geso</groupId>
+			<artifactId>servlettester-jetty</artifactId>
+			<version>0.0.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.6</version>
