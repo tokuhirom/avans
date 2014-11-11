@@ -121,6 +121,27 @@ You can rewrite HTML in hook point. It supported by avans-mustache and avans-fre
 		}
 	}
 
+### @ResponseConverter
+
+You can convert return value from controller method at this hook point.
+
+	@Data
+	public static class MyValue {
+		private final int foo = 3;
+	}
+
+	public static class MyController extends ControllerBase {
+		@ResponseConverter(MyValue.class)
+		public Optional<WebResponse> responseFilter(MyValue o) {
+			return Optional.of(this.renderJSON(o));
+		}
+
+		@GET("/")
+		public MyValue call() {
+			return new MyValue();
+		}
+	}
+
 ## FAQ
 
 ### Is there a HTML::FillInForm support?

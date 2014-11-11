@@ -25,7 +25,7 @@ public class ControllerBaseTest {
 	@Test
 	public void test() {
 		try (final MyController controller = new MyController()) {
-			final ControllerBase.Filters filters = controller.getFilters();
+			final Filters filters = controller.getFilters();
 			assertThat(filters.getResponseFilters().size(), is(1));
 		}
 	}
@@ -49,7 +49,7 @@ public class ControllerBaseTest {
 	public void test2() {
 		// filter scanner should not add same filter twice.
 		try (final Controller2 controller = new Controller2()) {
-			final ControllerBase.Filters filters = controller.getFilters();
+			final Filters filters = controller.getFilters();
 			filters.getResponseFilters().forEach(it -> System.out.println(it));
 			assertThat(filters.getResponseFilters().size(), is(1));
 		}
@@ -92,7 +92,7 @@ public class ControllerBaseTest {
 	public void test3() throws Exception {
 		// filter scanner should not add same filter twice.
 		try (final ControllerY controller = new ControllerY()) {
-			final ControllerBase.Filters filters = controller.getFilters();
+			final Filters filters = controller.getFilters();
 			filters.getResponseFilters().forEach(it -> System.out.println(it));
 			final String methods = filters.getResponseFilters().stream()
 					.map(it -> it.getName()).collect(Collectors.joining(","));

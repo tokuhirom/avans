@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +18,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -34,9 +31,7 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.jackson.JacksonJsonView;
-import me.geso.avans.trigger.BeforeDispatchTrigger;
-import me.geso.avans.trigger.HTMLFilter;
-import me.geso.avans.trigger.ResponseFilter;
+import me.geso.avans.trigger.ResponseConverter;
 import me.geso.tinyvalidator.ConstraintViolation;
 import me.geso.tinyvalidator.Validator;
 import me.geso.webscrew.Parameters;
@@ -323,92 +318,9 @@ public abstract class ControllerBase implements Controller,
 						});
 	}
 
-	static class FilterScanner {
-		final List<Method> responseFilters = new ArrayList<>();
-		final List<Method> htmlFilters = new ArrayList<>();
-		final List<Method> beforeDispatchTriggers = new ArrayList<>();
-		final Set<Method> seen = new HashSet<>();
-
-		void scanMethod(Method method) {
-			if (this.seen.contains(method)) {
-				return;
-			}
-
-			if (method.getAnnotation(BeforeDispatchTrigger.class) != null) {
-				this.beforeDispatchTriggers.add(method);
-			}
-			if (method.getAnnotation(HTMLFilter.class) != null) {
-				this.htmlFilters.add(method);
-			}
-			if (method.getAnnotation(ResponseFilter.class) != null) {
-				this.responseFilters.add(method);
-			}
-
-			this.seen.add(method);
-		}
-
-		public void scan(Class<?> klass) {
-			// LinkedList じゃなくてもっとうまいやり方あると思う｡
-			final LinkedList<Class<?>> linearIsa = new LinkedList<>();
-			while (klass != null
-					&& klass != ControllerBase.class) {
-				linearIsa.addFirst(klass);
-				klass = klass.getSuperclass();
-			}
-
-			for (final Class<?> k : linearIsa) {
-				// scan annotations in interfaces.
-				for (final Class<?> interfac : k.getInterfaces()) {
-					for (final Method method : interfac.getMethods()) {
-						this.scanMethod(method);
-					}
-				}
-
-				// scan annotations in methods.
-				for (final Method method : k.getMethods()) {
-					this.scanMethod(method);
-				}
-			}
-		}
-
-		Filters build() {
-			return new Filters(
-					this.beforeDispatchTriggers,
-					this.htmlFilters,
-					this.responseFilters);
-		}
-	}
-
-	static class Filters {
-		private final List<Method> responseFilters;
-		private final List<Method> beforeDispatchTriggers;
-		private final List<Method> htmlFilters;
-
-		public Filters(
-				final List<Method> beforeDispatchTriggers,
-				final List<Method> htmlFilters,
-				final List<Method> responseFilters) {
-			this.responseFilters = responseFilters;
-			this.beforeDispatchTriggers = beforeDispatchTriggers;
-			this.htmlFilters = htmlFilters;
-		}
-
-		public List<Method> getResponseFilters() {
-			return this.responseFilters;
-		}
-
-		public List<Method> getBeforeDispatchTriggers() {
-			return this.beforeDispatchTriggers;
-		}
-
-		public List<Method> getHtmlFilters() {
-			return this.htmlFilters;
-		}
-
-	}
-
 	private WebResponse makeResponse(final Controller controller,
-			final Method method) {
+			final Method method) throws IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException {
 		{
 			final Optional<WebResponse> maybeResponse = this.BEFORE_DISPATCH();
 			if (maybeResponse.isPresent()) {
@@ -471,6 +383,31 @@ public abstract class ControllerBase implements Controller,
 			throw new RuntimeException(
 					"dispatch method must not return NULL");
 		} else {
+			for (final Method converter : this.getFilters()
+					.getResponseConverters()) {
+				final ResponseConverter annotation = converter
+						.getAnnotation(ResponseConverter.class);
+				if (res.getClass().isAssignableFrom(annotation.value())) {
+					// Signature is : Optional<WebResponse> r(T o);
+					final Object v = converter.invoke(this, res);
+					if (v == null) {
+						throw new NullPointerException(
+								"@ResponseConverter must not return NULL");
+					} else if (v instanceof Optional) {
+						final Optional<?> ov = (Optional<?>) v;
+						if (ov.isPresent()) {
+							final WebResponse response = (WebResponse) ov.get();
+							return response;
+						} else {
+							// Call next response converter.
+							continue;
+						}
+					} else {
+						throw new RuntimeException(
+								"@ResponseConverter must return Optional<WebResponse>");
+					}
+				}
+			}
 			return this.convertResponse(res);
 		}
 	}
@@ -666,7 +603,7 @@ public abstract class ControllerBase implements Controller,
 			if (value.isPresent()) {
 				return MaybeParam.of(OptionalDouble.of(Double
 						.parseDouble(value
-						.get())));
+								.get())));
 			} else {
 				return MaybeParam.of(OptionalDouble.empty());
 			}
@@ -696,7 +633,7 @@ public abstract class ControllerBase implements Controller,
 			return this.renderJSON(200, res);
 		} else {
 			throw new RuntimeException(String.format(
-					"Unknown return value from action: %s(%s)", Object.class,
+					"Unknown return value from action: %s(%s)", res.getClass(),
 					this.getRequest().getPathInfo()));
 		}
 	}
