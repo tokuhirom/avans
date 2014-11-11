@@ -105,6 +105,22 @@ You can modify every response by this hook point.
       }
     }
 
+### @HTMLFilter
+
+You can rewrite HTML in hook point. It supported by avans-mustache and avans-freemarker.
+
+	public static class MyController extends ControllerBase {
+		@HTMLFilter
+		public String htmlFilter(String src) {
+			return src.toUpperCase();
+		}
+
+		@GET("/")
+		public WebResponse foo() {
+			return this.renderText(this.filterHTML("Hige"));
+		}
+	}
+
 ## FAQ
 
 ### Is there a HTML::FillInForm support?
