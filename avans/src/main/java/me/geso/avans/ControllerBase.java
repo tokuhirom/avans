@@ -24,6 +24,9 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lombok.NonNull;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
@@ -44,9 +47,6 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -60,13 +60,17 @@ public abstract class ControllerBase implements Controller,
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper;
 	private static final Logger logger = LoggerFactory
 			.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
 			.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
 			.getLogger("avans.exception.StackTrace");
+
+	public ControllerBase() {
+		this.objectMapper = new ObjectMapper();
+	}
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
