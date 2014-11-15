@@ -9,6 +9,7 @@ import java.util.Set;
 
 import me.geso.avans.trigger.BeforeDispatchTrigger;
 import me.geso.avans.trigger.HTMLFilter;
+import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
 import me.geso.avans.trigger.ResponseFilter;
 
@@ -17,6 +18,7 @@ class FilterScanner {
 	final List<Method> htmlFilters = new ArrayList<>();
 	final List<Method> beforeDispatchTriggers = new ArrayList<>();
 	final List<Method> responseConverters = new ArrayList<>();
+	final List<Method> paramProcessors = new ArrayList<>();
 	final Set<Method> seen = new HashSet<>();
 
 	void scanMethod(Method method) {
@@ -35,6 +37,9 @@ class FilterScanner {
 		}
 		if (method.getAnnotation(ResponseConverter.class) != null) {
 			this.responseConverters.add(method);
+		}
+		if (method.getAnnotation(ParamProcessor.class) != null) {
+			this.paramProcessors.add(method);
 		}
 
 		this.seen.add(method);
@@ -69,6 +74,7 @@ class FilterScanner {
 				this.beforeDispatchTriggers,
 				this.htmlFilters,
 				this.responseFilters,
-				this.responseConverters);
+				this.responseConverters,
+				this.paramProcessors);
 	}
 }

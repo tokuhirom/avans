@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <parent>
-    <groupId>me.geso</groupId>
-    <artifactId>avans-project</artifactId>
-    <version>0.34.4-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+	<parent>
+		<groupId>me.geso</groupId>
+		<artifactId>avans-project</artifactId>
+		<version>0.34.4-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>avans</artifactId>
@@ -17,12 +18,12 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
-    <scm>
-      <url>https://github.com/tokuhirom/avans/</url>
-      <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
-      <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-      <tag>avans-project-0.27.2</tag>
-  </scm>
+	<scm>
+		<url>https://github.com/tokuhirom/avans/</url>
+		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
+		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
+		<tag>avans-project-0.27.2</tag>
+	</scm>
 
 	<distributionManagement>
 		<repository>
@@ -135,6 +136,10 @@
 					<source>1.8</source>
 					<target>1.8</target>
 					<encoding>UTF-8</encoding>
+					<compilerArguments>
+						<parameters />
+						<Werror />
+					</compilerArguments>
 				</configuration>
 			</plugin>
 			<plugin>

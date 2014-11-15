@@ -142,6 +142,31 @@ You can convert return value from controller method at this hook point.
 		}
 	}
 
+## @ParamProcessor
+
+You can implement your own controller parameter converter.
+
+	public static class MyController extends ControllerBase {
+		@ParamProcessor(targetClass = String.class)
+		public ParameterProcessorResult paramUpperQ(Parameter parameter) {
+			final Optional<String> q = this.getRequest().getQueryParams()
+					.getFirst("q");
+			if (q.isPresent()) {
+				return ParameterProcessorResult.fromData(q.get().toUpperCase());
+			} else {
+				final WebResponse response = this.renderError(400, "Missing Q");
+				return ParameterProcessorResult.fromWebResponse(response);
+			}
+		}
+
+		@GET("/")
+		public WebResponse index(String q) {
+			return this.renderText(q);
+		}
+	}
+
+Concrete usecase: Inject member object deflated from `X-MY-TOKEN` header.
+
 ## FAQ
 
 ### Is there a HTML::FillInForm support?

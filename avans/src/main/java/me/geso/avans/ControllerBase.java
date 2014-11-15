@@ -24,9 +24,6 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import lombok.NonNull;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
@@ -47,6 +44,9 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -60,17 +60,13 @@ public abstract class ControllerBase implements Controller,
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
-	private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	private static final Logger logger = LoggerFactory
 			.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
 			.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
 			.getLogger("avans.exception.StackTrace");
-
-	public ControllerBase() {
-		this.objectMapper = new ObjectMapper();
-	}
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
@@ -97,12 +93,12 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
+	// DEPRECATED.
 	protected void BEFORE_INIT() {
-		// I am hook point.
 	}
 
+	// DEPRECATED.
 	protected void AFTER_INIT() {
-		// I am hook point.
 	}
 
 	/**
@@ -356,15 +352,18 @@ public abstract class ControllerBase implements Controller,
 		final List<String> violationMessages = new ArrayList<>();
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
-			final MaybeParam value = this.getParameterValue(parameter);
-			if (value.isPresent()) {
-				this.validateParameter(parameter, value.get(),
+			final ParameterProcessorResult value = this
+					.getParameterValue(parameter);
+			if (value.hasResponse()) {
+				return value.getResponse();
+			} else if (value.hasData()) {
+				this.validateParameter(parameter, value.getData(),
 						violationMessages);
-				params[i] = value.get();
+				params[i] = value.getData();
 			} else {
 				violationMessages.add(String.format(
 						"Missing mandatory parameter: %s",
-						value.getName()));
+						value.getMissingParameter()));
 			}
 		}
 		if (!violationMessages.isEmpty()) {
@@ -451,47 +450,31 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
-	private static class MaybeParam {
-		@Override
-		public String toString() {
-			return "MaybeParam [o=" + this.o + ", name=" + this.name + "]";
-		}
-
-		private final Optional<Object> o;
-
-		private final Optional<String> name;
-
-		private MaybeParam(Optional<Object> o, Optional<String> name) {
-			this.o = o;
-			this.name = name;
-		}
-
-		public static MaybeParam of(Object o) {
-			return new MaybeParam(Optional.of(o), Optional.empty());
-		}
-
-		public static MaybeParam empty(String name) {
-			return new MaybeParam(Optional.empty(), Optional.of(name));
-		}
-
-		public String getName() {
-			return this.name.get();
-		}
-
-		public boolean isPresent() {
-			return this.o.isPresent();
-		}
-
-		public Object get() {
-			return this.o.get();
-		}
-	}
-
-	private MaybeParam getParameterValue(final Parameter parameter)
+	private ParameterProcessorResult getParameterValue(
+			final Parameter parameter)
+			throws IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException
 	{
 		final Optional<Object> objectOptional = this.GET_PARAMETER(parameter);
 		if (objectOptional.isPresent()) {
-			return MaybeParam.of(objectOptional.get());
+			return ParameterProcessorResult.fromData(objectOptional.get());
+		}
+
+		// public ParamProcessor.Data<String> paramUpperQ(Parameter parameter);
+		for (final Method pp : this.getFilters().getParamProcessors()) {
+			final Object result = pp.invoke(this, parameter);
+			if (result == null) {
+				throw new NullPointerException("@ParamProcessor returns null: "
+						+ pp);
+			} else if (result instanceof ParameterProcessorResult) {
+				if (((ParameterProcessorResult) result).hasData()
+						|| ((ParameterProcessorResult) result).hasResponse()) {
+					return (ParameterProcessorResult) result;
+				}
+			} else {
+				throw new NullPointerException("@ParamProcessor returns null: "
+						+ pp);
+			}
 		}
 
 		final Annotation[] annotations = parameter.getAnnotations();
@@ -501,7 +484,7 @@ public abstract class ControllerBase implements Controller,
 				try {
 					final InputStream is = this.getRequest().getInputStream();
 					final Object value = this.objectMapper.readValue(is, type);
-					return MaybeParam.of(value);
+					return ParameterProcessorResult.fromData(value);
 				} catch (final IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -529,18 +512,19 @@ public abstract class ControllerBase implements Controller,
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFirstFileItem(name);
-					return MaybeParam.of(maybeFileItem.get());
+					return ParameterProcessorResult.fromData(maybeFileItem
+							.get());
 				} else if (type == WebRequestUpload[].class) {
 					final WebRequestUpload[] items = this.getRequest()
 							.getAllFileItems(name)
 							.toArray(new WebRequestUpload[0]);
-					return MaybeParam.of(items);
+					return ParameterProcessorResult.fromData(items);
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFirstFileItem(name);
-					return MaybeParam.of(maybeFileItem);
+					return ParameterProcessorResult.fromData(maybeFileItem);
 				} else {
 					throw new RuntimeException(
 							String.format(
@@ -557,7 +541,7 @@ public abstract class ControllerBase implements Controller,
 				parameter.getName()));
 	}
 
-	private MaybeParam getObjectFromParameterObject(
+	private ParameterProcessorResult getObjectFromParameterObject(
 			final Annotation annotation,
 			final String name,
 			final Class<?> type,
@@ -565,67 +549,75 @@ public abstract class ControllerBase implements Controller,
 		if (type.equals(String.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(value.get());
+			return ParameterProcessorResult.fromData(value.get());
 		} else if (type.equals(int.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(Integer.parseInt(value.get()));
+			return ParameterProcessorResult.fromData(Integer.parseInt(value
+					.get()));
 		} else if (type.equals(long.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(Long.parseLong(value.get()));
+			return ParameterProcessorResult
+					.fromData(Long.parseLong(value.get()));
 		} else if (type.equals(double.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(Double.parseDouble(value.get()));
+			return ParameterProcessorResult.fromData(Double.parseDouble(value
+					.get()));
 		} else if (type.equals(OptionalInt.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam
-						.of(OptionalInt.of(Integer.parseInt(value.get())));
+				return ParameterProcessorResult.fromData(OptionalInt.of(Integer
+						.parseInt(value.get())));
 			} else {
-				return MaybeParam.of(OptionalInt.empty());
+				return ParameterProcessorResult.fromData(OptionalInt.empty());
 			}
 		} else if (type.equals(OptionalLong.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam
-						.of(OptionalLong.of(Long.parseLong(value.get())));
+				return ParameterProcessorResult.fromData(OptionalLong.of(Long
+						.parseLong(value.get())));
 			} else {
-				return MaybeParam.of(OptionalLong.empty());
+				return ParameterProcessorResult.fromData(OptionalLong.empty());
 			}
 		} else if (type.equals(OptionalDouble.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam.of(OptionalDouble.of(Double
-						.parseDouble(value
-								.get())));
+				return ParameterProcessorResult.fromData(OptionalDouble
+						.of(Double
+								.parseDouble(value
+										.get())));
 			} else {
-				return MaybeParam.of(OptionalDouble.empty());
+				return ParameterProcessorResult
+						.fromData(OptionalDouble.empty());
 			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
 			// TODO: type parameter check
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam.of(Optional.of(value.get()));
+				return ParameterProcessorResult.fromData(Optional.of(value
+						.get()));
 			} else {
-				return MaybeParam.of(Optional.empty());
+				return ParameterProcessorResult.fromData(Optional.empty());
 			}
 		} else {
+			// Programming error
 			throw new RuntimeException(String.format(
 					"Unknown parameter type '%s' for '%s'", type, name));
 		}
 	}
 
+	// DEPRECATED.
 	protected Optional<Object> GET_PARAMETER(final Parameter parameter) {
 		return Optional.empty();
 	}

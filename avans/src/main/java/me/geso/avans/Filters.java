@@ -8,16 +8,19 @@ class Filters {
 	private final List<Method> beforeDispatchTriggers;
 	private final List<Method> htmlFilters;
 	private final List<Method> responseConverters;
+	private final List<Method> paramProcessors;
 
-	public Filters(
+	Filters(
 			final List<Method> beforeDispatchTriggers,
 			final List<Method> htmlFilters,
 			final List<Method> responseFilters,
-			final List<Method> responseConverters) {
+			final List<Method> responseConverters,
+			final List<Method> paramProcessors) {
 		this.responseFilters = responseFilters;
 		this.beforeDispatchTriggers = beforeDispatchTriggers;
 		this.htmlFilters = htmlFilters;
 		this.responseConverters = responseConverters;
+		this.paramProcessors = paramProcessors;
 	}
 
 	public List<Method> getResponseFilters() {
@@ -34,6 +37,10 @@ class Filters {
 
 	public List<Method> getResponseConverters() {
 		return this.responseConverters;
+	}
+
+	public List<Method> getParamProcessors() {
+		return this.paramProcessors;
 	}
 
 }
