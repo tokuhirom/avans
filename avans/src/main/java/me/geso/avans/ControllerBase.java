@@ -314,7 +314,7 @@ public abstract class ControllerBase implements Controller,
 			}
 		}
 		if (!violationMessages.isEmpty()) {
-			return this.errorValidationFailed(violationMessages);
+			return this.renderValidationFailedResponse(violationMessages);
 		}
 
 		Object res;
@@ -364,7 +364,7 @@ public abstract class ControllerBase implements Controller,
 		}
 	}
 
-	private WebResponse errorValidationFailed(
+	private WebResponse renderValidationFailedResponse(
 			final List<String> violationMessages) {
 		return this.renderJSON(new BasicAPIResponse(403, violationMessages));
 	}
@@ -411,7 +411,8 @@ public abstract class ControllerBase implements Controller,
 
 		// public ParamProcessorResult paramUpperQ(Parameter parameter);
 		for (final Method pp : this.getFilters().getParamProcessors()) {
-			final ParamProcessor paramProcessor = pp.getAnnotation(ParamProcessor.class);
+			final ParamProcessor paramProcessor = pp
+					.getAnnotation(ParamProcessor.class);
 			if (parameter.getType().isAssignableFrom(
 					paramProcessor.targetClass())) {
 				final Object result = pp.invoke(this, parameter);
