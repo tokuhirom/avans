@@ -1,6 +1,6 @@
 package me.geso.avans.annotationbased;
 
-import me.geso.avans.APIResponse;
+import me.geso.avans.AvansWebApplicationTest.StringAPIResponse;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
@@ -11,7 +11,7 @@ public class MyController extends ControllerBase {
 
 	@GET("/")
 	public WebResponse root() {
-		final APIResponse<String> res = new APIResponse<>("hoge");
+		final StringAPIResponse res = new StringAPIResponse("hoge");
 		return this.renderJSON(res);
 	}
 

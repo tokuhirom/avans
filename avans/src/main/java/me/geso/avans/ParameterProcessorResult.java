@@ -37,7 +37,7 @@ public class ParameterProcessorResult {
 	/**
 	 * Use this method if you got a data from parameter.
 	 * 
-	 * @param data
+	 * @param name
 	 * @return
 	 */
 	public static ParameterProcessorResult missingParameter(

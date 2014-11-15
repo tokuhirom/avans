@@ -53,7 +53,7 @@ public class ParamProcessorTest {
 							assertEquals(400, res.getResponse().getStatusLine()
 									.getStatusCode());
 							assertEquals(
-									"{\"code\":400,\"messages\":[\"Missing Q\"],\"data\":null}",
+									"{\"code\":400,\"messages\":[\"Missing Q\"]}",
 									res.getResponseBodyAsString());
 						});
 	}

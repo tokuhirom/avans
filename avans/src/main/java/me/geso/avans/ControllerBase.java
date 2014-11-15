@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +72,6 @@ public abstract class ControllerBase implements Controller,
 	public void init(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse,
 			final Map<String, String> captured) {
-		this.BEFORE_INIT();
 		this.request = this.createWebReqeust(servletRequest);
 		this.servletResponse = servletResponse;
 		this.setDefaultCharacterEncoding();
@@ -83,7 +81,6 @@ public abstract class ControllerBase implements Controller,
 			pathParameters.put(entry.getKey(), entry.getValue());
 		}
 		this.pathParameters = pathParameters.build();
-		this.AFTER_INIT();
 	}
 
 	public WebRequest createWebReqeust(final HttpServletRequest servletRequest) {
@@ -92,24 +89,6 @@ public abstract class ControllerBase implements Controller,
 		} catch (final UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	// DEPRECATED.
-	protected void BEFORE_INIT() {
-	}
-
-	// DEPRECATED.
-	protected void AFTER_INIT() {
-	}
-
-	/**
-	 * Normally, you shouldn't use this directly... For shooting itself in the
-	 * foot.
-	 *
-	 * @return
-	 */
-	protected HttpServletResponse getServletResponse() {
-		return this.servletResponse;
 	}
 
 	private void setDefaultCharacterEncoding() {
@@ -203,32 +182,6 @@ public abstract class ControllerBase implements Controller,
 		return h;
 	}
 
-	/**
-	 * Get project base directory. TODO: better jar location detection
-	 * algorithm.
-	 *
-	 * @return
-	 */
-	@Override
-	public Path getBaseDirectory() {
-		return AvansUtil.getBaseDirectory(this.getClass());
-	}
-
-	/**
-	 * This is a hook point. You can override this.<br>
-	 * <br>
-	 * Use case:
-	 * <ul>
-	 * <li>Authentication before dispatching</li>
-	 * </ul>
-	 *
-	 * @return
-	 */
-	protected Optional<WebResponse> BEFORE_DISPATCH() {
-		// override me.
-		return Optional.empty();
-	}
-
 	@Override
 	public void invoke(final Method method,
 			final HttpServletRequest servletRequest,
@@ -306,10 +259,10 @@ public abstract class ControllerBase implements Controller,
 		return e;
 	}
 
-	final ConcurrentHashMap<Class<?>, Filters> responseFilters = new ConcurrentHashMap<>();
+	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 
 	Filters getFilters() {
-		return this.responseFilters
+		return this.filters
 				.computeIfAbsent(
 						this.getClass(),
 						(klass) -> {
@@ -322,13 +275,6 @@ public abstract class ControllerBase implements Controller,
 	private WebResponse makeResponse(final Controller controller,
 			final Method method) throws IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException {
-		{
-			final Optional<WebResponse> maybeResponse = this.BEFORE_DISPATCH();
-			if (maybeResponse.isPresent()) {
-				return maybeResponse.get();
-			}
-		}
-
 		for (final Method filter : this.getFilters()
 				.getBeforeDispatchTriggers()) {
 			try {
@@ -412,13 +358,15 @@ public abstract class ControllerBase implements Controller,
 					}
 				}
 			}
-			return this.convertResponse(res);
+			throw new RuntimeException(String.format(
+					"Unknown return value from action: %s(%s)", res.getClass(),
+					this.getRequest().getPathInfo()));
 		}
 	}
 
 	private WebResponse errorValidationFailed(
 			final List<String> violationMessages) {
-		return this.renderJSON(new APIResponse<>(403, violationMessages, null));
+		return this.renderJSON(new BasicAPIResponse(403, violationMessages));
 	}
 
 	protected void validateParameter(final Parameter parameter,
@@ -628,18 +576,6 @@ public abstract class ControllerBase implements Controller,
 	// DEPRECATED.
 	protected Optional<Object> GET_PARAMETER(final Parameter parameter) {
 		return Optional.empty();
-	}
-
-	// You can hook this.
-	protected WebResponse convertResponse(final Object res) {
-		if (res instanceof APIResponse) {
-			// Rendering APIResponse for JSON by default.
-			return this.renderJSON(200, res);
-		} else {
-			throw new RuntimeException(String.format(
-					"Unknown return value from action: %s(%s)", res.getClass(),
-					this.getRequest().getPathInfo()));
-		}
 	}
 
 	@Override

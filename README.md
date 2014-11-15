@@ -30,20 +30,7 @@ I need the web application framework like Sledge(Popular web application framewo
 You can build web application based on servlet API.
 That's all.
 
-## Components
-
-### Core dependencies
-
- * mustache - very fast template engine.
- * jackson - really fast JSON serializer/deserializer
- * commons-fileupload - multipart/form-data processor
-
-### And recommended modules
-
- * testmech - testing framework for web applications
- * tinyorm - Tiny O/R Mapper library
-
-### INSTALLATION
+## INSTALLATION
 
 avans was uploaded on maven central.
 Please look maven central site: http://search.maven.org/#search%7Cga%7C1%7Cavans
@@ -172,6 +159,21 @@ Concrete usecase: Inject member object deflated from `X-MY-TOKEN` header.
 ### Is there a HTML::FillInForm support?
 
 No there isn't. You should do it with JavaScript.
+
+## Incompatible changes
+
+### 0.35.0
+
+ * Removed `ControllerBase#getBaseDirectory()`
+ * AvansUtil was gone.
+ * `me.geso.APIResponse` was gone.
+ * `me.geso.APIResponse` no longer converts `APIResponse` by default.
+   * You need to add your own response converter by `@ResponseConverter`
+ * Removed `ControllerBase#BEFORE_INIT` hook point.
+ * Removed `ControllerBase#AFTER_INIT` hook point.
+ * Removed `ControllerBase#getServletResponse` method.
+ * Removed `ControllerBase#BEFORE_DISPATCH` method.
+   * Use `@BeforeDispatchTrigger` method instead.
 
 ## LICENSE
 

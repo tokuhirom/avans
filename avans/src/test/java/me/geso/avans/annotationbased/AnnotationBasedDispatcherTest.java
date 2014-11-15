@@ -1,8 +1,6 @@
 package me.geso.avans.annotationbased;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -50,13 +48,6 @@ public class AnnotationBasedDispatcherTest {
 	}
 
 	public static class MyApplication extends ControllerBase {
-
-		@Override
-		public Path getBaseDirectory() {
-			return Paths.get(System.getProperty("user.dir"),
-					"src/test/resources/");
-		}
-
 	}
 
 	private MechJettyServlet mech;

@@ -1,7 +1,8 @@
 package com.example.kitchen.controller;
 
 import lombok.Data;
-import me.geso.avans.APIResponse;
+import lombok.EqualsAndHashCode;
+import me.geso.avans.BasicAPIResponse;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
@@ -25,9 +26,24 @@ public class RootController extends ControllerBase implements MustacheViewMixin 
 	}
 
 	@GET("/q/q/query")
-	public APIResponse<MyObject> qqquery(@QueryParam("hoge") String hoge,
-										 @BodyParam("foo") int foo) {
-		return new APIResponse<>(new MyObject("John"));
+	public MyObjectAPIResponse qqquery(@QueryParam("hoge") String hoge,
+			@BodyParam("foo") int foo) {
+		return new MyObjectAPIResponse(new MyObject("John"));
+	}
+
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class MyObjectAPIResponse extends BasicAPIResponse {
+		private MyObject data;
+
+		public MyObjectAPIResponse() {
+			super();
+		}
+
+		public MyObjectAPIResponse(MyObject data) {
+			super();
+			this.data = data;
+		}
 	}
 
 	@Data
@@ -37,9 +53,8 @@ public class RootController extends ControllerBase implements MustacheViewMixin 
 
 	@GET("/json")
 	public WebResponse json() {
-		return this.renderJSON(new APIResponse<>(new MyObject("John")));
+		return this.renderJSON(new MyObjectAPIResponse(new MyObject("John")));
 	}
-
 
 	@Data
 	public static class MyObject {
