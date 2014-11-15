@@ -31,6 +31,7 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.jackson.JacksonJsonView;
+import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
 import me.geso.tinyvalidator.ConstraintViolation;
 import me.geso.tinyvalidator.Validator;
@@ -460,20 +461,27 @@ public abstract class ControllerBase implements Controller,
 			return ParameterProcessorResult.fromData(objectOptional.get());
 		}
 
-		// public ParamProcessor.Data<String> paramUpperQ(Parameter parameter);
+		// public ParamProcessorResult paramUpperQ(Parameter parameter);
 		for (final Method pp : this.getFilters().getParamProcessors()) {
-			final Object result = pp.invoke(this, parameter);
-			if (result == null) {
-				throw new NullPointerException("@ParamProcessor returns null: "
-						+ pp);
-			} else if (result instanceof ParameterProcessorResult) {
-				if (((ParameterProcessorResult) result).hasData()
-						|| ((ParameterProcessorResult) result).hasResponse()) {
-					return (ParameterProcessorResult) result;
+			final ParamProcessor paramProcessor = pp.getAnnotation(ParamProcessor.class);
+			if (parameter.getType().isAssignableFrom(
+					paramProcessor.targetClass())) {
+				final Object result = pp.invoke(this, parameter);
+				if (result == null) {
+					throw new NullPointerException(
+							"@ParamProcessor returns null: "
+									+ pp);
+				} else if (result instanceof ParameterProcessorResult) {
+					if (((ParameterProcessorResult) result).hasData()
+							|| ((ParameterProcessorResult) result)
+									.hasResponse()) {
+						return (ParameterProcessorResult) result;
+					}
+				} else {
+					throw new NullPointerException(
+							"@ParamProcessor returns null: "
+									+ pp);
 				}
-			} else {
-				throw new NullPointerException("@ParamProcessor returns null: "
-						+ pp);
 			}
 		}
 
