@@ -1,21 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <parent>
-    <groupId>me.geso</groupId>
-    <artifactId>avans-project</artifactId>
-    <version>0.34.4-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+	<parent>
+		<groupId>me.geso</groupId>
+		<artifactId>avans-project</artifactId>
+		<version>0.34.4-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>avans-session-spymemcached</artifactId>
-	<name>avans-session-spymemcached</name>
-	<description>spymemcached as session storage</description>
+	<artifactId>avans-session</artifactId>
+	<name>avans-session</name>
+	<description>session binding for avans web application framework</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
+
 	<scm>
 		<url>https://github.com/tokuhirom/avans/</url>
 		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
@@ -34,34 +36,13 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-      <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
-			<artifactId>avans-session</artifactId>
-      <version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.thimbleware.jmemcached</groupId>
-			<artifactId>jmemcached-core</artifactId>
-			<version>1.0.0</version>
+			<artifactId>mech</artifactId>
+			<version>0.11.8</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.spy</groupId>
-			<artifactId>spymemcached</artifactId>
-			<version>2.11.4</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-cbor</artifactId>
-			<version>2.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.14.4</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -70,10 +51,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>me.geso</groupId>
-			<artifactId>mech</artifactId>
-			<version>0.11.8</version>
-			<scope>test</scope>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.14.4</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

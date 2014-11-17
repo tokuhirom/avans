@@ -17,6 +17,7 @@
         <module>avans-freemarker</module>
         <module>avans-jetty</module>
         <module>avans-tinyvalidator</module>
+        <module>avans-session</module>
         <module>avans-session-spymemcached</module>
     </modules>
 

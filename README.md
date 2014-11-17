@@ -182,6 +182,7 @@ No there isn't. You should do it with JavaScript.
  * Added JsonParamReader interface and JacksonJsonParamReader.
    * It ignores unknown parameters by default.
    * It throws IOException
+ * avans-session package was splitted from core
 
 ## LICENSE
 
