@@ -284,25 +284,6 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testJsonParamValidationFailed() throws IOException {
-		// validation failed.
-		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
-		final Foo foo = new Foo();
-		foo.setName(null);
-		try (MechResponse res = this.mech.postJSON("/jsonParam", foo).execute()) {
-			Assert.assertEquals(200, res.getStatusCode());
-			Assert.assertEquals(res.getContentType().getMimeType(),
-					"application/json");
-			Assert.assertEquals(
-					res.getContentType().getCharset().displayName(),
-					"UTF-8");
-			Assert.assertEquals(
-					"{\"code\":403,\"messages\":[\"name may not be null.\"]}",
-					res.getContentString());
-		}
-	}
-
-	@Test
 	public void testPostMultipart() throws Exception {
 		try (MechResponse res = this.mech
 				.postMultipart("/postMultipart")

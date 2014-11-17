@@ -6,6 +6,15 @@ import java.util.Optional;
 import me.geso.webscrew.response.WebResponse;
 
 public interface ValidatorProvider {
-	public Optional<WebResponse> validateParameters(Method method,
-			Object[] params);
+	/**
+	 * Return WebResponse if there is violations.
+	 * 
+	 * @param method
+	 * @param params
+	 * @return
+	 */
+	public default Optional<WebResponse> validateParameters(Method method,
+			Object[] params) {
+		return Optional.empty();
+	}
 }

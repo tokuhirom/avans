@@ -174,6 +174,8 @@ No there isn't. You should do it with JavaScript.
  * Removed `ControllerBase#getServletResponse` method.
  * Removed `ControllerBase#BEFORE_DISPATCH` method.
    * Use `@BeforeDispatchTrigger` method instead.
+ * ControllerBase no longer execute tinyvalidator by default.
+   * You need to implement avans-tinyvalidator on your controller class
 
 ## LICENSE
 

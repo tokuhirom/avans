@@ -30,7 +30,6 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.jackson.JacksonJsonView;
-import me.geso.avans.tinyvalidator.TinyValidatorValidator;
 import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
 import me.geso.webscrew.Parameters;
@@ -55,7 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
-		TinyValidatorValidator, TextRendererProvider {
+		ValidatorProvider, TextRendererProvider {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
