@@ -369,11 +369,7 @@ public abstract class ControllerBase implements Controller,
 			throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException
 	{
-		final Optional<Object> objectOptional = this.GET_PARAMETER(parameter);
-		if (objectOptional.isPresent()) {
-			return ParameterProcessorResult.fromData(objectOptional.get());
-		}
-
+		// @ParamProcessor
 		// public ParamProcessorResult paramUpperQ(Parameter parameter);
 		for (final Method pp : this.getFilters().getParamProcessors()) {
 			final ParamProcessor paramProcessor = pp
@@ -537,11 +533,6 @@ public abstract class ControllerBase implements Controller,
 			throw new RuntimeException(String.format(
 					"Unknown parameter type '%s' for '%s'", type, name));
 		}
-	}
-
-	// DEPRECATED.
-	protected Optional<Object> GET_PARAMETER(final Parameter parameter) {
-		return Optional.empty();
 	}
 
 	@Override

@@ -169,6 +169,7 @@ No there isn't. You should do it with JavaScript.
  * `me.geso.APIResponse` was gone.
  * `me.geso.APIResponse` no longer converts `APIResponse` by default.
    * You need to add your own response converter by `@ResponseConverter`
+   * Or, you can use BasicAPIResponse instead.
  * Removed `ControllerBase#BEFORE_INIT` hook point.
  * Removed `ControllerBase#AFTER_INIT` hook point.
  * Removed `ControllerBase#getServletResponse` method.
@@ -176,6 +177,8 @@ No there isn't. You should do it with JavaScript.
    * Use `@BeforeDispatchTrigger` method instead.
  * ControllerBase no longer execute tinyvalidator by default.
    * You need to implement avans-tinyvalidator on your controller class
+ * Removed `ControllerBase#GET_PARAMETER` method.
+   * Use `@ParamProcessor` method instead.
 
 ## LICENSE
 
