@@ -30,10 +30,9 @@ import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.jackson.JacksonJsonView;
+import me.geso.avans.tinyvalidator.TinyValidatorValidator;
 import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
-import me.geso.tinyvalidator.ConstraintViolation;
-import me.geso.tinyvalidator.Validator;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.request.WebRequestUpload;
@@ -55,7 +54,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author tokuhirom
  */
 public abstract class ControllerBase implements Controller,
-		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer {
+		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
+		TinyValidatorValidator, TextRendererProvider {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
@@ -157,6 +157,7 @@ public abstract class ControllerBase implements Controller,
 	 * @param text
 	 * @return
 	 */
+	@Override
 	public WebResponse renderText(final String text) {
 		if (text == null) {
 			throw new IllegalArgumentException("text must not be null");
@@ -304,8 +305,6 @@ public abstract class ControllerBase implements Controller,
 			if (value.hasResponse()) {
 				return value.getResponse();
 			} else if (value.hasData()) {
-				this.validateParameter(parameter, value.getData(),
-						violationMessages);
 				params[i] = value.getData();
 			} else {
 				violationMessages.add(String.format(
@@ -313,8 +312,10 @@ public abstract class ControllerBase implements Controller,
 						value.getMissingParameter()));
 			}
 		}
-		if (!violationMessages.isEmpty()) {
-			return this.renderValidationFailedResponse(violationMessages);
+		final Optional<WebResponse> validationResult = this
+				.validateParameters(method, params);
+		if (validationResult.isPresent()) {
+			return validationResult.get();
 		}
 
 		Object res;
@@ -361,41 +362,6 @@ public abstract class ControllerBase implements Controller,
 			throw new RuntimeException(String.format(
 					"Unknown return value from action: %s(%s)", res.getClass(),
 					this.getRequest().getPathInfo()));
-		}
-	}
-
-	private WebResponse renderValidationFailedResponse(
-			final List<String> violationMessages) {
-		return this.renderJSON(new BasicAPIResponse(403, violationMessages));
-	}
-
-	protected void validateParameter(final Parameter parameter,
-			final Object value,
-			final List<String> violationMessages) {
-		final Validator validator = new Validator();
-		final Annotation[] annotations = parameter.getAnnotations();
-		for (final Annotation annotation : annotations) {
-			if (annotation instanceof JsonParam) {
-				final List<ConstraintViolation> validate = validator
-						.validate(value);
-				validate.stream().forEach(
-						violation -> {
-							final String message = violation.getName() + " "
-									+ violation.getMessage();
-							violationMessages.add(message);
-						}
-						);
-			} else {
-				final Optional<ConstraintViolation> constraintViolationOptional = validator
-						.validateByAnnotation(annotation, parameter.getName(),
-								value);
-				if (constraintViolationOptional.isPresent()) {
-					final ConstraintViolation constraintViolation = constraintViolationOptional
-							.get();
-					violationMessages.add(constraintViolation.getName() + " "
-							+ constraintViolation.getMessage());
-				}
-			}
 		}
 	}
 
