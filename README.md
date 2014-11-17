@@ -179,6 +179,9 @@ No there isn't. You should do it with JavaScript.
    * You need to implement avans-tinyvalidator on your controller class
  * Removed `ControllerBase#GET_PARAMETER` method.
    * Use `@ParamProcessor` method instead.
+ * Added JsonParamReader interface and JacksonJsonParamReader.
+   * It ignores unknown parameters by default.
+   * It throws IOException
 
 ## LICENSE
 

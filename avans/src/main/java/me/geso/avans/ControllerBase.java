@@ -29,6 +29,7 @@ import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.jackson.JacksonJsonParamReader;
 import me.geso.avans.jackson.JacksonJsonView;
 import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
@@ -45,8 +46,6 @@ import me.geso.webscrew.response.WebResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * You should create this object per HTTP request.
  *
@@ -54,12 +53,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
-		ValidatorProvider, TextRendererProvider {
+		ValidatorProvider, TextRendererProvider, JacksonJsonParamReader {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
-	private final ObjectMapper objectMapper = new ObjectMapper();
 	private static final Logger logger = LoggerFactory
 			.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
@@ -401,7 +399,7 @@ public abstract class ControllerBase implements Controller,
 			if (annotation instanceof JsonParam) {
 				try {
 					final InputStream is = this.getRequest().getInputStream();
-					final Object value = this.objectMapper.readValue(is, type);
+					final Object value = this.readJsonParam(is, type);
 					return ParameterProcessorResult.fromData(value);
 				} catch (final IOException e) {
 					throw new RuntimeException(e);
