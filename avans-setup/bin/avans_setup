@@ -4,7 +4,7 @@ require 'fileutils'
 require 'erb'
 require 'pathname'
 
-AVANS_VERSION = '0.34.3'
+AVANS_VERSION = '0.35.0'
 
 # Setup application class
 class AvansSetup
