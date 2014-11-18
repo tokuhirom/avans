@@ -23,6 +23,9 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lombok.NonNull;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
@@ -43,9 +46,6 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * You should create this object per HTTP request.
  *
@@ -59,11 +59,11 @@ public abstract class ControllerBase implements Controller,
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
 	private static final Logger logger = LoggerFactory
-			.getLogger(ControllerBase.class);
+		.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
-			.getLogger("avans.exception.RootCause");
+		.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
-			.getLogger("avans.exception.StackTrace");
+		.getLogger("avans.exception.StackTrace");
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
@@ -171,7 +171,7 @@ public abstract class ControllerBase implements Controller,
 		String h = html;
 		for (final Method filter : this.getFilters().getHtmlFilters()) {
 			try {
-				h = (String) filter.invoke(this, h);
+				h = (String)filter.invoke(this, h);
 			} catch (IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new RuntimeException(e);
@@ -212,34 +212,34 @@ public abstract class ControllerBase implements Controller,
 			if (stackTrace.length > 0) {
 				final StackTraceElement ste = stackTrace[0];
 				exceptionRootCauseLogger.error(
-						"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
-						this.getRequest().getMethod(),
-						this.getRequest().getPathInfo(),
-						this.getRequest().getUserAgent(),
-						this.getRequest().getRemoteAddr(),
-						root.getClass(),
-						//
-						root.getMessage(),
-						ste.getClassName(),
-						ste.getMethodName(),
-						ste.getFileName(),
-						ste.getLineNumber()
-						);
+					"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
+					this.getRequest().getMethod(),
+					this.getRequest().getPathInfo(),
+					this.getRequest().getUserAgent(),
+					this.getRequest().getRemoteAddr(),
+					root.getClass(),
+					//
+					root.getMessage(),
+					ste.getClassName(),
+					ste.getMethodName(),
+					ste.getFileName(),
+					ste.getLineNumber()
+					);
 			} else {
 				exceptionRootCauseLogger.error("{}, {}, {}, {}, {}: {}",
-						this.getRequest().getMethod(),
-						this.getRequest().getPathInfo(),
-						this.getRequest().getUserAgent(),
-						this.getRequest().getRemoteAddr(),
-						root.getClass(),
-						//
-						root.getMessage()
-						);
+					this.getRequest().getMethod(),
+					this.getRequest().getPathInfo(),
+					this.getRequest().getUserAgent(),
+					this.getRequest().getRemoteAddr(),
+					root.getClass(),
+					//
+					root.getMessage()
+					);
 			}
 		}
 		// Logging all messages in the fat log.
 		exceptionStackTraceLogger.error("{}, {}\n{}", e.getCause(),
-				e.getMessage(), e.getStackTrace());
+			e.getMessage(), e.getStackTrace());
 		e.printStackTrace();
 	}
 
@@ -251,7 +251,7 @@ public abstract class ControllerBase implements Controller,
 
 	private Throwable unwrapRuntimeException(Throwable e) {
 		while ((e instanceof RuntimeException || e instanceof InvocationTargetException)
-				&& e.getCause() != null) {
+			&& e.getCause() != null) {
 			e = e.getCause();
 		}
 		return e;
@@ -261,27 +261,27 @@ public abstract class ControllerBase implements Controller,
 
 	Filters getFilters() {
 		return this.filters
-				.computeIfAbsent(
-						this.getClass(),
-						(klass) -> {
-							final FilterScanner scanner = new FilterScanner();
-							scanner.scan(klass);
-							return scanner.build();
-						});
+			.computeIfAbsent(
+				this.getClass(),
+				(klass) -> {
+					final FilterScanner scanner = new FilterScanner();
+					scanner.scan(klass);
+					return scanner.build();
+				});
 	}
 
 	private WebResponse makeResponse(final Controller controller,
 			final Method method) throws IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException {
 		for (final Method filter : this.getFilters()
-				.getBeforeDispatchTriggers()) {
+			.getBeforeDispatchTriggers()) {
 			try {
 				@SuppressWarnings("unchecked")
-				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
-						.invoke(this);
+				final Optional<WebResponse> webResponse = (Optional<WebResponse>)filter
+					.invoke(this);
 				if (webResponse == null) {
 					throw new NullPointerException(
-							"@BeforeDispatchTrigger shouldn't returned null. It should return `Optional<WebResponse>`.");
+						"@BeforeDispatchTrigger shouldn't returned null. It should return `Optional<WebResponse>`.");
 				}
 				if (webResponse.isPresent()) {
 					return webResponse.get();
@@ -298,19 +298,19 @@ public abstract class ControllerBase implements Controller,
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
 			final ParameterProcessorResult value = this
-					.getParameterValue(parameter);
+				.getParameterValue(parameter);
 			if (value.hasResponse()) {
 				return value.getResponse();
 			} else if (value.hasData()) {
 				params[i] = value.getData();
 			} else {
 				violationMessages.add(String.format(
-						"Missing mandatory parameter: %s",
-						value.getMissingParameter()));
+					"Missing mandatory parameter: %s",
+					value.getMissingParameter()));
 			}
 		}
 		final Optional<WebResponse> validationResult = this
-				.validateParameters(method, params);
+			.validateParameters(method, params);
 		if (validationResult.isPresent()) {
 			return validationResult.get();
 		}
@@ -322,29 +322,29 @@ public abstract class ControllerBase implements Controller,
 				| InvocationTargetException e) {
 			// It caused by programming error.
 			logger.error("{}: {}: {}, {}", e, this.request.getPathInfo(),
-					controller, params);
+				controller, params);
 			throw new RuntimeException(e);
 		}
 		if (res instanceof WebResponse) {
-			return (WebResponse) res;
+			return (WebResponse)res;
 		} else if (res == null) {
 			throw new RuntimeException(
-					"dispatch method must not return NULL");
+				"dispatch method must not return NULL");
 		} else {
 			for (final Method converter : this.getFilters()
-					.getResponseConverters()) {
+				.getResponseConverters()) {
 				final ResponseConverter annotation = converter
-						.getAnnotation(ResponseConverter.class);
+					.getAnnotation(ResponseConverter.class);
 				if (res.getClass().isAssignableFrom(annotation.value())) {
 					// Signature is : Optional<WebResponse> r(T o);
 					final Object v = converter.invoke(this, res);
 					if (v == null) {
 						throw new NullPointerException(
-								"@ResponseConverter must not return NULL");
+							"@ResponseConverter must not return NULL");
 					} else if (v instanceof Optional) {
-						final Optional<?> ov = (Optional<?>) v;
+						final Optional<?> ov = (Optional<?>)v;
 						if (ov.isPresent()) {
-							final WebResponse response = (WebResponse) ov.get();
+							final WebResponse response = (WebResponse)ov.get();
 							return response;
 						} else {
 							// Call next response converter.
@@ -352,17 +352,17 @@ public abstract class ControllerBase implements Controller,
 						}
 					} else {
 						throw new RuntimeException(
-								"@ResponseConverter must return Optional<WebResponse>");
+							"@ResponseConverter must return Optional<WebResponse>");
 					}
 				}
 			}
 			throw new RuntimeException(String.format(
-					"Unknown return value from action: %s(%s)", res.getClass(),
-					this.getRequest().getPathInfo()));
+				"Unknown return value from action: %s(%s)", res.getClass(),
+				this.getRequest().getPathInfo()));
 		}
 	}
 
-	private ParameterProcessorResult getParameterValue(
+	private <T> ParameterProcessorResult getParameterValue(
 			final Parameter parameter)
 			throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException
@@ -371,24 +371,27 @@ public abstract class ControllerBase implements Controller,
 		// public ParamProcessorResult paramUpperQ(Parameter parameter);
 		for (final Method pp : this.getFilters().getParamProcessors()) {
 			final ParamProcessor paramProcessor = pp
-					.getAnnotation(ParamProcessor.class);
-			if (parameter.getType().isAssignableFrom(
-					paramProcessor.targetClass())) {
-				final Object result = pp.invoke(this, parameter);
-				if (result == null) {
-					throw new NullPointerException(
+				.getAnnotation(ParamProcessor.class);
+
+			if (paramProcessor.targetClass().isAssignableFrom(parameter.getType())) {
+				if (paramProcessor.targetAnnotation() == ParamProcessor.class
+					|| parameter.getAnnotation(paramProcessor.targetAnnotation()) != null) {
+					final Object result = pp.invoke(this, parameter);
+					if (result == null) {
+						throw new NullPointerException(
 							"@ParamProcessor returns null: "
-									+ pp);
-				} else if (result instanceof ParameterProcessorResult) {
-					if (((ParameterProcessorResult) result).hasData()
-							|| ((ParameterProcessorResult) result)
-									.hasResponse()) {
-						return (ParameterProcessorResult) result;
+								+ pp);
+					} else if (result instanceof ParameterProcessorResult) {
+						if (((ParameterProcessorResult)result).hasData()
+							|| ((ParameterProcessorResult)result)
+								.hasResponse()) {
+							return (ParameterProcessorResult)result;
+						}
+					} else {
+						throw new NullPointerException(
+							"@ParamProcessor returns null: "
+								+ pp);
 					}
-				} else {
-					throw new NullPointerException(
-							"@ParamProcessor returns null: "
-									+ pp);
 				}
 			}
 		}
@@ -405,56 +408,56 @@ public abstract class ControllerBase implements Controller,
 					throw new RuntimeException(e);
 				}
 			} else if (annotation instanceof QueryParam) {
-				final String name = ((QueryParam) annotation).value();
+				final String name = ((QueryParam)annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
-						type,
-						this.getRequest()
-								.getQueryParams());
+					type,
+					this.getRequest()
+						.getQueryParams());
 			} else if (annotation instanceof BodyParam) {
-				final String name = ((BodyParam) annotation).value();
+				final String name = ((BodyParam)annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
-						type,
-						this.getRequest()
-								.getBodyParams());
+					type,
+					this.getRequest()
+						.getBodyParams());
 			} else if (annotation instanceof PathParam) {
-				final String name = ((PathParam) annotation).value();
+				final String name = ((PathParam)annotation).value();
 				return this.getObjectFromParameterObject(annotation, name,
-						type,
-						this.getPathParameters());
+					type,
+					this.getPathParameters());
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
-				final String name = ((UploadFile) annotation).value();
+				final String name = ((UploadFile)annotation).value();
 				if (type == WebRequestUpload.class) {
 					final Optional<WebRequestUpload> maybeFileItem = this
-							.getRequest()
-							.getFirstFileItem(name);
+						.getRequest()
+						.getFirstFileItem(name);
 					return ParameterProcessorResult.fromData(maybeFileItem
-							.get());
+						.get());
 				} else if (type == WebRequestUpload[].class) {
 					final WebRequestUpload[] items = this.getRequest()
-							.getAllFileItems(name)
-							.toArray(new WebRequestUpload[0]);
+						.getAllFileItems(name)
+						.toArray(new WebRequestUpload[0]);
 					return ParameterProcessorResult.fromData(items);
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
 					final Optional<WebRequestUpload> maybeFileItem = this
-							.getRequest()
-							.getFirstFileItem(name);
+						.getRequest()
+						.getFirstFileItem(name);
 					return ParameterProcessorResult.fromData(maybeFileItem);
 				} else {
 					throw new RuntimeException(
-							String.format(
-									"You shouldn't use @UploadFile annotation with %s. You must use FileItem or FileItem[]",
-									type));
+						String.format(
+							"You shouldn't use @UploadFile annotation with %s. You must use FileItem or FileItem[]",
+							type));
 				}
 			}
 		}
 
 		// Programming error. You may forget to specify the annotation.
 		throw new RuntimeException(String.format(
-				"There is no way to create parameter: %s, %s, %s",
-				this.getClass().getName(), this.getRequest().getPathInfo(),
-				parameter.getName()));
+			"There is no way to create parameter: %s, %s, %s",
+			this.getClass().getName(), this.getRequest().getPathInfo(),
+			parameter.getName()));
 	}
 
 	private ParameterProcessorResult getObjectFromParameterObject(
@@ -474,26 +477,26 @@ public abstract class ControllerBase implements Controller,
 				return ParameterProcessorResult.missingParameter(name);
 			}
 			return ParameterProcessorResult.fromData(Integer.parseInt(value
-					.get()));
+				.get()));
 		} else if (type.equals(long.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
 				return ParameterProcessorResult.missingParameter(name);
 			}
 			return ParameterProcessorResult
-					.fromData(Long.parseLong(value.get()));
+				.fromData(Long.parseLong(value.get()));
 		} else if (type.equals(double.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
 				return ParameterProcessorResult.missingParameter(name);
 			}
 			return ParameterProcessorResult.fromData(Double.parseDouble(value
-					.get()));
+				.get()));
 		} else if (type.equals(OptionalInt.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
 				return ParameterProcessorResult.fromData(OptionalInt.of(Integer
-						.parseInt(value.get())));
+					.parseInt(value.get())));
 			} else {
 				return ParameterProcessorResult.fromData(OptionalInt.empty());
 			}
@@ -501,7 +504,7 @@ public abstract class ControllerBase implements Controller,
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
 				return ParameterProcessorResult.fromData(OptionalLong.of(Long
-						.parseLong(value.get())));
+					.parseLong(value.get())));
 			} else {
 				return ParameterProcessorResult.fromData(OptionalLong.empty());
 			}
@@ -509,12 +512,12 @@ public abstract class ControllerBase implements Controller,
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
 				return ParameterProcessorResult.fromData(OptionalDouble
-						.of(Double
-								.parseDouble(value
-										.get())));
+					.of(Double
+						.parseDouble(value
+							.get())));
 			} else {
 				return ParameterProcessorResult
-						.fromData(OptionalDouble.empty());
+					.fromData(OptionalDouble.empty());
 			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
@@ -522,14 +525,14 @@ public abstract class ControllerBase implements Controller,
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
 				return ParameterProcessorResult.fromData(Optional.of(value
-						.get()));
+					.get()));
 			} else {
 				return ParameterProcessorResult.fromData(Optional.empty());
 			}
 		} else {
 			// Programming error
 			throw new RuntimeException(String.format(
-					"Unknown parameter type '%s' for '%s'", type, name));
+				"Unknown parameter type '%s' for '%s'", type, name));
 		}
 	}
 
@@ -544,7 +547,7 @@ public abstract class ControllerBase implements Controller,
 	@Override
 	public Optional<Object> getPluginStashValue(Class<?> pluginClass, String key) {
 		final Object object = this.pluginStash.get(this.generatePluginStashKey(
-				pluginClass, key));
+			pluginClass, key));
 		return Optional.ofNullable(object);
 	}
 
@@ -552,7 +555,7 @@ public abstract class ControllerBase implements Controller,
 	public void setPluginStashValue(Class<?> pluginClass, String key,
 			Object value) {
 		this.pluginStash.put(this.generatePluginStashKey(pluginClass, key),
-				value);
+			value);
 	}
 
 	@Override
@@ -560,8 +563,8 @@ public abstract class ControllerBase implements Controller,
 			String key,
 			Supplier<?> supplier) {
 		return this.pluginStash.computeIfAbsent(
-				this.generatePluginStashKey(pluginClass, key),
-				(fullKey) -> supplier.get());
+			this.generatePluginStashKey(pluginClass, key),
+			(fullKey) -> supplier.get());
 	}
 
 }

@@ -152,6 +152,22 @@ You can implement your own controller parameter converter.
 		}
 	}
 
+You can filter the injection target by annotation.
+
+	@Slf4j
+	public static class MyController extends ControllerBase {
+		@ParamProcessor(targetAnnotation = MyAnnotation.class)
+		public ParameterProcessorResult paramAnnotation(Parameter parameter) {
+			log.info("paramAnnotation");
+			return ParameterProcessorResult.fromData(3.14);
+		}
+
+		@GET("/annotation")
+		public WebResponse annotation(@MyAnnotation Double pi) {
+			return this.renderText("" + pi);
+		}
+	}
+
 Concrete usecase: Inject member object deflated from `X-MY-TOKEN` header.
 
 ## FAQ
