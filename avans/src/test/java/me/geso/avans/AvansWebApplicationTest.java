@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
@@ -21,6 +22,7 @@ import me.geso.avans.annotation.POST;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.trigger.ResponseConverter;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.tinyvalidator.constraints.NotNull;
@@ -50,23 +52,38 @@ public class AvansWebApplicationTest {
 		}
 	}
 
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class StringAPIResponse extends BasicAPIResponse {
+		private String data;
+
+		public StringAPIResponse(String data) {
+			this.data = data;
+		}
+	}
+
 	public static class MyController extends ControllerBase {
+
+		@ResponseConverter(StringAPIResponse.class)
+		public Optional<WebResponse> responseFilter(StringAPIResponse o) {
+			return Optional.of(this.renderJSON(o));
+		}
 
 		@GET("/")
 		public WebResponse root() {
-			final APIResponse<String> res = new APIResponse<>("hoge");
+			final StringAPIResponse res = new StringAPIResponse("hoge");
 			return this.renderJSON(res);
 		}
 
 		@GET("/jsonEasy")
-		public APIResponse<String> jsonEasy() {
-			final APIResponse<String> res = new APIResponse<>("It's easy!");
+		public StringAPIResponse jsonEasy() {
+			final StringAPIResponse res = new StringAPIResponse("It's easy!");
 			return res;
 		}
 
 		@POST("/jsonParam")
 		public WebResponse jsonParam(@JsonParam final Foo f) {
-			final APIResponse<String> res = new APIResponse<>("name:"
+			final StringAPIResponse res = new StringAPIResponse("name:"
 					+ f.name);
 			return this.renderJSON(res);
 		}
@@ -264,25 +281,6 @@ public class AvansWebApplicationTest {
 			}
 		}
 
-	}
-
-	@Test
-	public void testJsonParamValidationFailed() throws IOException {
-		// validation failed.
-		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
-		final Foo foo = new Foo();
-		foo.setName(null);
-		try (MechResponse res = this.mech.postJSON("/jsonParam", foo).execute()) {
-			Assert.assertEquals(200, res.getStatusCode());
-			Assert.assertEquals(res.getContentType().getMimeType(),
-					"application/json");
-			Assert.assertEquals(
-					res.getContentType().getCharset().displayName(),
-					"UTF-8");
-			Assert.assertEquals(
-					"{\"code\":403,\"messages\":[\"name may not be null.\"],\"data\":null}",
-					res.getContentString());
-		}
 	}
 
 	@Test

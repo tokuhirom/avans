@@ -1,7 +1,6 @@
 package me.geso.avans;
 
 import java.lang.reflect.Method;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -45,6 +44,4 @@ public interface Controller extends AutoCloseable {
 	public Object computePluginStashValueIfAbsent(Class<?> pluginClass,
 			String key,
 			Supplier<?> supplier);
-
-	public Path getBaseDirectory();
 }

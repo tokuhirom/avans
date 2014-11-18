@@ -1,15 +1,14 @@
 package com.example.kitchen.controller;
 
-import com.example.kitchen.KitchenServlet;
-import com.fasterxml.jackson.core.type.TypeReference;
-import me.geso.avans.APIResponse;
-import me.geso.mech.MechJettyServlet;
-import me.geso.mech.MechResponse;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import me.geso.mech.MechJettyServlet;
+import me.geso.mech.MechResponse;
+
+import org.junit.Test;
+
+import com.example.kitchen.KitchenServlet;
 
 public class RootControllerTest {
 
@@ -33,9 +32,8 @@ public class RootControllerTest {
                 assertEquals(200, res.getStatusCode());
                 assertEquals("application/json", res.getContentType().getMimeType());
                 assertEquals("UTF-8", res.getContentType().getCharset().displayName());
-                APIResponse<RootController.MyObject> dat = res
-                        .readJSON(new TypeReference<APIResponse<RootController.MyObject>>() {
-                        });
+				RootController.MyObjectAPIResponse dat = res
+						.readJSON(RootController.MyObjectAPIResponse.class);
                 assertThat(dat.getCode()).isEqualTo(200);
                 assertThat(dat.getData().getName()).isEqualTo("John");
             }

@@ -1,0 +1,6 @@
+/.classpath
+/.project
+/.settings/
+/target/
+/.idea/
+/hs_err_pid*.log

@@ -8,11 +8,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +17,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -33,12 +29,10 @@ import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
+import me.geso.avans.jackson.JacksonJsonParamReader;
 import me.geso.avans.jackson.JacksonJsonView;
-import me.geso.avans.trigger.BeforeDispatchTrigger;
-import me.geso.avans.trigger.HTMLFilter;
-import me.geso.avans.trigger.ResponseFilter;
-import me.geso.tinyvalidator.ConstraintViolation;
-import me.geso.tinyvalidator.Validator;
+import me.geso.avans.trigger.ParamProcessor;
+import me.geso.avans.trigger.ResponseConverter;
 import me.geso.webscrew.Parameters;
 import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.request.WebRequestUpload;
@@ -52,20 +46,18 @@ import me.geso.webscrew.response.WebResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * You should create this object per HTTP request.
  *
  * @author tokuhirom
  */
 public abstract class ControllerBase implements Controller,
-		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer {
+		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
+		ValidatorProvider, TextRendererProvider, JacksonJsonParamReader {
 	private WebRequest request;
 	private HttpServletResponse servletResponse;
 	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
-	private final ObjectMapper objectMapper = new ObjectMapper();
 	private static final Logger logger = LoggerFactory
 			.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
@@ -77,7 +69,6 @@ public abstract class ControllerBase implements Controller,
 	public void init(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse,
 			final Map<String, String> captured) {
-		this.BEFORE_INIT();
 		this.request = this.createWebReqeust(servletRequest);
 		this.servletResponse = servletResponse;
 		this.setDefaultCharacterEncoding();
@@ -87,7 +78,6 @@ public abstract class ControllerBase implements Controller,
 			pathParameters.put(entry.getKey(), entry.getValue());
 		}
 		this.pathParameters = pathParameters.build();
-		this.AFTER_INIT();
 	}
 
 	public WebRequest createWebReqeust(final HttpServletRequest servletRequest) {
@@ -96,24 +86,6 @@ public abstract class ControllerBase implements Controller,
 		} catch (final UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	protected void BEFORE_INIT() {
-		// I am hook point.
-	}
-
-	protected void AFTER_INIT() {
-		// I am hook point.
-	}
-
-	/**
-	 * Normally, you shouldn't use this directly... For shooting itself in the
-	 * foot.
-	 *
-	 * @return
-	 */
-	protected HttpServletResponse getServletResponse() {
-		return this.servletResponse;
 	}
 
 	private void setDefaultCharacterEncoding() {
@@ -182,6 +154,7 @@ public abstract class ControllerBase implements Controller,
 	 * @param text
 	 * @return
 	 */
+	@Override
 	public WebResponse renderText(final String text) {
 		if (text == null) {
 			throw new IllegalArgumentException("text must not be null");
@@ -205,32 +178,6 @@ public abstract class ControllerBase implements Controller,
 			}
 		}
 		return h;
-	}
-
-	/**
-	 * Get project base directory. TODO: better jar location detection
-	 * algorithm.
-	 *
-	 * @return
-	 */
-	@Override
-	public Path getBaseDirectory() {
-		return AvansUtil.getBaseDirectory(this.getClass());
-	}
-
-	/**
-	 * This is a hook point. You can override this.<br>
-	 * <br>
-	 * Use case:
-	 * <ul>
-	 * <li>Authentication before dispatching</li>
-	 * </ul>
-	 *
-	 * @return
-	 */
-	protected Optional<WebResponse> BEFORE_DISPATCH() {
-		// override me.
-		return Optional.empty();
 	}
 
 	@Override
@@ -310,10 +257,10 @@ public abstract class ControllerBase implements Controller,
 		return e;
 	}
 
-	final ConcurrentHashMap<Class<?>, Filters> responseFilters = new ConcurrentHashMap<>();
+	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 
 	Filters getFilters() {
-		return this.responseFilters
+		return this.filters
 				.computeIfAbsent(
 						this.getClass(),
 						(klass) -> {
@@ -323,105 +270,19 @@ public abstract class ControllerBase implements Controller,
 						});
 	}
 
-	static class FilterScanner {
-		final List<Method> responseFilters = new ArrayList<>();
-		final List<Method> htmlFilters = new ArrayList<>();
-		final List<Method> beforeDispatchTriggers = new ArrayList<>();
-		final Set<Method> seen = new HashSet<>();
-
-		void scanMethod(Method method) {
-			if (this.seen.contains(method)) {
-				return;
-			}
-
-			if (method.getAnnotation(BeforeDispatchTrigger.class) != null) {
-				this.beforeDispatchTriggers.add(method);
-			}
-			if (method.getAnnotation(HTMLFilter.class) != null) {
-				this.htmlFilters.add(method);
-			}
-			if (method.getAnnotation(ResponseFilter.class) != null) {
-				this.responseFilters.add(method);
-			}
-
-			this.seen.add(method);
-		}
-
-		public void scan(Class<?> klass) {
-			// LinkedList じゃなくてもっとうまいやり方あると思う｡
-			final LinkedList<Class<?>> linearIsa = new LinkedList<>();
-			while (klass != null
-					&& klass != ControllerBase.class) {
-				linearIsa.addFirst(klass);
-				klass = klass.getSuperclass();
-			}
-
-			for (final Class<?> k : linearIsa) {
-				// scan annotations in interfaces.
-				for (final Class<?> interfac : k.getInterfaces()) {
-					for (final Method method : interfac.getMethods()) {
-						this.scanMethod(method);
-					}
-				}
-
-				// scan annotations in methods.
-				for (final Method method : k.getMethods()) {
-					this.scanMethod(method);
-				}
-			}
-		}
-
-		Filters build() {
-			return new Filters(
-					this.beforeDispatchTriggers,
-					this.htmlFilters,
-					this.responseFilters);
-		}
-	}
-
-	static class Filters {
-		private final List<Method> responseFilters;
-		private final List<Method> beforeDispatchTriggers;
-		private final List<Method> htmlFilters;
-
-		public Filters(
-				final List<Method> beforeDispatchTriggers,
-				final List<Method> htmlFilters,
-				final List<Method> responseFilters) {
-			this.responseFilters = responseFilters;
-			this.beforeDispatchTriggers = beforeDispatchTriggers;
-			this.htmlFilters = htmlFilters;
-		}
-
-		public List<Method> getResponseFilters() {
-			return this.responseFilters;
-		}
-
-		public List<Method> getBeforeDispatchTriggers() {
-			return this.beforeDispatchTriggers;
-		}
-
-		public List<Method> getHtmlFilters() {
-			return this.htmlFilters;
-		}
-
-	}
-
 	private WebResponse makeResponse(final Controller controller,
-			final Method method) {
-		{
-			final Optional<WebResponse> maybeResponse = this.BEFORE_DISPATCH();
-			if (maybeResponse.isPresent()) {
-				return maybeResponse.get();
-			}
-		}
-
+			final Method method) throws IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException {
 		for (final Method filter : this.getFilters()
 				.getBeforeDispatchTriggers()) {
 			try {
 				@SuppressWarnings("unchecked")
 				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
 						.invoke(this);
+				if (webResponse == null) {
+					throw new NullPointerException(
+							"@BeforeDispatchTrigger shouldn't returned null. It should return `Optional<WebResponse>`.");
+				}
 				if (webResponse.isPresent()) {
 					return webResponse.get();
 				}
@@ -436,19 +297,22 @@ public abstract class ControllerBase implements Controller,
 		final List<String> violationMessages = new ArrayList<>();
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
-			final MaybeParam value = this.getParameterValue(parameter);
-			if (value.isPresent()) {
-				this.validateParameter(parameter, value.get(),
-						violationMessages);
-				params[i] = value.get();
+			final ParameterProcessorResult value = this
+					.getParameterValue(parameter);
+			if (value.hasResponse()) {
+				return value.getResponse();
+			} else if (value.hasData()) {
+				params[i] = value.getData();
 			} else {
 				violationMessages.add(String.format(
 						"Missing mandatory parameter: %s",
-						value.getName()));
+						value.getMissingParameter()));
 			}
 		}
-		if (!violationMessages.isEmpty()) {
-			return this.errorValidationFailed(violationMessages);
+		final Optional<WebResponse> validationResult = this
+				.validateParameters(method, params);
+		if (validationResult.isPresent()) {
+			return validationResult.get();
 		}
 
 		Object res;
@@ -467,86 +331,66 @@ public abstract class ControllerBase implements Controller,
 			throw new RuntimeException(
 					"dispatch method must not return NULL");
 		} else {
-			return this.convertResponse(res);
-		}
-	}
-
-	private WebResponse errorValidationFailed(
-			final List<String> violationMessages) {
-		return this.renderJSON(new APIResponse<>(403, violationMessages, null));
-	}
-
-	protected void validateParameter(final Parameter parameter,
-			final Object value,
-			final List<String> violationMessages) {
-		final Validator validator = new Validator();
-		final Annotation[] annotations = parameter.getAnnotations();
-		for (final Annotation annotation : annotations) {
-			if (annotation instanceof JsonParam) {
-				final List<ConstraintViolation> validate = validator
-						.validate(value);
-				validate.stream().forEach(
-						violation -> {
-							final String message = violation.getName() + " "
-									+ violation.getMessage();
-							violationMessages.add(message);
+			for (final Method converter : this.getFilters()
+					.getResponseConverters()) {
+				final ResponseConverter annotation = converter
+						.getAnnotation(ResponseConverter.class);
+				if (res.getClass().isAssignableFrom(annotation.value())) {
+					// Signature is : Optional<WebResponse> r(T o);
+					final Object v = converter.invoke(this, res);
+					if (v == null) {
+						throw new NullPointerException(
+								"@ResponseConverter must not return NULL");
+					} else if (v instanceof Optional) {
+						final Optional<?> ov = (Optional<?>) v;
+						if (ov.isPresent()) {
+							final WebResponse response = (WebResponse) ov.get();
+							return response;
+						} else {
+							// Call next response converter.
+							continue;
 						}
-						);
-			} else {
-				final Optional<ConstraintViolation> constraintViolationOptional = validator
-						.validateByAnnotation(annotation, parameter.getName(),
-								value);
-				if (constraintViolationOptional.isPresent()) {
-					final ConstraintViolation constraintViolation = constraintViolationOptional
-							.get();
-					violationMessages.add(constraintViolation.getName() + " "
-							+ constraintViolation.getMessage());
+					} else {
+						throw new RuntimeException(
+								"@ResponseConverter must return Optional<WebResponse>");
+					}
 				}
 			}
+			throw new RuntimeException(String.format(
+					"Unknown return value from action: %s(%s)", res.getClass(),
+					this.getRequest().getPathInfo()));
 		}
 	}
 
-	private static class MaybeParam {
-		@Override
-		public String toString() {
-			return "MaybeParam [o=" + this.o + ", name=" + this.name + "]";
-		}
-
-		private final Optional<Object> o;
-
-		private final Optional<String> name;
-
-		private MaybeParam(Optional<Object> o, Optional<String> name) {
-			this.o = o;
-			this.name = name;
-		}
-
-		public static MaybeParam of(Object o) {
-			return new MaybeParam(Optional.of(o), Optional.empty());
-		}
-
-		public static MaybeParam empty(String name) {
-			return new MaybeParam(Optional.empty(), Optional.of(name));
-		}
-
-		public String getName() {
-			return this.name.get();
-		}
-
-		public boolean isPresent() {
-			return this.o.isPresent();
-		}
-
-		public Object get() {
-			return this.o.get();
-		}
-	}
-
-	private MaybeParam getParameterValue(final Parameter parameter)
+	private ParameterProcessorResult getParameterValue(
+			final Parameter parameter)
+			throws IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException
 	{
-		final Optional<Object> objectOptional = this.GET_PARAMETER(parameter);
-		if (objectOptional.isPresent()) {
-			return MaybeParam.of(objectOptional.get());
+		// @ParamProcessor
+		// public ParamProcessorResult paramUpperQ(Parameter parameter);
+		for (final Method pp : this.getFilters().getParamProcessors()) {
+			final ParamProcessor paramProcessor = pp
+					.getAnnotation(ParamProcessor.class);
+			if (parameter.getType().isAssignableFrom(
+					paramProcessor.targetClass())) {
+				final Object result = pp.invoke(this, parameter);
+				if (result == null) {
+					throw new NullPointerException(
+							"@ParamProcessor returns null: "
+									+ pp);
+				} else if (result instanceof ParameterProcessorResult) {
+					if (((ParameterProcessorResult) result).hasData()
+							|| ((ParameterProcessorResult) result)
+									.hasResponse()) {
+						return (ParameterProcessorResult) result;
+					}
+				} else {
+					throw new NullPointerException(
+							"@ParamProcessor returns null: "
+									+ pp);
+				}
+			}
 		}
 
 		final Annotation[] annotations = parameter.getAnnotations();
@@ -555,8 +399,8 @@ public abstract class ControllerBase implements Controller,
 			if (annotation instanceof JsonParam) {
 				try {
 					final InputStream is = this.getRequest().getInputStream();
-					final Object value = this.objectMapper.readValue(is, type);
-					return MaybeParam.of(value);
+					final Object value = this.readJsonParam(is, type);
+					return ParameterProcessorResult.fromData(value);
 				} catch (final IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -584,18 +428,19 @@ public abstract class ControllerBase implements Controller,
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFirstFileItem(name);
-					return MaybeParam.of(maybeFileItem.get());
+					return ParameterProcessorResult.fromData(maybeFileItem
+							.get());
 				} else if (type == WebRequestUpload[].class) {
 					final WebRequestUpload[] items = this.getRequest()
 							.getAllFileItems(name)
 							.toArray(new WebRequestUpload[0]);
-					return MaybeParam.of(items);
+					return ParameterProcessorResult.fromData(items);
 				} else if (type == Optional.class) {
 					// It must be Optional<FileItem>
 					final Optional<WebRequestUpload> maybeFileItem = this
 							.getRequest()
 							.getFirstFileItem(name);
-					return MaybeParam.of(maybeFileItem);
+					return ParameterProcessorResult.fromData(maybeFileItem);
 				} else {
 					throw new RuntimeException(
 							String.format(
@@ -612,7 +457,7 @@ public abstract class ControllerBase implements Controller,
 				parameter.getName()));
 	}
 
-	private MaybeParam getObjectFromParameterObject(
+	private ParameterProcessorResult getObjectFromParameterObject(
 			final Annotation annotation,
 			final String name,
 			final Class<?> type,
@@ -620,80 +465,71 @@ public abstract class ControllerBase implements Controller,
 		if (type.equals(String.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(value.get());
+			return ParameterProcessorResult.fromData(value.get());
 		} else if (type.equals(int.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(Integer.parseInt(value.get()));
+			return ParameterProcessorResult.fromData(Integer.parseInt(value
+					.get()));
 		} else if (type.equals(long.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(Long.parseLong(value.get()));
+			return ParameterProcessorResult
+					.fromData(Long.parseLong(value.get()));
 		} else if (type.equals(double.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (!value.isPresent()) {
-				return MaybeParam.empty(name);
+				return ParameterProcessorResult.missingParameter(name);
 			}
-			return MaybeParam.of(Double.parseDouble(value.get()));
+			return ParameterProcessorResult.fromData(Double.parseDouble(value
+					.get()));
 		} else if (type.equals(OptionalInt.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam
-						.of(OptionalInt.of(Integer.parseInt(value.get())));
+				return ParameterProcessorResult.fromData(OptionalInt.of(Integer
+						.parseInt(value.get())));
 			} else {
-				return MaybeParam.of(OptionalInt.empty());
+				return ParameterProcessorResult.fromData(OptionalInt.empty());
 			}
 		} else if (type.equals(OptionalLong.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam
-						.of(OptionalLong.of(Long.parseLong(value.get())));
+				return ParameterProcessorResult.fromData(OptionalLong.of(Long
+						.parseLong(value.get())));
 			} else {
-				return MaybeParam.of(OptionalLong.empty());
+				return ParameterProcessorResult.fromData(OptionalLong.empty());
 			}
 		} else if (type.equals(OptionalDouble.class)) {
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam.of(OptionalDouble.of(Double
-						.parseDouble(value
-						.get())));
+				return ParameterProcessorResult.fromData(OptionalDouble
+						.of(Double
+								.parseDouble(value
+										.get())));
 			} else {
-				return MaybeParam.of(OptionalDouble.empty());
+				return ParameterProcessorResult
+						.fromData(OptionalDouble.empty());
 			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
 			// TODO: type parameter check
 			final Optional<String> value = params.getFirst(name);
 			if (value.isPresent()) {
-				return MaybeParam.of(Optional.of(value.get()));
+				return ParameterProcessorResult.fromData(Optional.of(value
+						.get()));
 			} else {
-				return MaybeParam.of(Optional.empty());
+				return ParameterProcessorResult.fromData(Optional.empty());
 			}
 		} else {
+			// Programming error
 			throw new RuntimeException(String.format(
 					"Unknown parameter type '%s' for '%s'", type, name));
-		}
-	}
-
-	protected Optional<Object> GET_PARAMETER(final Parameter parameter) {
-		return Optional.empty();
-	}
-
-	// You can hook this.
-	protected WebResponse convertResponse(final Object res) {
-		if (res instanceof APIResponse) {
-			// Rendering APIResponse for JSON by default.
-			return this.renderJSON(200, res);
-		} else {
-			throw new RuntimeException(String.format(
-					"Unknown return value from action: %s(%s)", Object.class,
-					this.getRequest().getPathInfo()));
 		}
 	}
 

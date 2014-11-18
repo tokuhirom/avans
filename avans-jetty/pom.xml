@@ -2,7 +2,7 @@
 	<parent>
 		<groupId>me.geso</groupId>
 		<artifactId>avans-project</artifactId>
-		<version>0.34.4-SNAPSHOT</version>
+		<version>0.35.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -15,13 +15,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
-
-    <scm>
-      <url>https://github.com/tokuhirom/avans/</url>
-      <connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
-      <developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
 
 	<dependencies>
 		<dependency>

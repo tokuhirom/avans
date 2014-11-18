@@ -3,7 +3,7 @@
   <parent>
     <groupId>me.geso</groupId>
     <artifactId>avans-project</artifactId>
-    <version>0.34.4-SNAPSHOT</version>
+    <version>0.35.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -34,6 +34,11 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
+      <version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>me.geso</groupId>
+			<artifactId>avans-session</artifactId>
       <version>${project.version}</version>
 		</dependency>
 		<dependency>

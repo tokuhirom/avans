@@ -7,7 +7,7 @@
 		<description>parent project for avans</description>
 		<url>http://github.com/tokuhirom/avans</url>
 
-    <version>0.34.4-SNAPSHOT</version>
+    <version>0.35.1-SNAPSHOT</version>
 
     <name>avans :: parent</name>
 
@@ -16,6 +16,8 @@
         <module>avans-mustache</module>
         <module>avans-freemarker</module>
         <module>avans-jetty</module>
+        <module>avans-tinyvalidator</module>
+        <module>avans-session</module>
         <module>avans-session-spymemcached</module>
     </modules>
 

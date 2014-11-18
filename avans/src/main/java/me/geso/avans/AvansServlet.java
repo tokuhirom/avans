@@ -27,7 +27,7 @@ public class AvansServlet extends HttpServlet {
 	 * You can register classes by web.xml. You can write web.xml as
 	 * {@code <init-param><param-name>package</param-name><param-value>pkg1,pkg2</param-value></init-param>}
 	 * or
-	 * {@code <init-param><param-name>class</param-name><param-value>pkg1,pkg2</param-value></init-param>}
+	 * {@code <init-param><param-name>class</param-name><param-value>klass1,klass2</param-value></init-param>}
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
