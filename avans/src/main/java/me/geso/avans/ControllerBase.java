@@ -388,8 +388,8 @@ public abstract class ControllerBase implements Controller,
 							return (ParameterProcessorResult)result;
 						}
 					} else {
-						throw new NullPointerException(
-							"@ParamProcessor returns null: "
+						throw new RuntimeException(
+							"@ParamProcessor should return ParameterProcessorResult, but "
 								+ pp);
 					}
 				}
