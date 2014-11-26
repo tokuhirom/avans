@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import me.geso.avans.JSONParamReader;
-
 import org.apache.commons.io.IOUtils;
+
+import me.geso.avans.JSONParamReader;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -33,7 +33,8 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 		} catch (JsonParseException | JsonMappingException e) {
 			final String json = new String(byteArray,
 					StandardCharsets.UTF_8);
-			throw new IOException(e.getCause().getMessage() + " : " + json);
+			final Throwable cause = e.getCause();
+			throw new IOException((cause != null ? cause.getMessage() : e.getMessage()) + " : " + json);
 		}
 	}
 
