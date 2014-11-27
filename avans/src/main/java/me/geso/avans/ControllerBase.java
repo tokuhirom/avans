@@ -2,6 +2,8 @@ package me.geso.avans;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -238,9 +240,15 @@ public abstract class ControllerBase implements Controller,
 			}
 		}
 		// Logging all messages in the fat log.
-		exceptionStackTraceLogger.error("{}, {}\n{}", e.getCause(),
-			e.getMessage(), e.getStackTrace());
-		e.printStackTrace();
+		{
+			final StringWriter writer = new StringWriter();
+			final PrintWriter printWriter = new PrintWriter(writer);
+			e.printStackTrace(printWriter);
+			final String s = writer.toString();
+
+			exceptionStackTraceLogger.error("{}: {}\n{}", root.getClass(),
+				root.getMessage(), s);
+		}
 	}
 
 	// You can override me.
