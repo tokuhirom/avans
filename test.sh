@@ -2,7 +2,7 @@
 set -e
 set -x
 
-mvn install -X
+mvn install -DskipTests=true -Dgpg.skip=true
 mvn javadoc:javadoc
 
 cd avans-setup
