@@ -2,7 +2,7 @@
 set -e
 set -x
 
-mvn test
+mvn install -X
 mvn javadoc:javadoc
 
 cd avans-setup
