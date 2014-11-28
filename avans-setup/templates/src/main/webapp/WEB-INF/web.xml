@@ -5,7 +5,7 @@
     <servlet-class>me.geso.avans.AvansServlet</servlet-class>
     <init-param>
       <param-name>class</param-name> 
-      <param-value><%= @package %>.controller.RootController</param-value> 
+      <param-value>[% package %].controller.RootController</param-value> 
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

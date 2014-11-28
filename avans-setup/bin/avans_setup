@@ -1,70 +1,80 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env python
 
-require 'fileutils'
-require 'erb'
-require 'pathname'
+# I tested this script on Python 2.7.6
 
-AVANS_VERSION = '0.35.0'
+from string import Template
+import sys
+import re
+import os
 
-# Setup application class
-class AvansSetup
-  def initialize(pkg)
-    @package = pkg
-    if pkg =~ /\A(.*)\.(.*?)\z/
-      @groupId = $1
-      @artifactId = $2
-      @project = $2
-    else
-      fail "Invalid package name: #{pkg}"
-    end
-  end
+AVANS_VERSION = '0.37.1'
 
-  def render(path)
-    erb = ERB.new(File.read(path))
-    result = erb.result(binding)
-    result
-  end
+class AvansSetup:
+    def __init__(self, pkg):
+        self.package = pkg
+        m = re.compile(r'\A(.*)\.([^.]*)$').match(pkg)
+        if m:
+            self.groupId = m.group(1)
+            self.artifactId = m.group(2)
+            self.project = m.group(2)
+        else:
+            self.fail("Invalid package name '%s'" % pkg)
 
-  def render_file(dest_path, template_file)
-    FileUtils.mkdir_p(File.dirname(dest_path))
-    puts "#{template_file} => #{dest_path}"
-    File.write(dest_path, render(template_file))
-  end
+    def fail(self, msg):
+        print(msg)
+        sys.exit(1)
 
-  def run
-    if File.directory?(@project)
-      fail "Directory is already exists: #{@project}/"
-    end
+    def run(self):
+        if os.path.exists(self.project):
+            self.fail("Directory is already exists: %s/" % self.project)
 
-    java_dir = "#{@project}/src/main/java/#{@package.gsub(/\./, '/')}"
+        java_dir = os.path.join(
+                self.project, 'src', 'main', 'java',
+                self.package.replace('.', '/'))
 
-    FileUtils.mkdir_p("#{java_dir}/controller/")
-    FileUtils.mkdir_p("#{@project}/src/main/resources/")
-    FileUtils.mkdir_p("#{@project}/templates/")
+        os.makedirs(os.path.join(java_dir, 'controller'))
+        os.makedirs(os.path.join(
+                self.project, 'src', 'main', 'resources'))
+        os.makedirs(os.path.join(
+                self.project, 'src', 'main', 'resources', 'templates'))
 
-    template_dir = File.join(File.dirname(File.expand_path(__FILE__)),
-                         "../templates/")
-    Dir.glob("#{template_dir}/**/*").select do |it|
-      File.file?(it)
-    end.each do |file|
-      destpath = Pathname.new(file).relative_path_from(Pathname.new(template_dir))
-      destpath = destpath.to_s.gsub(/PACKAGE/, @package.gsub(/\./, '/'))
-      render_file("#{@project}/#{destpath}", file)
-    end
+        template_dir = os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                '..', 'templates'
+                )
 
-    Dir.chdir(@project)
-    system('mvn package')
+        print template_dir
+        for root, dirnames, filenames in os.walk(template_dir):
+            for filename in filenames:
+                srcname = os.path.join(root, filename)
+                destpath = os.path.relpath(srcname, template_dir)
+                destpath = destpath.replace('PACKAGE', self.package.replace('.', '/'))
+                self.renderFile(os.path.join(self.project, destpath), srcname)
 
-    puts File.read('README.md')
-  end
-end
+        os.chdir(self.project)
+        code = os.system('mvn test')
+        if code != 0:
+            self.fail("mvn test fail: %s" % code)
+        print(open('README.md').read())
 
-if ARGV.length != 1
-  puts 'Usage: avans-setup.rb package.name'
-  exit
-end
+    def renderFile(self, dest, templatefilename):
+        print "Rendering %s" % dest
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        src = open(templatefilename).read()
+        src = src.replace('[% project %]', self.project)
+        src = src.replace('[% package %]', self.package)
+        src = src.replace('[% groupId %]', self.groupId)
+        src = src.replace('[% artifactId %]', self.artifactId)
+        src = src.replace('[% AVANS_VERSION %]', AVANS_VERSION)
+        open(dest, 'w').write(src)
 
-package_name = ARGV[0]
+if len(sys.argv) != 2:
+    print 'Usage: avans-setup.rb package.name'
+    sys.exit(1)
 
-setup = AvansSetup.new(package_name)
-setup.run
+package_name = sys.argv[1]
+
+setup = AvansSetup(package_name)
+setup.run()
+

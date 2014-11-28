@@ -1,4 +1,4 @@
-package <%= @package %>;
+package [% package %];
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public class RootControllerTest {
 	@Before
 	public void before() {
 		final AvansServlet servlet = new AvansServlet();
-		servlet.registerPackage(<%= @package %>.controller.RootController.class.getPackage());
+		servlet.registerPackage([% package %].controller.RootController.class.getPackage());
 		this.mech = new MechJettyServlet(servlet);
 	}
 
