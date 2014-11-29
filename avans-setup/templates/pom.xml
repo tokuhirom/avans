@@ -13,22 +13,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <avans.version>[% AVANS_VERSION %]</avans.version>
+		<tomcat.version>7.0.56</tomcat.version>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>me.geso</groupId>
-      <artifactId>mech</artifactId>
-      <version>0.11.8</version>
-			<scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>me.geso</groupId>
       <artifactId>avans</artifactId>
@@ -44,6 +32,37 @@
       <artifactId>slf4j-simple</artifactId>
       <version>1.7.7</version>
     </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+		<dependency>
+			<groupId>me.geso</groupId>
+			<artifactId>mech2</artifactId>
+			<version>0.2.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<version>${tomcat.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-catalina</artifactId>
+			<version>${tomcat.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-jasper</artifactId>
+			<version>${tomcat.version}</version>
+			<scope>test</scope>
+		</dependency>
   </dependencies>
 
   <build>
