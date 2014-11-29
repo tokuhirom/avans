@@ -19,6 +19,7 @@
         <module>avans-tinyvalidator</module>
         <module>avans-session</module>
         <module>avans-session-spymemcached</module>
+        <module>avans-setup</module>
     </modules>
 
     <scm>

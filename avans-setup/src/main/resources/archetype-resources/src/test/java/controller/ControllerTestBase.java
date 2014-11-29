@@ -1,4 +1,4 @@
-package [% package %].controller;
+package ${package}.controller;
 
 import me.geso.mech2.Mech2;
 import me.geso.mech2.Mech2WithBase;
