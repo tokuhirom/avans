@@ -35,6 +35,17 @@ That's all.
 avans was uploaded on maven central.
 Please look maven central site: http://search.maven.org/#search%7Cga%7C1%7Cavans
 
+## Create skelton site
+
+avans supports maven archetype. You can create a simple site by this skelton generator.
+
+    mvn archetype:generate \
+      -DarchetypeGroupId=me.geso.avans \
+      -DarchetypeArtifactId=avans-setup \
+      -DarchetypeVersion=LATEST_VERSION \
+      -DgroupId=com.example.myapp \
+      -DartifactId=MyWebApp
+
 ## web.xml
 
 You can initialize servlets by web.xml.
