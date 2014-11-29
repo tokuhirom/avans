@@ -1,4 +1,4 @@
-# [% project %]
+# ${project}
 
 ## Start the server
 
