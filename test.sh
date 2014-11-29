@@ -6,7 +6,5 @@ mvn install -DskipTests=true -Dgpg.skip=true
 mvn javadoc:javadoc
 
 cd avans-setup
-gem install bundler
-bundle install
-bundle exec rake test
+./bin/avans_setup com.example.foo
 
