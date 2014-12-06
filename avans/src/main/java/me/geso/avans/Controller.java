@@ -17,9 +17,15 @@ public interface Controller extends AutoCloseable {
 			final HttpServletResponse response,
 			final Map<String, String> captured);
 
+	@Deprecated
 	public WebRequest getRequest();
 
+	public HttpServletRequest getServletRequest();
+
+	@Deprecated
 	public Parameters getPathParameters();
+
+	public Map<String, String> getPathParams();
 
 	public void invoke(final Method method, final HttpServletRequest request,
 			final HttpServletResponse response,
