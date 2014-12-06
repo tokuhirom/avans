@@ -21,12 +21,10 @@ import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import lombok.NonNull;
 import me.geso.avans.annotation.BodyParam;
@@ -47,6 +45,9 @@ import me.geso.webscrew.request.impl.DefaultWebRequest;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * You should create this object per HTTP request.
@@ -302,7 +303,7 @@ public abstract class ControllerBase implements Controller,
 
 		final Parameter[] parameters = method.getParameters();
 		final Object[] params = new Object[parameters.length];
-		final List<String> violationMessages = new ArrayList<>();
+		final List<String> missingParameters = new ArrayList<>();
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
 			final ParameterProcessorResult value = this
@@ -312,10 +313,11 @@ public abstract class ControllerBase implements Controller,
 			} else if (value.hasData()) {
 				params[i] = value.getData();
 			} else {
-				violationMessages.add(String.format(
-					"Missing mandatory parameter: %s",
-					value.getMissingParameter()));
+				missingParameters.add(value.getMissingParameter());
 			}
+		}
+		if (!missingParameters.isEmpty()) {
+			return this.errorMissingMandatoryParameters(missingParameters);
 		}
 		final Optional<WebResponse> validationResult = this
 			.validateParameters(method, params);
@@ -368,6 +370,15 @@ public abstract class ControllerBase implements Controller,
 				"Unknown return value from action: %s(%s)", res.getClass(),
 				this.getRequest().getPathInfo()));
 		}
+	}
+
+	protected WebResponse errorMissingMandatoryParameters(
+			List<String> missingParameters) {
+		final int BAD_REQUEST = 400;
+		final StringBuilder buf = new StringBuilder();
+		buf.append("Missing mandatory parameter: ");
+		buf.append(missingParameters.stream().collect(Collectors.joining(", ")));
+		return this.renderError(BAD_REQUEST, new String(buf));
 	}
 
 	private <T> ParameterProcessorResult getParameterValue(
