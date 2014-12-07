@@ -162,7 +162,7 @@ public class SpyMemcachedSessionStoreTest {
 						new SecureRandom(), 32);
 
 				return new DefaultWebSessionManager(
-						this.getRequest(),
+						this.getServletRequest(),
 						sessionStore,
 						sessionIDGenerator,
 						sessionCookieFactory,

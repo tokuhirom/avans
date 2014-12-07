@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Parameter;
 import java.util.Optional;
 
-import org.junit.Test;
-
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.ParameterProcessorResult;
@@ -22,7 +21,8 @@ import me.geso.mech2.Mech2Result;
 import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
-import lombok.extern.slf4j.Slf4j;
+
+import org.junit.Test;
 
 public class ParamProcessorTest {
 
@@ -31,6 +31,7 @@ public class ParamProcessorTest {
 		@ParamProcessor(targetClass = String.class)
 		public ParameterProcessorResult paramUpperQ(Parameter parameter) {
 			log.info("paramUpperQ");
+			@SuppressWarnings("deprecation")
 			final Optional<String> q = this.getRequest().getQueryParams()
 				.getFirst("q");
 			if (q.isPresent()) {

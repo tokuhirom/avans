@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +23,16 @@ import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.servlet.http.Part;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
+import me.geso.avans.annotation.Param;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
@@ -48,40 +50,43 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * You should create this object per HTTP request.
  *
  * @author tokuhirom
  */
+@SuppressWarnings("deprecation")
+@Slf4j
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
 		ValidatorProvider, TextRendererProvider, JacksonJsonParamReader {
-	private WebRequest request;
 	private HttpServletResponse servletResponse;
-	private Parameters pathParameters;
 	private final Map<String, Object> pluginStash = new HashMap<>();
+	private HttpServletRequest servletRequest;
+	private Map<String, String> pathParams;
 	private static final Logger logger = LoggerFactory
-		.getLogger(ControllerBase.class);
+			.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
-		.getLogger("avans.exception.RootCause");
+			.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
-		.getLogger("avans.exception.StackTrace");
+			.getLogger("avans.exception.StackTrace");
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse,
 			final Map<String, String> captured) {
-		this.request = this.createWebReqeust(servletRequest);
 		this.servletResponse = servletResponse;
+		this.servletRequest = servletRequest;
 		this.setDefaultCharacterEncoding();
 
-		final Builder pathParameters = DefaultParameters.builder();
-		for (final Entry<String, String> entry : captured.entrySet()) {
-			pathParameters.put(entry.getKey(), entry.getValue());
-		}
-		this.pathParameters = pathParameters.build();
+		this.pathParams = Collections.unmodifiableMap(captured);
 	}
 
+	@Deprecated
 	public WebRequest createWebReqeust(final HttpServletRequest servletRequest) {
 		try {
 			return new DefaultWebRequest(servletRequest, StandardCharsets.UTF_8);
@@ -95,8 +100,14 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	@Override
+	@Deprecated
 	public WebRequest getRequest() {
-		return this.request;
+		return this.createWebReqeust(this.servletRequest);
+	}
+
+	@Override
+	public HttpServletRequest getServletRequest() {
+		return this.servletRequest;
 	}
 
 	/**
@@ -104,9 +115,14 @@ public abstract class ControllerBase implements Controller,
 	 *
 	 * @return
 	 */
+	@Deprecated
 	@Override
 	public Parameters getPathParameters() {
-		return this.pathParameters;
+		final Builder pathParameters = DefaultParameters.builder();
+		for (final Entry<String, String> entry : this.pathParams.entrySet()) {
+			pathParameters.put(entry.getKey(), entry.getValue());
+		}
+		return pathParameters.build();
 	}
 
 	/**
@@ -173,7 +189,7 @@ public abstract class ControllerBase implements Controller,
 		String h = html;
 		for (final Method filter : this.getFilters().getHtmlFilters()) {
 			try {
-				h = (String)filter.invoke(this, h);
+				h = (String) filter.invoke(this, h);
 			} catch (IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new RuntimeException(e);
@@ -214,29 +230,29 @@ public abstract class ControllerBase implements Controller,
 			if (stackTrace.length > 0) {
 				final StackTraceElement ste = stackTrace[0];
 				exceptionRootCauseLogger.error(
-					"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
-					this.getRequest().getMethod(),
-					this.getRequest().getPathInfo(),
-					this.getRequest().getUserAgent(),
-					this.getRequest().getRemoteAddr(),
-					root.getClass(),
-					//
-					root.getMessage(),
-					ste.getClassName(),
-					ste.getMethodName(),
-					ste.getFileName(),
-					ste.getLineNumber()
-					);
+						"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
+						this.servletRequest.getMethod(),
+						this.servletRequest.getPathInfo(),
+						this.servletRequest.getHeader("User-Agent"),
+						this.servletRequest.getRemoteAddr(),
+						root.getClass(),
+						//
+						root.getMessage(),
+						ste.getClassName(),
+						ste.getMethodName(),
+						ste.getFileName(),
+						ste.getLineNumber()
+						);
 			} else {
 				exceptionRootCauseLogger.error("{}, {}, {}, {}, {}: {}",
-					this.getRequest().getMethod(),
-					this.getRequest().getPathInfo(),
-					this.getRequest().getUserAgent(),
-					this.getRequest().getRemoteAddr(),
-					root.getClass(),
-					//
-					root.getMessage()
-					);
+						this.servletRequest.getMethod(),
+						this.servletRequest.getPathInfo(),
+						this.servletRequest.getHeader("User-Agent"),
+						this.servletRequest.getRemoteAddr(),
+						root.getClass(),
+						//
+						root.getMessage()
+						);
 			}
 		}
 		// Logging all messages in the fat log.
@@ -247,7 +263,7 @@ public abstract class ControllerBase implements Controller,
 			final String s = writer.toString();
 
 			exceptionStackTraceLogger.error("{}: {}\n{}", root.getClass(),
-				root.getMessage(), s);
+					root.getMessage(), s);
 		}
 	}
 
@@ -259,7 +275,7 @@ public abstract class ControllerBase implements Controller,
 
 	private Throwable unwrapRuntimeException(Throwable e) {
 		while ((e instanceof RuntimeException || e instanceof InvocationTargetException)
-			&& e.getCause() != null) {
+				&& e.getCause() != null) {
 			e = e.getCause();
 		}
 		return e;
@@ -269,27 +285,28 @@ public abstract class ControllerBase implements Controller,
 
 	Filters getFilters() {
 		return this.filters
-			.computeIfAbsent(
-				this.getClass(),
-				(klass) -> {
-					final FilterScanner scanner = new FilterScanner();
-					scanner.scan(klass);
-					return scanner.build();
-				});
+				.computeIfAbsent(
+						this.getClass(),
+						(klass) -> {
+							final FilterScanner scanner = new FilterScanner();
+							scanner.scan(klass);
+							return scanner.build();
+						});
 	}
 
 	private WebResponse makeResponse(final Controller controller,
 			final Method method) throws IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException {
+			IllegalArgumentException, InvocationTargetException, IOException,
+			ServletException {
 		for (final Method filter : this.getFilters()
-			.getBeforeDispatchTriggers()) {
+				.getBeforeDispatchTriggers()) {
 			try {
 				@SuppressWarnings("unchecked")
-				final Optional<WebResponse> webResponse = (Optional<WebResponse>)filter
-					.invoke(this);
+				final Optional<WebResponse> webResponse = (Optional<WebResponse>) filter
+						.invoke(this);
 				if (webResponse == null) {
 					throw new NullPointerException(
-						"@BeforeDispatchTrigger shouldn't returned null. It should return `Optional<WebResponse>`.");
+							"@BeforeDispatchTrigger shouldn't returned null. It should return `Optional<WebResponse>`.");
 				}
 				if (webResponse.isPresent()) {
 					return webResponse.get();
@@ -306,19 +323,19 @@ public abstract class ControllerBase implements Controller,
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
 			final ParameterProcessorResult value = this
-				.getParameterValue(parameter);
+					.getParameterValue(parameter);
 			if (value.hasResponse()) {
 				return value.getResponse();
 			} else if (value.hasData()) {
 				params[i] = value.getData();
 			} else {
 				violationMessages.add(String.format(
-					"Missing mandatory parameter: %s",
-					value.getMissingParameter()));
+						"Missing mandatory parameter: %s",
+						value.getMissingParameter()));
 			}
 		}
 		final Optional<WebResponse> validationResult = this
-			.validateParameters(method, params);
+				.validateParameters(method, params);
 		if (validationResult.isPresent()) {
 			return validationResult.get();
 		}
@@ -329,30 +346,31 @@ public abstract class ControllerBase implements Controller,
 		} catch (IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			// It caused by programming error.
-			logger.error("{}: {}: {}, {}", e, this.request.getPathInfo(),
-				controller, params);
+			logger.error("{}: {}: {}, {}", e, this.getServletRequest()
+					.getPathInfo(),
+					controller, params);
 			throw new RuntimeException(e);
 		}
 		if (res instanceof WebResponse) {
-			return (WebResponse)res;
+			return (WebResponse) res;
 		} else if (res == null) {
 			throw new RuntimeException(
-				"dispatch method must not return NULL");
+					"dispatch method must not return NULL");
 		} else {
 			for (final Method converter : this.getFilters()
-				.getResponseConverters()) {
+					.getResponseConverters()) {
 				final ResponseConverter annotation = converter
-					.getAnnotation(ResponseConverter.class);
+						.getAnnotation(ResponseConverter.class);
 				if (res.getClass().isAssignableFrom(annotation.value())) {
 					// Signature is : Optional<WebResponse> r(T o);
 					final Object v = converter.invoke(this, res);
 					if (v == null) {
 						throw new NullPointerException(
-							"@ResponseConverter must not return NULL");
+								"@ResponseConverter must not return NULL");
 					} else if (v instanceof Optional) {
-						final Optional<?> ov = (Optional<?>)v;
+						final Optional<?> ov = (Optional<?>) v;
 						if (ov.isPresent()) {
-							final WebResponse response = (WebResponse)ov.get();
+							final WebResponse response = (WebResponse) ov.get();
 							return response;
 						} else {
 							// Call next response converter.
@@ -360,45 +378,47 @@ public abstract class ControllerBase implements Controller,
 						}
 					} else {
 						throw new RuntimeException(
-							"@ResponseConverter must return Optional<WebResponse>");
+								"@ResponseConverter must return Optional<WebResponse>");
 					}
 				}
 			}
 			throw new RuntimeException(String.format(
-				"Unknown return value from action: %s(%s)", res.getClass(),
-				this.getRequest().getPathInfo()));
+					"Unknown return value from action: %s(%s)", res.getClass(),
+					this.servletRequest.getPathInfo()));
 		}
 	}
 
 	private <T> ParameterProcessorResult getParameterValue(
 			final Parameter parameter)
 			throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException
+			InvocationTargetException, IOException, ServletException
 	{
 		// @ParamProcessor
 		// public ParamProcessorResult paramUpperQ(Parameter parameter);
 		for (final Method pp : this.getFilters().getParamProcessors()) {
 			final ParamProcessor paramProcessor = pp
-				.getAnnotation(ParamProcessor.class);
+					.getAnnotation(ParamProcessor.class);
 
-			if (paramProcessor.targetClass().isAssignableFrom(parameter.getType())) {
+			if (paramProcessor.targetClass().isAssignableFrom(
+					parameter.getType())) {
 				if (paramProcessor.targetAnnotation() == ParamProcessor.class
-					|| parameter.getAnnotation(paramProcessor.targetAnnotation()) != null) {
+						|| parameter.getAnnotation(paramProcessor
+								.targetAnnotation()) != null) {
 					final Object result = pp.invoke(this, parameter);
 					if (result == null) {
 						throw new NullPointerException(
-							"@ParamProcessor returns null: "
-								+ pp);
+								"@ParamProcessor returns null: "
+										+ pp);
 					} else if (result instanceof ParameterProcessorResult) {
-						if (((ParameterProcessorResult)result).hasData()
-							|| ((ParameterProcessorResult)result)
-								.hasResponse()) {
-							return (ParameterProcessorResult)result;
+						if (((ParameterProcessorResult) result).hasData()
+								|| ((ParameterProcessorResult) result)
+										.hasResponse()) {
+							return (ParameterProcessorResult) result;
 						}
 					} else {
 						throw new RuntimeException(
-							"@ParamProcessor should return ParameterProcessorResult, but "
-								+ pp);
+								"@ParamProcessor should return ParameterProcessorResult, but "
+										+ pp);
 					}
 				}
 			}
@@ -408,139 +428,211 @@ public abstract class ControllerBase implements Controller,
 		final Class<?> type = parameter.getType();
 		for (final Annotation annotation : annotations) {
 			if (annotation instanceof JsonParam) {
-				try {
-					final InputStream is = this.getRequest().getInputStream();
-					final Object value = this.readJsonParam(is, type);
-					return ParameterProcessorResult.fromData(value);
-				} catch (final IOException e) {
-					throw new RuntimeException(e);
-				}
+				final InputStream is = this.servletRequest.getInputStream();
+				final Object value = this.readJsonParam(is, type);
+				return ParameterProcessorResult.fromData(value);
+			} else if (annotation instanceof Param) {
+				final String name = ((Param) annotation).value();
+				final String value = this.getServletRequest()
+						.getParameter(name);
+				return this.getObjectFromParameterObjectValue(annotation, name,
+						type, value);
 			} else if (annotation instanceof QueryParam) {
-				final String name = ((QueryParam)annotation).value();
-				return this.getObjectFromParameterObject(annotation, name,
-					type,
-					this.getRequest()
-						.getQueryParams());
+				final String name = ((QueryParam) annotation).value();
+				final String value = this.getServletRequest()
+						.getParameter(name);
+				return this.getObjectFromParameterObjectValue(annotation, name,
+						type, value);
 			} else if (annotation instanceof BodyParam) {
-				final String name = ((BodyParam)annotation).value();
-				return this.getObjectFromParameterObject(annotation, name,
-					type,
-					this.getRequest()
-						.getBodyParams());
+				final String name = ((BodyParam) annotation).value();
+				final String value = this.getServletRequest()
+						.getParameter(name);
+				return this.getObjectFromParameterObjectValue(annotation, name,
+						type, value);
 			} else if (annotation instanceof PathParam) {
-				final String name = ((PathParam)annotation).value();
-				return this.getObjectFromParameterObject(annotation, name,
-					type,
-					this.getPathParameters());
+				final String name = ((PathParam) annotation).value();
+				final String value = this.pathParams.get(name);
+				return this.getObjectFromParameterObjectValue(annotation, name,
+						type, value);
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
-				final String name = ((UploadFile)annotation).value();
-				if (type == WebRequestUpload.class) {
-					final Optional<WebRequestUpload> maybeFileItem = this
-						.getRequest()
-						.getFirstFileItem(name);
-					return ParameterProcessorResult.fromData(maybeFileItem
-						.get());
+				final String name = ((UploadFile) annotation).value();
+				if (type == Part.class) {
+					final Part part = this.servletRequest.getPart(name);
+					if (part != null) {
+						return ParameterProcessorResult.fromData(part);
+					} else {
+						return ParameterProcessorResult.missingParameter(name);
+					}
+				} else if (type == Part[].class) {
+					final Part[] parts = this.servletRequest.getParts()
+							.stream().filter(part -> {
+								return name.equals(part.getName());
+							}).toArray(Part[]::new);
+					return ParameterProcessorResult.fromData(parts);
+				} else if (type == WebRequestUpload.class) {
+					// TODO: remove me
+					final Part part = this.servletRequest.getPart(name);
+					if (part != null) {
+						return ParameterProcessorResult
+								.fromData(new PartWebRequestUpload(part));
+					} else {
+						return ParameterProcessorResult.missingParameter(name);
+					}
 				} else if (type == WebRequestUpload[].class) {
-					final WebRequestUpload[] items = this.getRequest()
-						.getAllFileItems(name)
-						.toArray(new WebRequestUpload[0]);
-					return ParameterProcessorResult.fromData(items);
+					// TODO: remove me
+					final WebRequestUpload[] parts = this.servletRequest
+							.getParts()
+							.stream()
+							.filter(part -> name.equals(part.getName()))
+							.map(part -> new PartWebRequestUpload(part))
+							.toArray(WebRequestUpload[]::new);
+					return ParameterProcessorResult.fromData(parts);
 				} else if (type == Optional.class) {
-					// It must be Optional<FileItem>
-					final Optional<WebRequestUpload> maybeFileItem = this
-						.getRequest()
-						.getFirstFileItem(name);
-					return ParameterProcessorResult.fromData(maybeFileItem);
+					// It must be Optional<WebRequestUpload>
+					// TODO: support Optional<Part>
+					try {
+						final Part part = this.servletRequest.getPart(name);
+						if (part != null) {
+							return ParameterProcessorResult
+									.fromData(
+									Optional.of(new PartWebRequestUpload(part)));
+						} else {
+							return ParameterProcessorResult.fromData(Optional
+									.empty());
+						}
+					} catch (final IOException e) {
+						// We must catch this exception.
+						// Since jetty throws exception if the request doesn't
+						// have a part.
+						// See
+						// org.eclipse.jetty.util.MultiPartInputStreamParser.parse.
+						log.info("{}: {}", e.getClass(), e.getMessage());
+						return ParameterProcessorResult.fromData(Optional
+								.empty());
+					}
 				} else {
 					throw new RuntimeException(
-						String.format(
-							"You shouldn't use @UploadFile annotation with %s. You must use FileItem or FileItem[]",
-							type));
+							String.format(
+									"You shouldn't use @UploadFile annotation with %s. You must use Part or Part[]",
+									type));
 				}
 			}
 		}
 
 		// Programming error. You may forget to specify the annotation.
 		throw new RuntimeException(String.format(
-			"There is no way to create parameter: %s, %s, %s",
-			this.getClass().getName(), this.getRequest().getPathInfo(),
-			parameter.getName()));
+				"There is no way to create parameter: %s, %s, %s",
+				this.getClass().getName(), this.getServletRequest()
+						.getPathInfo(),
+				parameter.getName()));
 	}
 
-	private ParameterProcessorResult getObjectFromParameterObject(
+	/**
+	 * Uploaded file object built on Servlet 3.0's javax.servlet.http.Part object.
+	 */
+	class PartWebRequestUpload implements WebRequestUpload {
+		private final Part part;
+
+		public PartWebRequestUpload(Part part) {
+			this.part = part;
+		}
+
+		@Override
+		public String getString(String encoding) {
+			try {
+				final String string = IOUtils.toString(
+						this.part.getInputStream(),
+						encoding);
+				return string;
+			} catch (final IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public InputStream getInputStream() {
+			try {
+				return this.part.getInputStream();
+			} catch (final IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public String getName() {
+			return this.part.getName();
+		}
+
+	}
+
+	private ParameterProcessorResult getObjectFromParameterObjectValue(
 			final Annotation annotation,
 			final String name,
 			final Class<?> type,
-			final Parameters params) {
+			final String value) {
 		if (type.equals(String.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (!value.isPresent()) {
+			if (value != null) {
+				return ParameterProcessorResult.fromData(value);
+			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
-			return ParameterProcessorResult.fromData(value.get());
 		} else if (type.equals(int.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (!value.isPresent()) {
+			if (value != null) {
+				return ParameterProcessorResult.fromData(Integer
+						.parseInt(value));
+			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
-			return ParameterProcessorResult.fromData(Integer.parseInt(value
-				.get()));
 		} else if (type.equals(long.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (!value.isPresent()) {
+			if (value != null) {
+				return ParameterProcessorResult
+						.fromData(Long.parseLong(value));
+			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
-			return ParameterProcessorResult
-				.fromData(Long.parseLong(value.get()));
 		} else if (type.equals(double.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (!value.isPresent()) {
+			if (value != null) {
+				return ParameterProcessorResult.fromData(Double
+						.parseDouble(value));
+			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
-			return ParameterProcessorResult.fromData(Double.parseDouble(value
-				.get()));
 		} else if (type.equals(OptionalInt.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (value.isPresent()) {
+			if (value != null) {
 				return ParameterProcessorResult.fromData(OptionalInt.of(Integer
-					.parseInt(value.get())));
+						.parseInt(value)));
 			} else {
 				return ParameterProcessorResult.fromData(OptionalInt.empty());
 			}
 		} else if (type.equals(OptionalLong.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (value.isPresent()) {
+			if (value != null) {
 				return ParameterProcessorResult.fromData(OptionalLong.of(Long
-					.parseLong(value.get())));
+						.parseLong(value)));
 			} else {
 				return ParameterProcessorResult.fromData(OptionalLong.empty());
 			}
 		} else if (type.equals(OptionalDouble.class)) {
-			final Optional<String> value = params.getFirst(name);
-			if (value.isPresent()) {
+			if (value != null) {
 				return ParameterProcessorResult.fromData(OptionalDouble
-					.of(Double
-						.parseDouble(value
-							.get())));
+						.of(Double
+								.parseDouble(value)));
 			} else {
 				return ParameterProcessorResult
-					.fromData(OptionalDouble.empty());
+						.fromData(OptionalDouble.empty());
 			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
 			// TODO: type parameter check
-			final Optional<String> value = params.getFirst(name);
-			if (value.isPresent()) {
-				return ParameterProcessorResult.fromData(Optional.of(value
-					.get()));
+			if (value != null) {
+				return ParameterProcessorResult.fromData(Optional.of(value));
 			} else {
 				return ParameterProcessorResult.fromData(Optional.empty());
 			}
 		} else {
 			// Programming error
 			throw new RuntimeException(String.format(
-				"Unknown parameter type '%s' for '%s'", type, name));
+					"Unknown parameter type '%s' for '%s'", type, name));
 		}
 	}
 
@@ -555,7 +647,7 @@ public abstract class ControllerBase implements Controller,
 	@Override
 	public Optional<Object> getPluginStashValue(Class<?> pluginClass, String key) {
 		final Object object = this.pluginStash.get(this.generatePluginStashKey(
-			pluginClass, key));
+				pluginClass, key));
 		return Optional.ofNullable(object);
 	}
 
@@ -563,7 +655,7 @@ public abstract class ControllerBase implements Controller,
 	public void setPluginStashValue(Class<?> pluginClass, String key,
 			Object value) {
 		this.pluginStash.put(this.generatePluginStashKey(pluginClass, key),
-			value);
+				value);
 	}
 
 	@Override
@@ -571,8 +663,13 @@ public abstract class ControllerBase implements Controller,
 			String key,
 			Supplier<?> supplier) {
 		return this.pluginStash.computeIfAbsent(
-			this.generatePluginStashKey(pluginClass, key),
-			(fullKey) -> supplier.get());
+				this.generatePluginStashKey(pluginClass, key),
+				(fullKey) -> supplier.get());
+	}
+
+	@Override
+	public Map<String, String> getPathParams() {
+		return this.pathParams;
 	}
 
 }

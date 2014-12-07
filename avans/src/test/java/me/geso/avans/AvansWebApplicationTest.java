@@ -2,39 +2,51 @@ package me.geso.avans;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.POST;
+import me.geso.avans.annotation.Param;
 import me.geso.avans.annotation.PathParam;
 import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.trigger.ResponseConverter;
-import me.geso.mech.MechJettyServlet;
+import me.geso.mech.Mech;
 import me.geso.mech.MechResponse;
 import me.geso.tinyvalidator.constraints.NotNull;
 import me.geso.webscrew.request.WebRequestUpload;
 import me.geso.webscrew.response.CallbackResponse;
 import me.geso.webscrew.response.WebResponse;
 
+import org.apache.commons.io.IOUtils;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("deprecation")
 public class AvansWebApplicationTest {
 
 	public static class MyServlet extends HttpServlet {
@@ -99,6 +111,46 @@ public class AvansWebApplicationTest {
 		@GET("/query")
 		public WebResponse query(@QueryParam("name") String name) {
 			final String text = "name:" + name;
+			return this.renderText(text);
+		}
+
+		@GET("/ng/param/get")
+		public WebResponse paramGet(@Param("name") String name) {
+			final String text = "name:" + name;
+			return this.renderText(text);
+		}
+
+		@POST("/ng/param/post")
+		public WebResponse paramPost(@Param("name") String name) {
+			final String text = "name:" + name;
+			return this.renderText(text);
+		}
+
+		@POST("/ng/part/single")
+		public WebResponse partSingle(@NonNull @Param("p") String p,
+				@NonNull @UploadFile("file") Part file)
+				throws IOException {
+			final String text = "p: " + p + "file:"
+					+ IOUtils.toString(file.getInputStream(), "UTF-8");
+			return this.renderText(text);
+		}
+
+		@POST("/ng/part/array")
+		public WebResponse partArray(@UploadFile("file") Part[] files)
+				throws IOException {
+			final String text = "file:"
+					+
+					Arrays.stream(files)
+							.map(it -> {
+								try {
+									return IOUtils.toString(
+											it.getInputStream(),
+											"UTF-8");
+								} catch (final Exception e) {
+									throw new RuntimeException(e);
+								}
+							})
+							.collect(Collectors.joining(","));
 			return this.renderText(text);
 		}
 
@@ -180,17 +232,35 @@ public class AvansWebApplicationTest {
 		private String name;
 	}
 
-	private MechJettyServlet mech;
+	private Mech mech;
+	private Server server;
 
 	@Before
-	public void before() {
-		this.mech = new MechJettyServlet(MyServlet.class);
+	public void before() throws Exception {
+		final ServletHolder servletHolder = new ServletHolder(MyServlet.class);
+		final String tmpDirName = System.getProperty("java.io.tmpdir");
+		servletHolder.getRegistration().setMultipartConfig(
+				new MultipartConfigElement(tmpDirName));
+		this.server = new Server(0);
+		final ServletContextHandler context = new ServletContextHandler(
+				this.server,
+				"/",
+				ServletContextHandler.SESSIONS
+				);
+		context.addServlet(servletHolder, "/*");
+		this.server.setStopAtShutdown(true);
+		this.server.start();
+		final ServerConnector connector = (ServerConnector) this.server
+				.getConnectors()[0];
+		final int port = connector.getLocalPort();
+		final String baseURL = "http://127.0.0.1:" + port;
+		this.mech = new Mech(baseURL);
 	}
 
 	@After
 	public void after() throws Exception {
-		if (this.mech != null) {
-			this.mech.close();
+		if (this.server != null) {
+			this.server.stop();
 		}
 	}
 
@@ -232,6 +302,53 @@ public class AvansWebApplicationTest {
 			Assert.assertTrue(res.getContentString().contains("name:おほ"));
 		}
 
+	}
+
+	@Test
+	public void testNg() throws IOException {
+
+		try (MechResponse res = this.mech.get(
+				"/ng/param/get?name=%E3%81%8A%E3%81%BB")
+				.execute()) {
+			Assert.assertEquals(res.getStatusCode(), 200);
+			Assert.assertTrue(res.getContentString().contains("name:おほ"));
+		}
+
+		try (MechResponse res = this.mech.post(
+				"/ng/param/post")
+				.param("name", "保坂")
+				.execute()) {
+			Assert.assertEquals(res.getStatusCode(), 200);
+			Assert.assertTrue(res.getContentString().contains("name:保坂"));
+		}
+
+		try (MechResponse res = this.mech.post(
+				"/ng/param/post")
+				.param("name", "保坂")
+				.execute()) {
+			Assert.assertEquals(res.getStatusCode(), 200);
+			Assert.assertTrue(res.getContentString().contains("name:保坂"));
+		}
+
+		try (MechResponse res = this.mech.postMultipart(
+				"/ng/part/single")
+				.param("p", "hey")
+				.file("file", new File("src/test/resources/hello.txt"))
+				.execute()) {
+			Assert.assertEquals(res.getStatusCode(), 200);
+			System.out.println(res.getContentString());
+			Assert.assertEquals("p: heyfile:hello", res.getContentString());
+		}
+
+		try (MechResponse res = this.mech.postMultipart(
+				"/ng/part/array")
+				.file("file", new File("src/test/resources/hello.txt"))
+				.file("file", new File("src/test/resources/hello.txt"))
+				.execute()) {
+			Assert.assertEquals(res.getStatusCode(), 200);
+			System.out.println(res.getContentString());
+			Assert.assertTrue(res.getContentString().contains("file:hello"));
+		}
 	}
 
 	@Test

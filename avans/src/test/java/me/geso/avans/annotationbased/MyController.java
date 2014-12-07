@@ -7,6 +7,7 @@ import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
 import me.geso.webscrew.response.WebResponse;
 
+@SuppressWarnings("deprecation")
 public class MyController extends ControllerBase {
 
 	@GET("/")

@@ -6,15 +6,15 @@ import java.util.Optional;
 import java.util.OptionalLong;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import lombok.NonNull;
-import me.geso.webscrew.request.WebRequest;
 import me.geso.webscrew.response.WebResponse;
 
 public class DefaultWebSessionManager implements
 		WebSessionManager {
 	@NonNull
-	private final WebRequest request;
+	private final HttpServletRequest request;
 	@NonNull
 	private final WebSessionStore sessionStore;
 	@NonNull
@@ -24,7 +24,7 @@ public class DefaultWebSessionManager implements
 	@NonNull
 	private final XSRFTokenCookieFactory xsrfTokenCookieFactory;
 
-	public DefaultWebSessionManager(WebRequest request,
+	public DefaultWebSessionManager(HttpServletRequest request,
 			WebSessionStore sessionStore,
 			SessionIDGenerator sessionIDGenerator,
 			SessionCookieFactory sessionCookieFactory,

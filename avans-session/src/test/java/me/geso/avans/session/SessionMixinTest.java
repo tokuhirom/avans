@@ -70,7 +70,7 @@ public class SessionMixinTest {
 						32);
 
 				return new DefaultWebSessionManager(
-						this.getRequest(),
+						this.getServletRequest(),
 						MyController.store,
 						sessionIDGenerator,
 						sessionCookieFactory,
