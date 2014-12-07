@@ -302,6 +302,15 @@ public class AvansWebApplicationTest {
 			Assert.assertTrue(res.getContentString().contains("name:おほ"));
 		}
 
+		try (MechResponse res = this.mech.get("/query")
+				.execute()) {
+			Assert.assertEquals(res.getStatusCode(), 400);
+			System.out.println(res.getContentString());
+			Assert.assertEquals(
+					"{\"code\":400,\"messages\":[\"Missing mandatory parameter: name\"]}",
+					res.getContentString());
+		}
+
 	}
 
 	@Test
