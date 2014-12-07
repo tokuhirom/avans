@@ -127,9 +127,10 @@ public class AvansWebApplicationTest {
 		}
 
 		@POST("/ng/part/single")
-		public WebResponse partSingle(@NonNull @UploadFile("file") Part file)
+		public WebResponse partSingle(@NonNull @Param("p") String p,
+				@NonNull @UploadFile("file") Part file)
 				throws IOException {
-			final String text = "file:"
+			final String text = "p: " + p + "file:"
 					+ IOUtils.toString(file.getInputStream(), "UTF-8");
 			return this.renderText(text);
 		}
@@ -331,11 +332,12 @@ public class AvansWebApplicationTest {
 
 		try (MechResponse res = this.mech.postMultipart(
 				"/ng/part/single")
+				.param("p", "hey")
 				.file("file", new File("src/test/resources/hello.txt"))
 				.execute()) {
 			Assert.assertEquals(res.getStatusCode(), 200);
 			System.out.println(res.getContentString());
-			Assert.assertTrue(res.getContentString().contains("file:hello"));
+			Assert.assertEquals("p: heyfile:hello", res.getContentString());
 		}
 
 		try (MechResponse res = this.mech.postMultipart(
