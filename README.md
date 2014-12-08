@@ -35,9 +35,9 @@ That's all.
 avans was uploaded on maven central.
 Please look maven central site: http://search.maven.org/#search%7Cga%7C1%7Cavans
 
-## Create skelton site
+## Create skeleton site
 
-avans supports maven archetype. You can create a simple site by this skelton generator.
+avans supports maven archetype. You can create a simple site by this skeleton generator.
 
     mvn archetype:generate \
       -DarchetypeGroupId=me.geso.avans \
