@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -31,27 +29,18 @@ import javax.servlet.http.Part;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.Param;
 import me.geso.avans.annotation.PathParam;
-import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.jackson.JacksonJsonParamReader;
 import me.geso.avans.jackson.JacksonJsonView;
 import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
-import me.geso.webscrew.Parameters;
-import me.geso.webscrew.request.WebRequest;
-import me.geso.webscrew.request.WebRequestUpload;
-import me.geso.webscrew.request.impl.DefaultParameters;
-import me.geso.webscrew.request.impl.DefaultParameters.Builder;
-import me.geso.webscrew.request.impl.DefaultWebRequest;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +49,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author tokuhirom
  */
-@SuppressWarnings("deprecation")
 @Slf4j
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
@@ -87,43 +75,13 @@ public abstract class ControllerBase implements Controller,
 		this.pathParams = Collections.unmodifiableMap(captured);
 	}
 
-	@Deprecated
-	public WebRequest createWebReqeust(final HttpServletRequest servletRequest) {
-		try {
-			return new DefaultWebRequest(servletRequest, StandardCharsets.UTF_8);
-		} catch (final UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	private void setDefaultCharacterEncoding() {
 		this.servletResponse.setCharacterEncoding("UTF-8");
 	}
 
 	@Override
-	@Deprecated
-	public WebRequest getRequest() {
-		return this.createWebReqeust(this.servletRequest);
-	}
-
-	@Override
 	public HttpServletRequest getServletRequest() {
 		return this.servletRequest;
-	}
-
-	/**
-	 * Get a path parameter.
-	 *
-	 * @return
-	 */
-	@Deprecated
-	@Override
-	public Parameters getPathParameters() {
-		final Builder pathParameters = DefaultParameters.builder();
-		for (final Entry<String, String> entry : this.pathParams.entrySet()) {
-			pathParameters.put(entry.getKey(), entry.getValue());
-		}
-		return pathParameters.build();
 	}
 
 	/**
@@ -448,18 +406,6 @@ public abstract class ControllerBase implements Controller,
 						.getParameter(name);
 				return this.getObjectFromParameterObjectValue(annotation, name,
 						type, value);
-			} else if (annotation instanceof QueryParam) {
-				final String name = ((QueryParam) annotation).value();
-				final String value = this.getServletRequest()
-						.getParameter(name);
-				return this.getObjectFromParameterObjectValue(annotation, name,
-						type, value);
-			} else if (annotation instanceof BodyParam) {
-				final String name = ((BodyParam) annotation).value();
-				final String value = this.getServletRequest()
-						.getParameter(name);
-				return this.getObjectFromParameterObjectValue(annotation, name,
-						type, value);
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam) annotation).value();
 				final String value = this.pathParams.get(name);
@@ -481,24 +427,6 @@ public abstract class ControllerBase implements Controller,
 								return name.equals(part.getName());
 							}).toArray(Part[]::new);
 					return ParameterProcessorResult.fromData(parts);
-				} else if (type == WebRequestUpload.class) {
-					// TODO: remove me
-					final Part part = this.servletRequest.getPart(name);
-					if (part != null) {
-						return ParameterProcessorResult
-								.fromData(new PartWebRequestUpload(part));
-					} else {
-						return ParameterProcessorResult.missingParameter(name);
-					}
-				} else if (type == WebRequestUpload[].class) {
-					// TODO: remove me
-					final WebRequestUpload[] parts = this.servletRequest
-							.getParts()
-							.stream()
-							.filter(part -> name.equals(part.getName()))
-							.map(part -> new PartWebRequestUpload(part))
-							.toArray(WebRequestUpload[]::new);
-					return ParameterProcessorResult.fromData(parts);
 				} else if (type == Optional.class) {
 					// It must be Optional<WebRequestUpload>
 					// TODO: support Optional<Part>
@@ -507,7 +435,7 @@ public abstract class ControllerBase implements Controller,
 						if (part != null) {
 							return ParameterProcessorResult
 									.fromData(
-									Optional.of(new PartWebRequestUpload(part)));
+									Optional.of(part));
 						} else {
 							return ParameterProcessorResult.fromData(Optional
 									.empty());
@@ -537,44 +465,6 @@ public abstract class ControllerBase implements Controller,
 				this.getClass().getName(), this.getServletRequest()
 						.getPathInfo(),
 				parameter.getName()));
-	}
-
-	/**
-	 * Uploaded file object built on Servlet 3.0's javax.servlet.http.Part object.
-	 */
-	class PartWebRequestUpload implements WebRequestUpload {
-		private final Part part;
-
-		public PartWebRequestUpload(Part part) {
-			this.part = part;
-		}
-
-		@Override
-		public String getString(String encoding) {
-			try {
-				final String string = IOUtils.toString(
-						this.part.getInputStream(),
-						encoding);
-				return string;
-			} catch (final IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override
-		public InputStream getInputStream() {
-			try {
-				return this.part.getInputStream();
-			} catch (final IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override
-		public String getName() {
-			return this.part.getName();
-		}
-
 	}
 
 	private ParameterProcessorResult getObjectFromParameterObjectValue(

@@ -31,9 +31,8 @@ public class ParamProcessorTest {
 		@ParamProcessor(targetClass = String.class)
 		public ParameterProcessorResult paramUpperQ(Parameter parameter) {
 			log.info("paramUpperQ");
-			@SuppressWarnings("deprecation")
-			final Optional<String> q = this.getRequest().getQueryParams()
-				.getFirst("q");
+			final Optional<String> q = Optional.ofNullable(this
+					.getServletRequest().getParameter("q"));
 			if (q.isPresent()) {
 				return ParameterProcessorResult.fromData(q.get().toUpperCase());
 			} else {
