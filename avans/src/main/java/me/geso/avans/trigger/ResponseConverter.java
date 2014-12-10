@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
  * Response converter reduces your controller code. e.g. you can return the DTO
  * object from controller method, and convert it as JSON response in response
  * converter.
+ * <p>
+ * I don't recommend to use this.
  * 
  * <pre>
  * <code>public class MyController extends ControllerBase {

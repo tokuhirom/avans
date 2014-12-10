@@ -8,22 +8,13 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import me.geso.webscrew.Parameters;
-import me.geso.webscrew.request.WebRequest;
-
 public interface Controller extends AutoCloseable {
 
 	void init(final HttpServletRequest request,
 			final HttpServletResponse response,
 			final Map<String, String> captured);
 
-	@Deprecated
-	public WebRequest getRequest();
-
 	public HttpServletRequest getServletRequest();
-
-	@Deprecated
-	public Parameters getPathParameters();
 
 	public Map<String, String> getPathParams();
 

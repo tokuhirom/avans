@@ -20,19 +20,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.POST;
 import me.geso.avans.annotation.Param;
 import me.geso.avans.annotation.PathParam;
-import me.geso.avans.annotation.QueryParam;
 import me.geso.avans.annotation.UploadFile;
 import me.geso.avans.trigger.ResponseConverter;
 import me.geso.mech.Mech;
 import me.geso.mech.MechResponse;
 import me.geso.tinyvalidator.constraints.NotNull;
-import me.geso.webscrew.request.WebRequestUpload;
 import me.geso.webscrew.response.CallbackResponse;
 import me.geso.webscrew.response.WebResponse;
 
@@ -46,7 +43,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-@SuppressWarnings("deprecation")
 public class AvansWebApplicationTest {
 
 	public static class MyServlet extends HttpServlet {
@@ -109,7 +105,7 @@ public class AvansWebApplicationTest {
 		}
 
 		@GET("/query")
-		public WebResponse query(@QueryParam("name") String name) {
+		public WebResponse query(@Param("name") String name) {
 			final String text = "name:" + name;
 			return this.renderText(text);
 		}
@@ -155,26 +151,26 @@ public class AvansWebApplicationTest {
 		}
 
 		@POST("/postForm")
-		public WebResponse postForm(@BodyParam("name") String name) {
+		public WebResponse postForm(@Param("name") String name) {
 			final String text = "(postform)name:" + name;
 			return this.renderText(text);
 		}
 
 		@POST("/postMultipart")
-		public WebResponse postMultipart(@BodyParam("name") String name,
-				@UploadFile("tmpl") WebRequestUpload tmpl) {
+		public WebResponse postMultipart(@Param("name") String name,
+				@UploadFile("tmpl") Part tmpl) throws IOException {
 			final String text = "(postform)name:"
 					+ name
 					+ ":"
-					+ tmpl.getString("UTF-8");
+					+ IOUtils.toString(tmpl.getInputStream(), "UTF-8");
 			return this.renderText(text);
 		}
 
 		@GET("/queryParamAnnotation")
 		public WebResponse queryParamAnnotation(
-				@QueryParam("a") final String a,
-				@QueryParam("b") final OptionalInt b,
-				@QueryParam("c") final OptionalInt c) {
+				@Param("a") final String a,
+				@Param("b") final OptionalInt b,
+				@Param("c") final OptionalInt c) {
 			final String text = "a:" + a + ",b:" + b + ",c:" + c;
 			return this.renderText(text);
 		}
@@ -187,25 +183,27 @@ public class AvansWebApplicationTest {
 
 		@GET("/optionalString")
 		public WebResponse optionalString(
-				@QueryParam("a") final Optional<String> a) {
+				@Param("a") final Optional<String> a) {
 			final String text = "a:" + a;
 			return this.renderText(text);
 		}
 
 		@POST("/uploadFile")
 		@SneakyThrows
-		public WebResponse uploadFile(@UploadFile("a") final WebRequestUpload a) {
-			final String text = "a:" + a.getString("UTF-8");
+		public WebResponse uploadFile(@UploadFile("a") final Part a) {
+			final String text = "a:"
+					+ IOUtils.toString(a.getInputStream(), "UTF-8");
 			return this.renderText(text);
 		}
 
 		@POST("/uploadOptionalFile")
 		@SneakyThrows
 		public WebResponse uploadOptionalFile(
-				@UploadFile("a") final Optional<WebRequestUpload> a) {
+				@UploadFile("a") final Optional<Part> a) {
 			String text = "a:";
 			if (a.isPresent()) {
-				text = text + a.get().getString("UTF-8");
+				text = text
+						+ IOUtils.toString(a.get().getInputStream(), "UTF-8");
 			} else {
 				text = text + "missing";
 			}
@@ -215,11 +213,11 @@ public class AvansWebApplicationTest {
 		@POST("/uploadFileArray")
 		@SneakyThrows
 		public WebResponse uploadFileArray(
-				@UploadFile("a") final WebRequestUpload[] a) {
+				@UploadFile("a") final Part[] a) {
 			final StringBuilder builder = new StringBuilder();
 			builder.append("a:");
-			for (final WebRequestUpload item : a) {
-				builder.append(item.getString("UTF-8"));
+			for (final Part item : a) {
+				builder.append(IOUtils.toString(item.getInputStream(), "UTF-8"));
 				builder.append(",");
 			}
 			return this.renderText(builder.toString());
@@ -425,7 +423,7 @@ public class AvansWebApplicationTest {
 	}
 
 	@Test
-	public void testQueryParamAnnotation() throws Exception {
+	public void testParamAnnotation() throws Exception {
 		try (MechResponse res = this.mech
 				.get("/queryParamAnnotation?a=b")
 				.execute()) {
