@@ -12,18 +12,19 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<avans.version>0.40.0</avans.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>${project.version}</version>
+			<version>${avans.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans-jetty</artifactId>
-			<version>${project.version}</version>
+			<version>${avans.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -42,7 +43,6 @@
 			<version>0.11.8</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
