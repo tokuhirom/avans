@@ -11,6 +11,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<avans.version>0.40.0</avans.version>
+		<tomcat.version>7.0.56</tomcat.version>
 	</properties>
 
 	<dependencies>
@@ -23,23 +25,23 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>${project.version}</version>
+			<version>${avans.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans-jetty</artifactId>
-			<version>${project.version}</version>
+			<version>${avans.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans-mustache</artifactId>
-			<version>${project.version}</version>
+			<version>${avans.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>me.geso</groupId>
-			<artifactId>mech</artifactId>
-			<version>0.11.8</version>
+			<artifactId>mech2</artifactId>
+			<version>0.2.1</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -54,6 +56,22 @@
 			<version>1.14.4</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<version>${tomcat.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-catalina</artifactId>
+			<version>${tomcat.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-jasper</artifactId>
+			<version>${tomcat.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

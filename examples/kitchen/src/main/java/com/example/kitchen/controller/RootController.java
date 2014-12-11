@@ -4,9 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import me.geso.avans.BasicAPIResponse;
 import me.geso.avans.ControllerBase;
-import me.geso.avans.annotation.BodyParam;
 import me.geso.avans.annotation.GET;
-import me.geso.avans.annotation.QueryParam;
+import me.geso.avans.annotation.Param;
 import me.geso.avans.mustache.MustacheView;
 import me.geso.avans.mustache.MustacheViewMixin;
 import me.geso.webscrew.response.WebResponse;
@@ -26,8 +25,8 @@ public class RootController extends ControllerBase implements MustacheViewMixin 
 	}
 
 	@GET("/q/q/query")
-	public MyObjectAPIResponse qqquery(@QueryParam("hoge") String hoge,
-			@BodyParam("foo") int foo) {
+	public MyObjectAPIResponse qqquery(@Param("hoge") String hoge,
+			@Param("foo") int foo) {
 		return new MyObjectAPIResponse(new MyObject("John"));
 	}
 

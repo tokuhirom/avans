@@ -1,25 +1,23 @@
 package com.example.kitchen;
 
-import com.example.kitchen.controller.RootController;
-import me.geso.avans.jetty.JettyServerBuilder;
-import org.eclipse.jetty.server.Server;
+import java.io.File;
+
+import org.apache.catalina.Globals;
+import org.apache.catalina.startup.Tomcat;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
 		new Main().doMain();
 	}
 
-	private static final int port = 8080;
-
 	private void doMain() throws Exception {
-		Server server = new JettyServerBuilder()
-				.setPort(port)
-				.setMaxThreads(10)
-				.setMinThreads(10)
-				.registerPackage(RootController.class.getPackage())
-				.build();
-		server.start();
-		server.join();
+		Tomcat tomcat = new Tomcat();
+		tomcat.setPort(0);
+		org.apache.catalina.Context webContext = tomcat.addWebapp("/",
+				new File("src/main/webapp").getAbsolutePath());
+		webContext.getServletContext().setAttribute(Globals.ALT_DD_ATTR,
+				"src/main/webapp/WEB-INF/web.xml");
+		tomcat.start();
 	}
 
 }
