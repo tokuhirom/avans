@@ -7,6 +7,7 @@
 	<name>kitchen</name>
 	<version>0.34.4-SNAPSHOT</version>
 	<description>kitchen</description>
+	<packaging>war</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,11 +26,6 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans</artifactId>
-			<version>${avans.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>me.geso</groupId>
-			<artifactId>avans-jetty</artifactId>
 			<version>${avans.version}</version>
 		</dependency>
 		<dependency>
@@ -60,16 +56,19 @@
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
 			<version>${tomcat.version}</version>
+      <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-catalina</artifactId>
 			<version>${tomcat.version}</version>
+      <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-jasper</artifactId>
 			<version>${tomcat.version}</version>
+      <scope>test</scope>
 		</dependency>
 
 	</dependencies>
@@ -89,49 +88,12 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.6</version>
-				<configuration>
-					<createDependencyReducedPom>true</createDependencyReducedPom>
-					<filters>
-						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/*.SF</exclude>
-								<exclude>META-INF/*.DSA</exclude>
-								<exclude>META-INF/*.RSA</exclude>
-							</excludes>
-						</filter>
-					</filters>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.example.kitchen.Main</mainClass>
-								</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
 					<!-- DO NOT DEPLOY (or Release) -->
 					<skip>true</skip>
 				</configuration>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>

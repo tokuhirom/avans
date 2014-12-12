@@ -54,9 +54,11 @@ public class RootControllerTest {
 	@Test
 	public void testRoot() throws Exception {
 		Mech2Result res = this.mech2.get("/").execute();
+		ContentType ct = ContentType.parse(
+				res.getResponse().getFirstHeader("Content-Type")
+						.getValue());
 		assertEquals(200, res.getResponse().getStatusLine().getStatusCode());
-		assertEquals("text/html",
-				res.getResponse().getFirstHeader("Content-Type"));
+		assertEquals("text/html", ct.getMimeType());
 		assertTrue(res.getResponseBodyAsString().contains("<!doctype"));
 	}
 
