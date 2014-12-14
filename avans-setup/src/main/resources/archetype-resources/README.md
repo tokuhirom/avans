@@ -1,4 +1,4 @@
-# ${project}
+# ${artifactId}
 
 ## Start the server
 
