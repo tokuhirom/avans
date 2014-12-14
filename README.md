@@ -98,7 +98,7 @@ You can modify every response by this hook point.
 
     public class MyController extends ControllerBase {
       @ResponseFilter
-      public void beforeDispatch(WebResponse resp) {
+      public void responseFilter(WebResponse resp) {
         resp.addHeader("X-Content-Type-Options", "nosniff");
       }
     }
