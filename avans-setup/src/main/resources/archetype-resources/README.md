@@ -1,10 +1,13 @@
-# ${project}
+${artifactId}
+=============
 
-## Start the server
+Start the server
+----------------
 
     mvn tomcat7:run
 
-## Creating war file
+Creating war file
+-----------------
 
     mvn package
 
