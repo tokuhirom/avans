@@ -42,7 +42,7 @@ avans supports maven archetype. You can create a simple site by this skeleton ge
     mvn archetype:generate \
       -DarchetypeGroupId=me.geso.avans \
       -DarchetypeArtifactId=avans-setup \
-      -DarchetypeVersion=LATEST_VERSION \
+      -DarchetypeVersion=LATEST \
       -DgroupId=com.example.myapp \
       -DartifactId=MyWebApp
 
