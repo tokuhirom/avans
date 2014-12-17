@@ -4,13 +4,17 @@
     <servlet-name>main</servlet-name>
     <servlet-class>me.geso.avans.AvansServlet</servlet-class>
     <init-param>
-      <param-name>class</param-name> 
-      <param-value>${package}.controller.RootController</param-value> 
+      <param-name>class</param-name>
+      <param-value>${package}.controller.RootController</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
     <servlet-name>main</servlet-name>
     <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/static/*</url-pattern>
   </servlet-mapping>
 </web-app>
