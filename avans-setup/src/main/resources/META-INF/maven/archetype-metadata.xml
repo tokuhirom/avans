@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0 http://maven.apache.org/xsd/archetype-descriptor-1.0.0.xsd"
+  name="avans-setup" partial="false">
+  <fileSets>
+    <fileSet filtered="true" packaged="true" encoding="UTF-8">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+
+    <fileSet filtered="true" packaged="true" encoding="UTF-8">
+      <directory>src/test/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+
+    <fileSet filtered="true" packaged="false" encoding="UTF-8">
+      <directory>src/main/resources/templates</directory>
+      <includes>
+        <include>**/*.mustache</include>
+      </includes>
+    </fileSet>
+
+    <fileSet filtered="true" packaged="false" encoding="UTF-8">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>WEB-INF/web.xml</include>
+      </includes>
+      <excludes>
+        <exclude>static/**/*</exclude>
+      </excludes>
+    </fileSet>
+
+    <fileSet filtered="false" packaged="false" encoding="UTF-8">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>static/**/*</include>
+      </includes>
+    </fileSet>
+
+    <fileSet filtered="true" packaged="false" encoding="UTF-8">
+      <directory></directory>
+      <includes>
+        <include>README.md</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</archetype-descriptor>
