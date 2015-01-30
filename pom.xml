@@ -162,6 +162,9 @@
 					<findbugsXmlOutputDirectory>target/site/findbugs</findbugsXmlOutputDirectory>
 				</configuration>
 			</plugin>
+			<!--
+					 maven-checkstyle-plugin does not support Java 8
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
@@ -182,6 +185,7 @@
 					<outputFile>${project.build.directory}/site/checkstyle/checkstyle-result.xml</outputFile>
 				</configuration>
 			</plugin>
+			-->
 		</plugins>
 	</build>
 
