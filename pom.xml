@@ -154,7 +154,7 @@
 				</executions>
 				<configuration>
 					<effort>Max</effort>
-					<threshold>Low</threshold>
+					<threshold>Default</threshold>
 					<failOnError>true</failOnError>
 					<xmlOutput>true</xmlOutput>
 					<outputEncoding>UTF-8</outputEncoding>
