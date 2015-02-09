@@ -8,13 +8,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
