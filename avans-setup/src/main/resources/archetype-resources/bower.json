@@ -1,0 +1,9 @@
+{
+     "name": "${artifactId}",
+     "version": "0.0.1",
+     "dependencies": {
+         "bootstrap": "~3.3.2",
+         "underscore" : "~1.7.0",
+         "dispatch": "~1.3.0"
+     }
+}

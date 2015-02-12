@@ -17,4 +17,8 @@
     <servlet-name>default</servlet-name>
     <url-pattern>/static/*</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/components/*</url-pattern>
+  </servlet-mapping>
 </web-app>
