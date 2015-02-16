@@ -6,6 +6,9 @@ import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
@@ -21,11 +24,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Enclosed.class)
-@SuiteClasses({ ControllerBaseTest.class,
-		ControllerBaseTest.TestOptionalLong.class })
 public class ControllerBaseTest {
 
 	// --------------------------------------------------------------
@@ -143,13 +143,159 @@ public class ControllerBaseTest {
 
 		@Test
 		public void testX() throws Exception {
-			System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			// without string parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=5963", mech2.get("/").execute()
+						.getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=5963", mech2.get("/")
+						.addQueryParameter("q", "")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// with string
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), baseURI);
+						assertEquals("q=4649", mech2.get("/")
+								.addQueryParameter("q", "4649")
+								.execute()
+								.getResponseBodyAsString());
+					});
+		}
+	}
+
+	/**
+	 * OptionalInt must be accept empty string as OptionalLong.empty().
+	 */
+	public static class TestOptionalInt {
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") OptionalInt q) {
+				return this.renderText("q=" + q.orElse(5963));
+			}
+		}
+
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			// without string parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=5963", mech2.get("/").execute()
+						.getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=5963", mech2.get("/")
+						.addQueryParameter("q", "")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// with string
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), baseURI);
+						assertEquals("q=4649", mech2.get("/")
+								.addQueryParameter("q", "4649")
+								.execute()
+								.getResponseBodyAsString());
+					});
+		}
+	}
+
+	/**
+	 * OptionalDouble must be accept empty string as OptionalLong.empty().
+	 */
+	public static class TestOptionalDouble {
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") OptionalDouble q) {
+				return this.renderText("q=" + q.orElse(3.14));
+			}
+		}
+
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			// without string parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=3.14", mech2.get("/").execute()
+						.getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=3.14", mech2.get("/")
+						.addQueryParameter("q", "")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// with string
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), baseURI);
+						assertEquals("q=2.71", mech2.get("/")
+								.addQueryParameter("q", "2.71")
+								.execute()
+								.getResponseBodyAsString());
+					});
+		}
+	}
+
+	/**
+	 * OptionalLong must be accept empty string as OptionalLong.empty().
+	 */
+	public static class TestOptionalStringParameter {
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Optional<String> q) {
+				return this.renderText("q=" + q.orElse("Missing"));
+			}
+		}
+
+		@Test
+		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
 						.build(), baseURI);
-				assertEquals("q=5963", mech2.get("/").execute()
+				assertEquals("q=Missing", mech2.get("/").execute()
+						.getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/")
+						.addQueryParameter("q", "")
+						.execute()
 						.getResponseBodyAsString());
 			});
 			JettyServletTester.runServlet(

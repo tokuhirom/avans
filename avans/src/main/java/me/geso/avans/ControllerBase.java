@@ -29,9 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.annotation.BeanParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.Param;
@@ -44,8 +43,9 @@ import me.geso.avans.trigger.ResponseConverter;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * You should create this object per HTTP request.
@@ -536,21 +536,21 @@ public abstract class ControllerBase implements Controller,
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(OptionalInt.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(OptionalInt.of(Integer
 					.parseInt(value)));
 			} else {
 				return ParameterProcessorResult.fromData(OptionalInt.empty());
 			}
 		} else if (type.equals(OptionalLong.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(OptionalLong.of(Long
 					.parseLong(value)));
 			} else {
 				return ParameterProcessorResult.fromData(OptionalLong.empty());
 			}
 		} else if (type.equals(OptionalDouble.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(OptionalDouble
 					.of(Double
 						.parseDouble(value)));
@@ -561,7 +561,7 @@ public abstract class ControllerBase implements Controller,
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
 			// TODO: type parameter check
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(Optional.of(value));
 			} else {
 				return ParameterProcessorResult.fromData(Optional.empty());
