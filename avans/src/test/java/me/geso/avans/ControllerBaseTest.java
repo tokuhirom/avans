@@ -1,21 +1,36 @@
 package me.geso.avans;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
+import me.geso.avans.annotation.GET;
+import me.geso.avans.annotation.Param;
 import me.geso.avans.trigger.ResponseFilter;
+import me.geso.mech2.Mech2;
+import me.geso.mech2.Mech2WithBase;
+import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
 
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite.SuiteClasses;
 
+@RunWith(Enclosed.class)
+@SuiteClasses({ ControllerBaseTest.class,
+		ControllerBaseTest.TestOptionalLong.class })
 public class ControllerBaseTest {
 
 	// --------------------------------------------------------------
 
+	@Ignore
 	public static class MyController extends ControllerBase {
 		@ResponseFilter
 		public void filter(WebResponse repsonse) {
@@ -38,10 +53,12 @@ public class ControllerBaseTest {
 		}
 	}
 
+	@Ignore
 	public static abstract class Controller3 extends ControllerBase implements
 			Mixin {
 	}
 
+	@Ignore
 	public static class Controller2 extends Controller3 implements Mixin {
 	}
 
@@ -73,6 +90,7 @@ public class ControllerBaseTest {
 		}
 	}
 
+	@Ignore
 	public static abstract class ControllerX extends ControllerBase implements
 			MixinA {
 		@Override
@@ -81,6 +99,7 @@ public class ControllerBaseTest {
 		}
 	}
 
+	@Ignore
 	public static class ControllerY extends ControllerX implements MixinB {
 		@Override
 		@ResponseFilter
@@ -109,6 +128,42 @@ public class ControllerBaseTest {
 
 	private Method method(Class<?> klass, String name) throws Exception {
 		return klass.getMethod(name, WebResponse.class);
+	}
+
+	/**
+	 * OptionalLong must be accept empty string as OptionalLong.empty().
+	 */
+	public static class TestOptionalLong {
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") OptionalLong q) {
+				return this.renderText("q=" + q.orElse(5963));
+			}
+		}
+
+		@Test
+		public void testX() throws Exception {
+			System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=5963", mech2.get("/").execute()
+						.getResponseBodyAsString());
+			});
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), baseURI);
+						assertEquals("q=4649", mech2.get("/")
+								.addQueryParameter("q", "4649")
+								.execute()
+								.getResponseBodyAsString());
+					});
+		}
 	}
 
 }
