@@ -138,28 +138,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<phase>test</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<effort>Max</effort>
-					<threshold>Default</threshold>
-					<failOnError>true</failOnError>
-					<xmlOutput>true</xmlOutput>
-					<outputEncoding>UTF-8</outputEncoding>
-					<xmlOutputDirectory>target/site/findbugs</xmlOutputDirectory>
-					<findbugsXmlOutputDirectory>target/site/findbugs</findbugsXmlOutputDirectory>
-				</configuration>
-			</plugin>
 			<!--
 					 maven-checkstyle-plugin does not support Java 8
 
