@@ -24,7 +24,7 @@ public class Dispatcher implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger logger = LoggerFactory
-			.getLogger(Dispatcher.class);
+		.getLogger(Dispatcher.class);
 	private final WebRouter<Action> router = new WebRouter<>();
 
 	public Dispatcher() {
@@ -47,11 +47,11 @@ public class Dispatcher implements Serializable {
 	public void registerPackage(final String packageName) {
 		Dispatcher.logger.info("Registering package: {}", packageName);
 		final ClassLoader contextClassLoader = Thread.currentThread()
-				.getContextClassLoader();
+			.getContextClassLoader();
 		ImmutableSet<ClassInfo> topLevelClasses;
 		try {
 			topLevelClasses = ClassPath.from(
-					contextClassLoader).getTopLevelClasses(packageName);
+				contextClassLoader).getTopLevelClasses(packageName);
 		} catch (final IOException e) {
 			// It caused by programming error.
 			throw new RuntimeException(e);
@@ -60,7 +60,7 @@ public class Dispatcher implements Serializable {
 			final Class<?> klass = classInfo.load();
 			if (Controller.class.isAssignableFrom(klass)) {
 				final Class<? extends Controller> pagesClass = klass
-						.asSubclass(Controller.class);
+					.asSubclass(Controller.class);
 				this.registerClass(pagesClass);
 			} else {
 				Dispatcher.logger.info("{} is not a Controller", klass);
@@ -107,7 +107,7 @@ public class Dispatcher implements Serializable {
 		final String path = request.getPathInfo();
 		// log.debug("{} {}", method, path);
 		final RoutingResult<Action> match = this.router.match(
-				method, path);
+			method, path);
 		if (match == null) {
 			this.writeNotFoundErrorPage(request, response);
 			return;
@@ -121,7 +121,7 @@ public class Dispatcher implements Serializable {
 		final Map<String, String> captured = match.getCaptured();
 		final Action action = match.getDestination();
 		this.runController(action.getControllerClass(), action.getMethod(),
-				request, response, captured);
+			request, response, captured);
 	}
 
 	// You can replace this method by concrete code in your sub class.
@@ -145,7 +145,7 @@ public class Dispatcher implements Serializable {
 		response.setContentType("text/html; charset=utf-8");
 		try {
 			response.getWriter()
-			.write("<!doctype html><html><div style='font-size: 400%'>405 Method Not Allowed</div></html>");
+				.write("<!doctype html><html><div style='font-size: 400%'>405 Method Not Allowed</div></html>");
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -158,7 +158,7 @@ public class Dispatcher implements Serializable {
 		response.setContentType("text/html; charset=utf-8");
 		try {
 			response.getWriter()
-			.write("<!doctype html><html><div style='font-size: 400%'>404 Not Found</div></html>");
+				.write("<!doctype html><html><div style='font-size: 400%'>404 Not Found</div></html>");
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}

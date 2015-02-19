@@ -49,7 +49,7 @@ class FilterScanner {
 		// LinkedList じゃなくてもっとうまいやり方あると思う｡
 		final LinkedList<Class<?>> linearIsa = new LinkedList<>();
 		while (klass != null
-				&& klass != ControllerBase.class) {
+			&& klass != ControllerBase.class) {
 			linearIsa.addFirst(klass);
 			klass = klass.getSuperclass();
 		}
@@ -71,10 +71,10 @@ class FilterScanner {
 
 	Filters build() {
 		return new Filters(
-				this.beforeDispatchTriggers,
-				this.htmlFilters,
-				this.responseFilters,
-				this.responseConverters,
-				this.paramProcessors);
+			this.beforeDispatchTriggers,
+			this.htmlFilters,
+			this.responseFilters,
+			this.responseConverters,
+			this.paramProcessors);
 	}
 }
