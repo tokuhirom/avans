@@ -29,7 +29,7 @@ public class AnnotationBasedDispatcherTest {
 		static final Dispatcher dispatcher = new Dispatcher();
 		static {
 			MyServlet.dispatcher
-					.registerPackage("me.geso.avans.annotationbased");
+				.registerPackage("me.geso.avans.annotationbased");
 			System.out.println(MyServlet.dispatcher.getRouter().toString());
 		}
 
@@ -37,8 +37,8 @@ public class AnnotationBasedDispatcherTest {
 		public void service(final ServletRequest req, final ServletResponse res)
 				throws ServletException, IOException {
 			MyServlet.dispatcher.handler(
-					(HttpServletRequest) req,
-					(HttpServletResponse) res);
+				(HttpServletRequest)req,
+				(HttpServletResponse)res);
 		}
 	}
 
@@ -70,14 +70,14 @@ public class AnnotationBasedDispatcherTest {
 	public void test() throws Exception {
 		try (MechResponse res = this.mech.get("/").execute()) {
 			Assert.assertEquals(res.getContentString(),
-					"{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
+				"{\"code\":200,\"messages\":[],\"data\":\"hoge\"}");
 		}
 	}
 
 	@Test
 	public void testPostForm() throws Exception {
 		try (MechResponse res = this.mech.post("/postForm")
-				.param("name", "John").execute()) {
+			.param("name", "John").execute()) {
 			Assert.assertEquals(res.getContentString(), "(postform)name:John");
 		}
 	}

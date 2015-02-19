@@ -24,7 +24,7 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 		final ObjectMapper mapper = new ObjectMapper();
 		// Ignore unknown properties.
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-				false);
+			false);
 
 		// Read bytes into byte array.
 		// It needs for better logging, error introspection.
@@ -41,11 +41,11 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 			return value;
 		} catch (JsonParseException | JsonMappingException e) {
 			final String json = new String(byteArray,
-					StandardCharsets.UTF_8);
+				StandardCharsets.UTF_8);
 			final Throwable cause = e.getCause();
 			throw new IOException((cause != null ? cause.getMessage()
-					: e.getMessage())
-					+ " : " + json);
+				: e.getMessage())
+				+ " : " + json);
 		}
 	}
 }

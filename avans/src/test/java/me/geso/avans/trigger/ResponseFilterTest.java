@@ -30,21 +30,21 @@ public class ResponseFilterTest {
 		final AvansServlet servlet = new AvansServlet();
 		servlet.registerClass(MyController.class);
 		JettyServletTester.runServlet(
-				servlet,
-				(uri) -> {
-					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-							.builder()
-							.build(), uri);
-					final Mech2Result res = mech2.get("/").execute();
-					assertEquals(200, res.getResponse().getStatusLine()
-							.getStatusCode());
-					assertEquals(
-							"nosniff",
-							res.getResponse()
-									.getFirstHeader("X-Content-Type-Options")
-									.getValue());
-					assertEquals("\"HOGE\"", res.getResponseBodyAsString());
-				});
+			servlet,
+			(uri) -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+					.builder()
+					.build(), uri);
+				final Mech2Result res = mech2.get("/").execute();
+				assertEquals(200, res.getResponse().getStatusLine()
+					.getStatusCode());
+				assertEquals(
+					"nosniff",
+					res.getResponse()
+						.getFirstHeader("X-Content-Type-Options")
+						.getValue());
+				assertEquals("\"HOGE\"", res.getResponseBodyAsString());
+			});
 	}
 
 }

@@ -31,7 +31,7 @@ public class BeforeDispatchTriggerTest {
 		@GET("/")
 		public WebResponse index() {
 			return new ByteArrayResponse(200,
-					this.resp.getBytes(StandardCharsets.UTF_8));
+				this.resp.getBytes(StandardCharsets.UTF_8));
 		}
 	}
 
@@ -41,10 +41,10 @@ public class BeforeDispatchTriggerTest {
 		servlet.registerClass(MyController.class);
 		JettyServletTester.runServlet(servlet, (uri) -> {
 			final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-					.build(), uri);
+				.build(), uri);
 			final Mech2Result execute = mech2.get("/").execute();
 			assertEquals(200, execute.getResponse().getStatusLine()
-					.getStatusCode());
+				.getStatusCode());
 			assertEquals("OK", execute.getResponseBodyAsString());
 		});
 	}
@@ -55,13 +55,13 @@ public class BeforeDispatchTriggerTest {
 		@BeforeDispatchTrigger
 		public Optional<WebResponse> beforeDispatch() {
 			return Optional.of(new ByteArrayResponse(200,
-					"FromTrigger".getBytes(StandardCharsets.UTF_8)));
+				"FromTrigger".getBytes(StandardCharsets.UTF_8)));
 		}
 
 		@GET("/")
 		public WebResponse index() {
 			return new ByteArrayResponse(200,
-					"FAIL".getBytes(StandardCharsets.UTF_8));
+				"FAIL".getBytes(StandardCharsets.UTF_8));
 		}
 	}
 
@@ -71,10 +71,10 @@ public class BeforeDispatchTriggerTest {
 		servlet.registerClass(MyController2.class);
 		JettyServletTester.runServlet(servlet, (uri) -> {
 			final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-					.build(), uri);
+				.build(), uri);
 			final Mech2Result execute = mech2.get("/").execute();
 			assertEquals(200, execute.getResponse().getStatusLine()
-					.getStatusCode());
+				.getStatusCode());
 			assertEquals("FromTrigger", execute.getResponseBodyAsString());
 		});
 	}

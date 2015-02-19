@@ -32,7 +32,7 @@ public class ParamProcessorTest {
 		public ParameterProcessorResult paramUpperQ(Parameter parameter) {
 			log.info("paramUpperQ");
 			final Optional<String> q = Optional.ofNullable(this
-					.getServletRequest().getParameter("q"));
+				.getServletRequest().getParameter("q"));
 			if (q.isPresent()) {
 				return ParameterProcessorResult.fromData(q.get().toUpperCase());
 			} else {

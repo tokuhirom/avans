@@ -21,7 +21,7 @@ public class AvansServlet extends HttpServlet {
 
 	private final Dispatcher dispatcher = new Dispatcher();
 	private static final Logger logger = LoggerFactory
-			.getLogger(AvansServlet.class);
+		.getLogger(AvansServlet.class);
 
 	/**
 	 * You can register classes by web.xml. You can write web.xml as
@@ -52,7 +52,7 @@ public class AvansServlet extends HttpServlet {
 				logger.info("Registering class: {}", className);
 				try {
 					final Class<?> klass = Class.forName(className);
-					this.registerClass((Class<? extends Controller>) klass);
+					this.registerClass((Class<? extends Controller>)klass);
 				} catch (final ClassNotFoundException e) {
 					logger.error("AvansServlet can't load class: {}", className);
 					throw new RuntimeException(e);
@@ -104,8 +104,8 @@ public class AvansServlet extends HttpServlet {
 	public void service(final ServletRequest req, final ServletResponse res)
 			throws ServletException, IOException {
 		this.dispatcher.handler(
-				(HttpServletRequest) req,
-				(HttpServletResponse) res);
+			(HttpServletRequest)req,
+			(HttpServletResponse)res);
 	}
 
 }
