@@ -12,12 +12,15 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+
+import com.google.common.collect.ImmutableMap;
 
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.Param;
@@ -26,8 +29,6 @@ import me.geso.mech2.Mech2;
 import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
-
-import com.google.common.collect.ImmutableMap;
 
 @RunWith(Enclosed.class)
 public class ControllerBaseTest {
@@ -367,6 +368,12 @@ public class ControllerBaseTest {
 					.put("c", "3")
 					.build());
 			}
+
+			@GET("/z")
+			public WebResponse z() throws IOException, URISyntaxException {
+				return this.redirect("/ok", ImmutableMap.<String, String>builder()
+						.build());
+			}
 		}
 
 		@Test
@@ -374,31 +381,28 @@ public class ControllerBaseTest {
 			final AvansServlet servlet = new AvansServlet();
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				mech2.disableRedirectHandling();
+
+				assertEquals("/ok", getPathQuery(mech2, "/z"));
 				// Only one parameter
-				{
-					final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
-					mech2.disableRedirectHandling();
-					assertEquals("/ok?a=1", mech2.get("/a").execute()
-						.getResponse().getFirstHeader("Location"));
-				}
+				assertEquals("/ok?a=1", getPathQuery(mech2, "/a"));
 				// There is two parameters.
-				{
-					final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
-					mech2.disableRedirectHandling();
-					assertEquals("/ok?a=1", mech2.get("/b").execute()
-						.getResponse().getFirstHeader("Location"));
-				}
+				assertEquals("/ok?a=1&b=2", getPathQuery(mech2, "/b"));
 				// There is three parameters.
-				{
-					final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
-					mech2.disableRedirectHandling();
-					assertEquals("/ok?a=1&b=2&c=3", mech2.get("/c").execute()
-						.getResponse().getFirstHeader("Location"));
-				}
+				assertEquals("/ok?a=1&b=2&c=3", getPathQuery(mech2, "/c"));
 			});
+		}
+
+		private String getPathQuery(Mech2WithBase mech2, String path) throws URISyntaxException, IOException {
+			String location = mech2.get(path).execute()
+					.getResponse()
+					.getFirstHeader("Location")
+					.getValue();
+			// Remove scheme, host and port.
+			Pattern pattern = Pattern.compile("^http://[^/]+");
+			return pattern.matcher(location).replaceFirst("");
 		}
 	}
 
