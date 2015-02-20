@@ -1,9 +1,5 @@
 package me.geso.avans;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -14,7 +10,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,12 +27,16 @@ import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.annotation.BeanParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.Param;
@@ -46,6 +49,9 @@ import me.geso.avans.trigger.ResponseConverter;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * You should create this object per HTTP request.
@@ -263,12 +269,12 @@ public abstract class ControllerBase implements Controller,
 	Filters getFilters() {
 		return this.filters
 			.computeIfAbsent(
-				this.getClass(),
-				(klass) -> {
-					final FilterScanner scanner = new FilterScanner();
-					scanner.scan(klass);
-					return scanner.build();
-				});
+					this.getClass(),
+					(klass) -> {
+						final FilterScanner scanner = new FilterScanner();
+						scanner.scan(klass);
+						return scanner.build();
+					});
 	}
 
 	private WebResponse makeResponse(final Controller controller,
@@ -472,7 +478,7 @@ public abstract class ControllerBase implements Controller,
 						if (part != null) {
 							return ParameterProcessorResult
 								.fromData(
-								Optional.of(part));
+										Optional.of(part));
 						} else {
 							return ParameterProcessorResult.fromData(Optional
 								.empty());
@@ -568,7 +574,7 @@ public abstract class ControllerBase implements Controller,
 			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(OptionalDouble
 					.of(Double
-						.parseDouble(value)));
+							.parseDouble(value)));
 			} else {
 				return ParameterProcessorResult
 					.fromData(OptionalDouble.empty());
@@ -622,6 +628,67 @@ public abstract class ControllerBase implements Controller,
 	@Override
 	public Map<String, String> getPathParams() {
 		return this.pathParams;
+	}
+
+	/**
+	 * [EXPERIMENTAL] Get the URL for current HTTP request.
+	 * Return value includes query string.
+	 *
+	 * @return Reconstructed URL
+	 * @throws MalformedURLException
+	 */
+	public URL getCurrentURL() throws MalformedURLException {
+		StringBuffer url = this.getServletRequest().getRequestURL();
+		if (!this.getServletRequest().getQueryString().isEmpty()) {
+			url.append("?").append(this.getServletRequest().getQueryString());
+		}
+		return new URL(url.toString());
+	}
+
+	/**
+	 * [EXPERIMENTAL] Constructs an absolute URI object based on the application root, the provided path, and the additional arguments and query parameters provided.
+	 *
+	 * @param path
+	 * @param parameters
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws MalformedURLException
+	 */
+	public URI uriFor(String path, Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
+		URIBuilder builder = new URIBuilder(String.valueOf(this.getServletRequest().getRequestURL()));
+		builder.setPath(path);
+		parameters.entrySet().stream().forEach(it -> {
+			builder.setParameter(it.getKey(), it.getValue());
+		});
+		return builder.build();
+	}
+
+	/**
+	 * [EXPERIMENTAL] Short hand for {@code this.uriFor(path, Collections.emptyMap())}.
+	 *
+	 * @param path Path for destination.
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws MalformedURLException
+	 */
+	public URI uriFor(final String path) throws URISyntaxException, MalformedURLException {
+		return this.uriFor(path, Collections.emptyMap());
+	}
+
+	/**
+	 * [EXPERIMENTAL] Returns a rewritten URI object for the current request. Key/value pairs passed in will override existing parameters. You can remove an existing parameter by passing in an undef value. Unmodified pairs will be preserved.
+	 *
+	 * @param parameters
+	 * @return Constructed URI.
+	 * @throws URISyntaxException
+	 * @throws MalformedURLException
+	 */
+	public URI uriWith(final Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
+		URIBuilder builder = new URIBuilder(String.valueOf(this.getCurrentURL()));
+		parameters.entrySet().stream().forEach(it -> {
+			builder.setParameter(it.getKey(), it.getValue());
+		});
+		return builder.build();
 	}
 
 }
