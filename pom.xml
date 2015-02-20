@@ -7,7 +7,7 @@
 	<description>parent project for avans</description>
 	<url>http://github.com/tokuhirom/avans</url>
 
-	<version>1.5.0</version>
+	<version>1.5.1-SNAPSHOT</version>
 
 	<name>avans :: parent</name>
 
@@ -25,7 +25,7 @@
 		<url>https://github.com/tokuhirom/avans/</url>
 		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
 		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-		<tag>avans-project-1.5.0</tag>
+		<tag>avans-project-0.27.2</tag>
 	</scm>
 
 	<developers>
