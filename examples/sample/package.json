@@ -1,0 +1,15 @@
+{
+  "name": "${artifactId}",
+  "version": "0.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Unknown",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-bower-task": "~0.2.3"
+  }
+}
