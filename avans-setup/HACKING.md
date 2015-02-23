@@ -12,3 +12,11 @@ Use it from local repo.
     pushd MyWebApp
     mvn test
 
+## Clear cache
+
+    mvn archetype:update-local-catalog
+
+## SEE ALSO
+
+http://maven.apache.org/archetype/maven-archetype-plugin/
+

@@ -1,19 +1,24 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
 package ${package}.controller;
 
 import me.geso.avans.ControllerBase;
-import me.geso.avans.annotation.GET;
-import me.geso.avans.mustache.MustacheViewMixin;
-import me.geso.avans.mustache.MustacheView;
 import me.geso.avans.trigger.ResponseFilter;
+import ${package}.ConfigLoader;
+import ${package}.view.FreemarkerView;
+import ${package}.view.FreemarkerViewFactory;
 import me.geso.webscrew.response.WebResponse;
 
-import com.github.mustachejava.DefaultMustacheFactory;
+public abstract class BaseController extends ControllerBase {
+	private static FreemarkerViewFactory freemarkerViewFactory = new FreemarkerViewFactory();
 
-public abstract class BaseController extends ControllerBase
-    implements MustacheViewMixin {
+	public static boolean isDevelopment() {
+		return ConfigLoader.getConfig().isDevelopment();
+	}
 
-	public MustacheView getMustacheView() {
-		return new MustacheView(new DefaultMustacheFactory("templates/"));
+	public FreemarkerView freemarker(String templatePath) {
+		return BaseController.freemarkerViewFactory.create(templatePath, this);
 	}
 
 	@ResponseFilter
@@ -22,7 +27,7 @@ public abstract class BaseController extends ControllerBase
 		// http://msdn.microsoft.com/en-us/library/ie/gg622941(v=vs.85).aspx
 		resp.addHeader("X-Content-Type-Options", "nosniff");
 
-		// Avoid clickjacking attacks
+		// Avoid click jacking attacks
 		// (If you want to display this site in frames, remove this header)
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/X-Frame-Options
 		resp.addHeader("X-Frame-Options", "DENY");

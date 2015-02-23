@@ -7,5 +7,6 @@
     </head>
     <body style="font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif; text-align: center; font-size: 900%; background-color: #feefee; color: #030303; vertical-align: middle;">
         Hello, world!
+        <p>${name}</p>
     </body>
 </html>

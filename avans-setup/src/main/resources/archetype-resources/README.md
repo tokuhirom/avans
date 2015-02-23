@@ -1,5 +1,5 @@
 ${artifactId}
-=============
+======
 
 Start the server
 ----------------
