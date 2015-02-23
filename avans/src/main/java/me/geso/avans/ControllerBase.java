@@ -269,12 +269,12 @@ public abstract class ControllerBase implements Controller,
 	Filters getFilters() {
 		return this.filters
 			.computeIfAbsent(
-					this.getClass(),
-					(klass) -> {
-						final FilterScanner scanner = new FilterScanner();
-						scanner.scan(klass);
-						return scanner.build();
-					});
+				this.getClass(),
+				(klass) -> {
+					final FilterScanner scanner = new FilterScanner();
+					scanner.scan(klass);
+					return scanner.build();
+				});
 	}
 
 	private WebResponse makeResponse(final Controller controller,
@@ -478,7 +478,7 @@ public abstract class ControllerBase implements Controller,
 						if (part != null) {
 							return ParameterProcessorResult
 								.fromData(
-										Optional.of(part));
+								Optional.of(part));
 						} else {
 							return ParameterProcessorResult.fromData(Optional
 								.empty());
@@ -574,7 +574,7 @@ public abstract class ControllerBase implements Controller,
 			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(OptionalDouble
 					.of(Double
-							.parseDouble(value)));
+						.parseDouble(value)));
 			} else {
 				return ParameterProcessorResult
 					.fromData(OptionalDouble.empty());

@@ -123,15 +123,15 @@ public class ControllerBaseTest {
 			final Filters filters = controller.getFilters();
 			filters.getResponseFilters().forEach(it -> System.out.println(it));
 			final String methods = filters.getResponseFilters().stream()
-					.map(it -> it.getName()).collect(Collectors.joining(","));
+				.map(it -> it.getName()).collect(Collectors.joining(","));
 			System.out.println(methods);
 			assertThat(filters.getResponseFilters(), is(Arrays.asList(
-					this.method(MixinA.class, "filterA"),
-					this.method(MixinA.class, "filterA2"),
-					this.method(ControllerX.class, "filterA2"),
-					this.method(MixinB.class, "filterB"),
-					this.method(ControllerY.class, "filterA")
-			)));
+				this.method(MixinA.class, "filterA"),
+				this.method(MixinA.class, "filterA2"),
+				this.method(ControllerX.class, "filterA2"),
+				this.method(MixinB.class, "filterB"),
+				this.method(ControllerY.class, "filterA")
+				)));
 		}
 	}
 
@@ -157,31 +157,31 @@ public class ControllerBaseTest {
 			// without string parameter
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=5963", mech2.get("/").execute()
-						.getResponseBodyAsString());
+					.getResponseBodyAsString());
 			});
 			// with empty string
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=5963", mech2.get("/")
-						.addQueryParameter("q", "")
-						.execute()
-						.getResponseBodyAsString());
+					.addQueryParameter("q", "")
+					.execute()
+					.getResponseBodyAsString());
 			});
 			// with string
 			JettyServletTester.runServlet(
-					servlet,
-					baseURI -> {
-						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-								.builder()
-								.build(), baseURI);
-						assertEquals("q=4649", mech2.get("/")
-								.addQueryParameter("q", "4649")
-								.execute()
-								.getResponseBodyAsString());
-					});
+				servlet,
+				baseURI -> {
+					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+						.builder()
+						.build(), baseURI);
+					assertEquals("q=4649", mech2.get("/")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+				});
 		}
 	}
 
@@ -203,31 +203,31 @@ public class ControllerBaseTest {
 			// without string parameter
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=5963", mech2.get("/").execute()
-						.getResponseBodyAsString());
+					.getResponseBodyAsString());
 			});
 			// with empty string
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=5963", mech2.get("/")
-						.addQueryParameter("q", "")
-						.execute()
-						.getResponseBodyAsString());
+					.addQueryParameter("q", "")
+					.execute()
+					.getResponseBodyAsString());
 			});
 			// with string
 			JettyServletTester.runServlet(
-					servlet,
-					baseURI -> {
-						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-								.builder()
-								.build(), baseURI);
-						assertEquals("q=4649", mech2.get("/")
-								.addQueryParameter("q", "4649")
-								.execute()
-								.getResponseBodyAsString());
-					});
+				servlet,
+				baseURI -> {
+					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+						.builder()
+						.build(), baseURI);
+					assertEquals("q=4649", mech2.get("/")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+				});
 		}
 	}
 
@@ -249,31 +249,31 @@ public class ControllerBaseTest {
 			// without string parameter
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=3.14", mech2.get("/").execute()
-						.getResponseBodyAsString());
+					.getResponseBodyAsString());
 			});
 			// with empty string
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=3.14", mech2.get("/")
-						.addQueryParameter("q", "")
-						.execute()
-						.getResponseBodyAsString());
+					.addQueryParameter("q", "")
+					.execute()
+					.getResponseBodyAsString());
 			});
 			// with string
 			JettyServletTester.runServlet(
-					servlet,
-					baseURI -> {
-						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-								.builder()
-								.build(), baseURI);
-						assertEquals("q=2.71", mech2.get("/")
-								.addQueryParameter("q", "2.71")
-								.execute()
-								.getResponseBodyAsString());
-					});
+				servlet,
+				baseURI -> {
+					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+						.builder()
+						.build(), baseURI);
+					assertEquals("q=2.71", mech2.get("/")
+						.addQueryParameter("q", "2.71")
+						.execute()
+						.getResponseBodyAsString());
+				});
 		}
 	}
 
@@ -294,30 +294,30 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=Missing", mech2.get("/").execute()
-						.getResponseBodyAsString());
+					.getResponseBodyAsString());
 			});
 			// with empty string
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("q=Missing", mech2.get("/")
-						.addQueryParameter("q", "")
-						.execute()
-						.getResponseBodyAsString());
+					.addQueryParameter("q", "")
+					.execute()
+					.getResponseBodyAsString());
 			});
 			JettyServletTester.runServlet(
-					servlet,
-					baseURI -> {
-						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-								.builder()
-								.build(), baseURI);
-						assertEquals("q=4649", mech2.get("/")
-								.addQueryParameter("q", "4649")
-								.execute()
-								.getResponseBodyAsString());
-					});
+				servlet,
+				baseURI -> {
+					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+						.builder()
+						.build(), baseURI);
+					assertEquals("q=4649", mech2.get("/")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+				});
 		}
 	}
 
@@ -340,9 +340,9 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				assertEquals("OK", mech2.get("/").execute()
-						.getResponseBodyAsString());
+					.getResponseBodyAsString());
 			});
 		}
 	}
@@ -352,31 +352,31 @@ public class ControllerBaseTest {
 			@GET("/a")
 			public WebResponse a() throws IOException, URISyntaxException {
 				return this.redirect("/ok", ImmutableMap.<String, String>builder()
-						.put("a", "1")
-						.build());
+					.put("a", "1")
+					.build());
 			}
 
 			@GET("/b")
 			public WebResponse b() throws Exception {
 				return this.redirect("/ok", ImmutableMap.<String, String>builder()
-						.put("a", "1")
-						.put("b", "2")
-						.build());
+					.put("a", "1")
+					.put("b", "2")
+					.build());
 			}
 
 			@GET("/c")
 			public WebResponse c() throws Exception {
 				return this.redirect("/ok", ImmutableMap.<String, String>builder()
-						.put("a", "1")
-						.put("b", "2")
-						.put("c", "3")
-						.build());
+					.put("a", "1")
+					.put("b", "2")
+					.put("c", "3")
+					.build());
 			}
 
 			@GET("/z")
 			public WebResponse z() throws IOException, URISyntaxException {
 				return this.redirect("/ok", ImmutableMap.<String, String>builder()
-						.build());
+					.build());
 			}
 		}
 
@@ -386,7 +386,7 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
 				assertEquals("/ok", getPathQuery(mech2, "/z"));
@@ -401,9 +401,9 @@ public class ControllerBaseTest {
 
 		private String getPathQuery(Mech2WithBase mech2, String path) throws URISyntaxException, IOException {
 			String location = mech2.get(path).execute()
-					.getResponse()
-					.getFirstHeader("Location")
-					.getValue();
+				.getResponse()
+				.getFirstHeader("Location")
+				.getValue();
 			// Remove scheme, host and port.
 			Pattern pattern = Pattern.compile("^http://[^/]+");
 			return pattern.matcher(location).replaceFirst("");
@@ -424,13 +424,13 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
 				HttpResponse response = mech2.get("/a")
-						.addQueryParameter("x", "ok")
-						.execute()
-						.getResponse();
+					.addQueryParameter("x", "ok")
+					.execute()
+					.getResponse();
 				String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 				System.out.println(got);
 				assertTrue(got.matches("http://127.0.0.1:[0-9]+/a\\?x=ok"));
@@ -448,8 +448,8 @@ public class ControllerBaseTest {
 			@GET("/b")
 			public WebResponse b() throws IOException, URISyntaxException {
 				return this.renderText(this.uriFor("/x", ImmutableMap.<String, String>builder()
-						.put("foo", "bar")
-						.build()).toString());
+					.put("foo", "bar")
+					.build()).toString());
 			}
 		}
 
@@ -459,23 +459,23 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
 				{
 					HttpResponse response = mech2.get("/uriFor1")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/o"));
 				}
 				{
 					HttpResponse response = mech2.get("/b")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/x\\?foo=bar"));
@@ -489,8 +489,8 @@ public class ControllerBaseTest {
 			@GET("/b")
 			public WebResponse b() throws IOException, URISyntaxException {
 				return this.renderText(this.uriWith(ImmutableMap.<String, String>builder()
-						.put("foo", "bar")
-						.build()).toString());
+					.put("foo", "bar")
+					.build()).toString());
 			}
 		}
 
@@ -500,14 +500,14 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
 				{
 					HttpResponse response = mech2.get("/b")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/b\\?x=ok&foo=bar"));
