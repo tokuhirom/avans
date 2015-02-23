@@ -24,6 +24,8 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
+import com.google.common.collect.ImmutableMap;
+
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.Param;
 import me.geso.avans.trigger.ResponseFilter;
@@ -31,8 +33,6 @@ import me.geso.mech2.Mech2;
 import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
-
-import com.google.common.collect.ImmutableMap;
 
 @RunWith(Enclosed.class)
 public class ControllerBaseTest {
@@ -427,13 +427,26 @@ public class ControllerBaseTest {
 					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
-				HttpResponse response = mech2.get("/a")
-					.addQueryParameter("x", "ok")
-					.execute()
-					.getResponse();
-				String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-				System.out.println(got);
-				assertTrue(got.matches("http://127.0.0.1:[0-9]+/a\\?x=ok"));
+				// With query string
+				{
+					HttpResponse response = mech2.get("/a")
+							.addQueryParameter("x", "ok")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/a\\?x=ok"));
+				}
+
+				// Without query string
+				{
+					HttpResponse response = mech2.get("/a")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/a"));
+				}
 			});
 		}
 	}

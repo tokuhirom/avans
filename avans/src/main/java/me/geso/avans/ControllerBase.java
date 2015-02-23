@@ -639,7 +639,8 @@ public abstract class ControllerBase implements Controller,
 	 */
 	public URL getCurrentURL() throws MalformedURLException {
 		StringBuffer url = this.getServletRequest().getRequestURL();
-		if (!this.getServletRequest().getQueryString().isEmpty()) {
+		final String queryString = this.getServletRequest().getQueryString();
+		if (queryString != null && !queryString.isEmpty()) {
 			url.append("?").append(this.getServletRequest().getQueryString());
 		}
 		return new URL(url.toString());
