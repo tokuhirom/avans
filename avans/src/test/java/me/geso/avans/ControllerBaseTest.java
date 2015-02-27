@@ -121,7 +121,7 @@ public class ControllerBaseTest {
 	}
 
 	@Ignore
-	public static class Controller2 extends Controller3 implements Mixin {
+	private static class Controller2 extends Controller3 implements Mixin {
 	}
 
 	@Ignore
