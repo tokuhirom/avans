@@ -646,18 +646,35 @@ public abstract class ControllerBase implements Controller,
 		return new URL(url.toString());
 	}
 
+	private URIBuilder getRelativePath(@NonNull final String path) throws MalformedURLException, URISyntaxException {
+		if (path.startsWith("/")) {
+			HttpServletRequest req = this.getServletRequest();
+			return new URIBuilder().setScheme(req.getScheme())
+				.setHost(req.getServerName())
+				.setPort(req.getServerPort())
+				.setPath(req.getContextPath() + path);
+		} else {
+			final StringBuffer requestURL = this.getServletRequest().getRequestURL();
+			return new URIBuilder(new URL(new URL(requestURL.toString()), path).toURI());
+		}
+	}
+
 	/**
 	 * [EXPERIMENTAL] Constructs an absolute URI object based on the application root, the provided path, and the additional arguments and query parameters provided.
+	 * This method cares context path. You can use relative path from context root.
 	 *
-	 * @param path
-	 * @param parameters
-	 * @return
+	 * For example, if your context path is {@code http://example.com/xxx/},
+	 * <code>uriFor("/x")</code> returns {@code http://example.com/xxx/x}
+	 *
+	 * @param path Path from the current URL. You can use root relative URL from context root.
+	 * @param parameters Query parameters.
+	 * @return Constructed URI.
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
 	public URI uriFor(String path, Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
-		URIBuilder builder = new URIBuilder(String.valueOf(this.getServletRequest().getRequestURL()));
-		builder.setPath(path);
+		URIBuilder builder = this.getRelativePath(path);
+
 		parameters.entrySet().stream().forEach(it -> {
 			builder.setParameter(it.getKey(), it.getValue());
 		});
@@ -668,7 +685,7 @@ public abstract class ControllerBase implements Controller,
 	 * [EXPERIMENTAL] Short hand for {@code this.uriFor(path, Collections.emptyMap())}.
 	 *
 	 * @param path Path for destination.
-	 * @return
+	 * @return Constructed URL
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */

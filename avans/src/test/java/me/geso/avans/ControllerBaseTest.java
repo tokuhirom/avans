@@ -42,7 +42,7 @@ public class ControllerBaseTest {
 	@Ignore
 	public static class MyController extends ControllerBase {
 		@ResponseFilter
-		public void filter(WebResponse repsonse) {
+		public void filter(WebResponse response) {
 		}
 	}
 
@@ -58,7 +58,7 @@ public class ControllerBaseTest {
 
 	static interface Mixin {
 		@ResponseFilter
-		public default void filter(WebResponse repsonse) {
+		public default void filter(WebResponse response) {
 		}
 	}
 
@@ -449,6 +449,38 @@ public class ControllerBaseTest {
 				}
 			});
 		}
+
+		@Test
+		public void testWithContextPath() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, "/xxxx/", baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				mech2.disableRedirectHandling();
+
+				// With query string
+				{
+					HttpResponse response = mech2.get("/xxxx/a")
+							.addQueryParameter("x", "ok")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/xxxx/a\\?x=ok"));
+				}
+
+				// Without query string
+				{
+					HttpResponse response = mech2.get("/xxxx/a")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/xxxx/a"));
+				}
+			});
+		}
 	}
 
 	public static class TestURIFor {
@@ -463,6 +495,21 @@ public class ControllerBaseTest {
 				return this.renderText(this.uriFor("/x", ImmutableMap.<String, String>builder()
 					.put("foo", "bar")
 					.build()).toString());
+			}
+
+			@GET("/c/d")
+			public WebResponse cd() throws IOException, URISyntaxException {
+				return this.renderText(this.uriFor("iyan", ImmutableMap.<String, String>builder()
+						.put("foo", "bar")
+						.build()).toString());
+			}
+
+			@GET("/m/d/e")
+			public WebResponse cde() throws IOException, URISyntaxException {
+				return this.renderText(this.uriFor("../upper", ImmutableMap.<String, String>builder()
+						.put("foo", "bar")
+						.put("boo", "wow")
+						.build()).toString());
 			}
 		}
 
@@ -492,6 +539,56 @@ public class ControllerBaseTest {
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/x\\?foo=bar"));
+				}
+			});
+		}
+
+		@Test
+		public void testURIForContextPath() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, "/aaaa", baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				mech2.disableRedirectHandling();
+
+				{
+					HttpResponse response = mech2.get("/aaaa/uriFor1")
+							.addQueryParameter("x", "ok")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/o"));
+				}
+				{
+					HttpResponse response = mech2.get("/aaaa/b")
+							.addQueryParameter("x", "ok")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/x\\?foo=bar"));
+				}
+
+				{
+					HttpResponse response = mech2.get("/aaaa/c/d")
+							.addQueryParameter("x", "ok")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/c/iyan\\?foo=bar"));
+				}
+
+				{
+					HttpResponse response = mech2.get("/aaaa/m/d/e")
+							.addQueryParameter("x", "ok")
+							.execute()
+							.getResponse();
+					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					System.out.println(got);
+					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/m/upper\\?foo=bar&boo=wow"));
 				}
 			});
 		}
