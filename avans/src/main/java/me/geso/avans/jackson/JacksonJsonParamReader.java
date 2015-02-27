@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import me.geso.avans.JSONParamReader;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import me.geso.avans.JSONParamReader;
 
 public interface JacksonJsonParamReader extends JSONParamReader {
 
@@ -30,7 +30,7 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 		// It needs for better logging, error introspection.
 		final ByteArrayOutputStream output = new ByteArrayOutputStream();
 		final byte[] buffer = new byte[1024 * 4];
-		int n = 0;
+		int n;
 		while (-1 != (n = is.read(buffer))) {
 			output.write(buffer, 0, n);
 		}
