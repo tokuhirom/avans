@@ -37,8 +37,7 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 		final byte[] byteArray = output.toByteArray();
 
 		try {
-			final Object value = mapper.readValue(byteArray, valueType);
-			return value;
+			return mapper.readValue(byteArray, valueType);
 		} catch (JsonParseException | JsonMappingException e) {
 			final String json = new String(byteArray,
 				StandardCharsets.UTF_8);
