@@ -67,7 +67,7 @@ public abstract class ControllerBase implements Controller,
 		.getLogger("avans.exception.RootCause");
 	private static final Logger EXCEPTION_STACK_TRACE_LOGGER = LoggerFactory
 		.getLogger("avans.exception.StackTrace");
-	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 	private final Map<String, Object> pluginStash = new HashMap<>();
 	private HttpServletResponse servletResponse;
 	private HttpServletRequest servletRequest;
