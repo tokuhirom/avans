@@ -14,12 +14,12 @@ import me.geso.avans.trigger.ResponseConverter;
 import me.geso.avans.trigger.ResponseFilter;
 
 class FilterScanner {
-	final List<Method> responseFilters = new ArrayList<>();
-	final List<Method> htmlFilters = new ArrayList<>();
-	final List<Method> beforeDispatchTriggers = new ArrayList<>();
-	final List<Method> responseConverters = new ArrayList<>();
-	final List<Method> paramProcessors = new ArrayList<>();
-	final Set<Method> seen = new HashSet<>();
+	private final List<Method> responseFilters = new ArrayList<>();
+	private final List<Method> htmlFilters = new ArrayList<>();
+	private final List<Method> beforeDispatchTriggers = new ArrayList<>();
+	private final List<Method> responseConverters = new ArrayList<>();
+	private final List<Method> paramProcessors = new ArrayList<>();
+	private final Set<Method> seen = new HashSet<>();
 
 	void scanMethod(Method method) {
 		if (this.seen.contains(method)) {
