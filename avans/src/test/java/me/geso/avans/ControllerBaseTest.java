@@ -92,11 +92,11 @@ public class ControllerBaseTest {
 
 	static interface MixinA {
 		@ResponseFilter
-		public default void filterA(WebResponse repsonse) {
+		public default void filterA(WebResponse response) {
 		}
 
 		@ResponseFilter
-		public default void filterA2(WebResponse repsonse) {
+		public default void filterA2(WebResponse response) {
 		}
 	}
 
@@ -104,7 +104,7 @@ public class ControllerBaseTest {
 
 	static interface MixinB {
 		@ResponseFilter
-		public default void filterB(WebResponse repsonse) {
+		public default void filterB(WebResponse response) {
 		}
 	}
 
@@ -129,7 +129,7 @@ public class ControllerBaseTest {
 			MixinA {
 		@Override
 		@ResponseFilter
-		public void filterA2(WebResponse repsonse) {
+		public void filterA2(WebResponse response) {
 		}
 	}
 
@@ -137,7 +137,7 @@ public class ControllerBaseTest {
 	public static class ControllerY extends ControllerX implements MixinB {
 		@Override
 		@ResponseFilter
-		public void filterA(WebResponse repsonse) {
+		public void filterA(WebResponse response) {
 		}
 	}
 

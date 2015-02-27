@@ -56,8 +56,8 @@ class FilterScanner {
 
 		for (final Class<?> k : linearIsa) {
 			// scan annotations in interfaces.
-			for (final Class<?> interfac : k.getInterfaces()) {
-				for (final Method method : interfac.getMethods()) {
+			for (final Class<?> interfaceClass : k.getInterfaces()) {
+				for (final Method method : interfaceClass.getMethods()) {
 					this.scanMethod(method);
 				}
 			}

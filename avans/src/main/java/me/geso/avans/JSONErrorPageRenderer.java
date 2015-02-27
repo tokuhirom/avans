@@ -16,7 +16,7 @@ public interface JSONErrorPageRenderer extends ErrorPageRenderer,
 	@Override
 	public default WebResponse renderError(final int code,
 			@NonNull final String message) {
-		final BasicAPIResponse apires = new BasicAPIResponse(code, message);
-		return this.renderJSON(code, apires);
+		final BasicAPIResponse apiResponse = new BasicAPIResponse(code, message);
+		return this.renderJSON(code, apiResponse);
 	}
 }
