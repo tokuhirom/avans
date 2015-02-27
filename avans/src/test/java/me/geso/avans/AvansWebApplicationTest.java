@@ -45,191 +45,6 @@ import me.geso.webscrew.response.WebResponse;
 
 public class AvansWebApplicationTest {
 
-	public static class MyServlet extends HttpServlet {
-		private static final long serialVersionUID = 1L;
-		private static final Dispatcher dispatcher = new Dispatcher();
-		static {
-			MyServlet.dispatcher.registerClass(MyController.class);
-		}
-
-		@Override
-		public void service(final ServletRequest req, final ServletResponse resp)
-				throws ServletException, IOException {
-			MyServlet.dispatcher.handler((HttpServletRequest)req,
-				(HttpServletResponse)resp);
-		}
-	}
-
-	@Data
-	@EqualsAndHashCode(callSuper = false)
-	public static class StringAPIResponse extends BasicAPIResponse {
-		private String data;
-
-		public StringAPIResponse(String data) {
-			this.data = data;
-		}
-	}
-
-	public static class MyController extends ControllerBase {
-
-		@ResponseConverter(StringAPIResponse.class)
-		public Optional<WebResponse> responseFilter(StringAPIResponse o) {
-			return Optional.of(this.renderJSON(o));
-		}
-
-		@GET("/")
-		public WebResponse root() {
-			final StringAPIResponse res = new StringAPIResponse("hoge");
-			return this.renderJSON(res);
-		}
-
-		@GET("/jsonEasy")
-		public StringAPIResponse jsonEasy() {
-			final StringAPIResponse res = new StringAPIResponse("It's easy!");
-			return res;
-		}
-
-		@POST("/jsonParam")
-		public WebResponse jsonParam(@JsonParam final Foo f) {
-			final StringAPIResponse res = new StringAPIResponse("name:"
-				+ f.name);
-			return this.renderJSON(res);
-		}
-
-		@GET("/cb")
-		public WebResponse callback() {
-			return new CallbackResponse((resp) -> {
-				resp.setContentType("text/plain; charset=utf-8");
-				resp.getWriter().write("いぇーい");
-			});
-		}
-
-		@GET("/query")
-		public WebResponse query(@Param("name") String name) {
-			final String text = "name:" + name;
-			return this.renderText(text);
-		}
-
-		@GET("/ng/param/get")
-		public WebResponse paramGet(@Param("name") String name) {
-			final String text = "name:" + name;
-			return this.renderText(text);
-		}
-
-		@POST("/ng/param/post")
-		public WebResponse paramPost(@Param("name") String name) {
-			final String text = "name:" + name;
-			return this.renderText(text);
-		}
-
-		@POST("/ng/part/single")
-		public WebResponse partSingle(@NonNull @Param("p") String p,
-				@NonNull @UploadFile("file") Part file)
-				throws IOException {
-			final String text = "p: " + p + "file:"
-				+ IOUtils.toString(file.getInputStream(), "UTF-8");
-			return this.renderText(text);
-		}
-
-		@POST("/ng/part/array")
-		public WebResponse partArray(@UploadFile("file") Part[] files)
-				throws IOException {
-			final String text = "file:"
-				+
-				Arrays.stream(files)
-					.map(it -> {
-						try {
-							return IOUtils.toString(
-								it.getInputStream(),
-								"UTF-8");
-						} catch (final Exception e) {
-							throw new RuntimeException(e);
-						}
-					})
-					.collect(Collectors.joining(","));
-			return this.renderText(text);
-		}
-
-		@POST("/postForm")
-		public WebResponse postForm(@Param("name") String name) {
-			final String text = "(postform)name:" + name;
-			return this.renderText(text);
-		}
-
-		@POST("/postMultipart")
-		public WebResponse postMultipart(@Param("name") String name,
-				@UploadFile("tmpl") Part tmpl) throws IOException {
-			final String text = "(postform)name:"
-				+ name
-				+ ":"
-				+ IOUtils.toString(tmpl.getInputStream(), "UTF-8");
-			return this.renderText(text);
-		}
-
-		@GET("/queryParamAnnotation")
-		public WebResponse queryParamAnnotation(
-				@Param("a") final String a,
-				@Param("b") final OptionalInt b,
-				@Param("c") final OptionalInt c) {
-			final String text = "a:" + a + ",b:" + b + ",c:" + c;
-			return this.renderText(text);
-		}
-
-		@GET("/pathParamAnnotation/{a}")
-		public WebResponse pathParamAnnotation(@PathParam("a") final String a) {
-			final String text = "a:" + a;
-			return this.renderText(text);
-		}
-
-		@GET("/optionalString")
-		public WebResponse optionalString(
-				@Param("a") final Optional<String> a) {
-			final String text = "a:" + a;
-			return this.renderText(text);
-		}
-
-		@POST("/uploadFile")
-		@SneakyThrows
-		public WebResponse uploadFile(@UploadFile("a") final Part a) {
-			final String text = "a:"
-				+ IOUtils.toString(a.getInputStream(), "UTF-8");
-			return this.renderText(text);
-		}
-
-		@POST("/uploadOptionalFile")
-		@SneakyThrows
-		public WebResponse uploadOptionalFile(
-				@UploadFile("a") final Optional<Part> a) {
-			String text = "a:";
-			if (a.isPresent()) {
-				text = text
-					+ IOUtils.toString(a.get().getInputStream(), "UTF-8");
-			} else {
-				text = text + "missing";
-			}
-			return this.renderText(text);
-		}
-
-		@POST("/uploadFileArray")
-		@SneakyThrows
-		public WebResponse uploadFileArray(
-				@UploadFile("a") final Part[] a) {
-			final StringBuilder builder = new StringBuilder();
-			builder.append("a:");
-			for (final Part item : a) {
-				builder.append(IOUtils.toString(item.getInputStream(), "UTF-8"));
-				builder.append(",");
-			}
-			return this.renderText(builder.toString());
-		}
-	}
-
-	@Data
-	public static class Foo {
-		@NotNull
-		private String name;
-	}
-
 	private Mech mech;
 	private Server server;
 
@@ -507,5 +322,189 @@ public class AvansWebApplicationTest {
 			Assert.assertEquals(res.getStatusCode(), 200);
 			Assert.assertEquals("a:hello,hello,", res.getContentString());
 		}
+	}
+
+	public static class MyServlet extends HttpServlet {
+		private static final long serialVersionUID = 1L;
+		private static final Dispatcher dispatcher = new Dispatcher();
+		static {
+			MyServlet.dispatcher.registerClass(MyController.class);
+		}
+
+		@Override
+		public void service(final ServletRequest req, final ServletResponse resp)
+				throws ServletException, IOException {
+			MyServlet.dispatcher.handler((HttpServletRequest)req,
+				(HttpServletResponse)resp);
+		}
+	}
+
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class StringAPIResponse extends BasicAPIResponse {
+		private String data;
+
+		public StringAPIResponse(String data) {
+			this.data = data;
+		}
+	}
+
+	public static class MyController extends ControllerBase {
+
+		@ResponseConverter(StringAPIResponse.class)
+		public Optional<WebResponse> responseFilter(StringAPIResponse o) {
+			return Optional.of(this.renderJSON(o));
+		}
+
+		@GET("/")
+		public WebResponse root() {
+			final StringAPIResponse res = new StringAPIResponse("hoge");
+			return this.renderJSON(res);
+		}
+
+		@GET("/jsonEasy")
+		public StringAPIResponse jsonEasy() {
+			return new StringAPIResponse("It's easy!");
+		}
+
+		@POST("/jsonParam")
+		public WebResponse jsonParam(@JsonParam final Foo f) {
+			final StringAPIResponse res = new StringAPIResponse("name:"
+				+ f.name);
+			return this.renderJSON(res);
+		}
+
+		@GET("/cb")
+		public WebResponse callback() {
+			return new CallbackResponse((resp) -> {
+				resp.setContentType("text/plain; charset=utf-8");
+				resp.getWriter().write("いぇーい");
+			});
+		}
+
+		@GET("/query")
+		public WebResponse query(@Param("name") String name) {
+			final String text = "name:" + name;
+			return this.renderText(text);
+		}
+
+		@GET("/ng/param/get")
+		public WebResponse paramGet(@Param("name") String name) {
+			final String text = "name:" + name;
+			return this.renderText(text);
+		}
+
+		@POST("/ng/param/post")
+		public WebResponse paramPost(@Param("name") String name) {
+			final String text = "name:" + name;
+			return this.renderText(text);
+		}
+
+		@POST("/ng/part/single")
+		public WebResponse partSingle(@NonNull @Param("p") String p,
+				@NonNull @UploadFile("file") Part file)
+				throws IOException {
+			final String text = "p: " + p + "file:"
+				+ IOUtils.toString(file.getInputStream(), "UTF-8");
+			return this.renderText(text);
+		}
+
+		@POST("/ng/part/array")
+		public WebResponse partArray(@UploadFile("file") Part[] files)
+				throws IOException {
+			final String text = "file:"
+				+
+				Arrays.stream(files)
+					.map(it -> {
+						try {
+							return IOUtils.toString(
+								it.getInputStream(),
+								"UTF-8");
+						} catch (final Exception e) {
+							throw new RuntimeException(e);
+						}
+					})
+					.collect(Collectors.joining(","));
+			return this.renderText(text);
+		}
+
+		@POST("/postForm")
+		public WebResponse postForm(@Param("name") String name) {
+			final String text = "(postform)name:" + name;
+			return this.renderText(text);
+		}
+
+		@POST("/postMultipart")
+		public WebResponse postMultipart(@Param("name") String name,
+				@UploadFile("tmpl") Part tmpl) throws IOException {
+			final String text = "(postform)name:"
+				+ name
+				+ ":"
+				+ IOUtils.toString(tmpl.getInputStream(), "UTF-8");
+			return this.renderText(text);
+		}
+
+		@GET("/queryParamAnnotation")
+		public WebResponse queryParamAnnotation(
+				@Param("a") final String a,
+				@Param("b") final OptionalInt b,
+				@Param("c") final OptionalInt c) {
+			final String text = "a:" + a + ",b:" + b + ",c:" + c;
+			return this.renderText(text);
+		}
+
+		@GET("/pathParamAnnotation/{a}")
+		public WebResponse pathParamAnnotation(@PathParam("a") final String a) {
+			final String text = "a:" + a;
+			return this.renderText(text);
+		}
+
+		@GET("/optionalString")
+		public WebResponse optionalString(
+				@Param("a") final Optional<String> a) {
+			final String text = "a:" + a;
+			return this.renderText(text);
+		}
+
+		@POST("/uploadFile")
+		@SneakyThrows
+		public WebResponse uploadFile(@UploadFile("a") final Part a) {
+			final String text = "a:"
+				+ IOUtils.toString(a.getInputStream(), "UTF-8");
+			return this.renderText(text);
+		}
+
+		@POST("/uploadOptionalFile")
+		@SneakyThrows
+		public WebResponse uploadOptionalFile(
+				@UploadFile("a") final Optional<Part> a) {
+			String text = "a:";
+			if (a.isPresent()) {
+				text = text
+					+ IOUtils.toString(a.get().getInputStream(), "UTF-8");
+			} else {
+				text = text + "missing";
+			}
+			return this.renderText(text);
+		}
+
+		@POST("/uploadFileArray")
+		@SneakyThrows
+		public WebResponse uploadFileArray(
+				@UploadFile("a") final Part[] a) {
+			final StringBuilder builder = new StringBuilder();
+			builder.append("a:");
+			for (final Part item : a) {
+				builder.append(IOUtils.toString(item.getInputStream(), "UTF-8"));
+				builder.append(",");
+			}
+			return this.renderText(builder.toString());
+		}
+	}
+
+	@Data
+	public static class Foo {
+		@NotNull
+		private String name;
 	}
 }

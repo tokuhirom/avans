@@ -372,8 +372,7 @@ public abstract class ControllerBase implements Controller,
 					} else if (v instanceof Optional) {
 						final Optional<?> ov = (Optional<?>)v;
 						if (ov.isPresent()) {
-							final WebResponse response = (WebResponse)ov.get();
-							return response;
+							return (WebResponse)ov.get();
 						} else {
 							// Call next response converter.
 							continue;
