@@ -109,12 +109,12 @@ public class Dispatcher implements Serializable {
 		final RoutingResult<Action> match = this.router.match(
 			method, path);
 		if (match == null) {
-			this.writeNotFoundErrorPage(request, response);
+			this.writeNotFoundErrorPage(response);
 			return;
 		}
 
 		if (!match.methodAllowed()) {
-			this.writeMethodNotAllowedErrorPage(request, response);
+			this.writeMethodNotAllowedErrorPage(response);
 			return;
 		}
 
@@ -138,7 +138,6 @@ public class Dispatcher implements Serializable {
 	}
 
 	private void writeMethodNotAllowedErrorPage(
-			final HttpServletRequest request,
 			final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(405);
@@ -151,8 +150,7 @@ public class Dispatcher implements Serializable {
 		}
 	}
 
-	public void writeNotFoundErrorPage(final HttpServletRequest request,
-			final HttpServletResponse response) {
+	public void writeNotFoundErrorPage(final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(404);
 		response.setContentType("text/html; charset=utf-8");
