@@ -18,10 +18,9 @@ import org.slf4j.LoggerFactory;
  */
 public class AvansServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
-	private final Dispatcher dispatcher = new Dispatcher();
-	private static final Logger logger = LoggerFactory
+	private static final Logger LOGGER = LoggerFactory
 		.getLogger(AvansServlet.class);
+	private final Dispatcher dispatcher = new Dispatcher();
 
 	/**
 	 * You can register classes by web.xml. You can write web.xml as
@@ -35,7 +34,7 @@ public class AvansServlet extends HttpServlet {
 		final String pkg = servletConfig.getInitParameter("package");
 		if (pkg != null) {
 			for (final String p : pkg.split(",")) {
-				logger.info("Registering package: {}", p);
+				LOGGER.info("Registering package: {}", p);
 				this.registerPackage(p);
 			}
 		}
@@ -49,12 +48,12 @@ public class AvansServlet extends HttpServlet {
 		final String classCsv = servletConfig.getInitParameter("class");
 		if (classCsv != null) {
 			for (final String className : classCsv.split(",")) {
-				logger.info("Registering class: {}", className);
+				LOGGER.info("Registering class: {}", className);
 				try {
 					final Class<?> klass = Class.forName(className);
 					this.registerClass((Class<? extends Controller>)klass);
 				} catch (final ClassNotFoundException e) {
-					logger.error("AvansServlet can't load class: {}", className);
+					LOGGER.error("AvansServlet can't load class: {}", className);
 					throw new RuntimeException(e);
 				}
 			}

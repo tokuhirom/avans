@@ -61,11 +61,11 @@ import me.geso.webscrew.response.WebResponse;
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
 		ValidatorProvider, TextRendererProvider, JacksonJsonParamReader {
-	private static final Logger logger = LoggerFactory
+	private static final Logger LOGGER = LoggerFactory
 		.getLogger(ControllerBase.class);
-	private static final Logger exceptionRootCauseLogger = LoggerFactory
+	private static final Logger EXCEPTION_ROOT_CAUSE_LOGGER = LoggerFactory
 		.getLogger("avans.exception.RootCause");
-	private static final Logger exceptionStackTraceLogger = LoggerFactory
+	private static final Logger EXCEPTION_STACK_TRACE_LOGGER = LoggerFactory
 		.getLogger("avans.exception.StackTrace");
 	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 	private final Map<String, Object> pluginStash = new HashMap<>();
@@ -213,7 +213,7 @@ public abstract class ControllerBase implements Controller,
 			final StackTraceElement[] stackTrace = root.getStackTrace();
 			if (stackTrace.length > 0) {
 				final StackTraceElement ste = stackTrace[0];
-				exceptionRootCauseLogger.error(
+				EXCEPTION_ROOT_CAUSE_LOGGER.error(
 					"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
 					this.servletRequest.getMethod(),
 					this.servletRequest.getPathInfo(),
@@ -228,7 +228,7 @@ public abstract class ControllerBase implements Controller,
 					ste.getLineNumber()
 					);
 			} else {
-				exceptionRootCauseLogger.error("{}, {}, {}, {}, {}: {}",
+				EXCEPTION_ROOT_CAUSE_LOGGER.error("{}, {}, {}, {}, {}: {}",
 					this.servletRequest.getMethod(),
 					this.servletRequest.getPathInfo(),
 					this.servletRequest.getHeader("User-Agent"),
@@ -246,7 +246,7 @@ public abstract class ControllerBase implements Controller,
 			e.printStackTrace(printWriter);
 			final String s = writer.toString();
 
-			exceptionStackTraceLogger.error("{}: {}\n{}", root.getClass(),
+			EXCEPTION_STACK_TRACE_LOGGER.error("{}: {}\n{}", root.getClass(),
 				root.getMessage(), s);
 		}
 	}
@@ -348,7 +348,7 @@ public abstract class ControllerBase implements Controller,
 		} catch (IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			// It caused by programming error.
-			logger.error("{}: {}: {}, {}", e, this.getServletRequest()
+			LOGGER.error("{}: {}: {}, {}", e, this.getServletRequest()
 				.getPathInfo(),
 				controller, params);
 			throw new RuntimeException(e);
@@ -391,11 +391,10 @@ public abstract class ControllerBase implements Controller,
 
 	protected WebResponse errorMissingMandatoryParameters(
 			List<String> missingParameters) {
-		final int BAD_REQUEST = 400;
 		final StringBuilder buf = new StringBuilder();
 		buf.append("Missing mandatory parameter: ");
 		buf.append(missingParameters.stream().collect(Collectors.joining(", ")));
-		return this.renderError(BAD_REQUEST, new String(buf));
+		return this.renderError(HttpServletResponse.SC_BAD_REQUEST, new String(buf));
 	}
 
 	private <T> ParameterProcessorResult getParameterValue(
@@ -688,7 +687,10 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	/**
-	 * [EXPERIMENTAL] Returns a rewritten URI object for the current request. Key/value pairs passed in will override existing parameters. You can remove an existing parameter by passing in an undef value. Unmodified pairs will be preserved.
+	 * [EXPERIMENTAL] Returns a rewritten URI object for the current request.
+	 * Key/value pairs passed in will override existing parameters.
+	 * You can remove an existing parameter by passing in an undef value.
+	 * Unmodified pairs will be preserved.
 	 *
 	 * @param parameters
 	 * @return Constructed URI.

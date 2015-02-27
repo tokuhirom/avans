@@ -23,7 +23,7 @@ import me.geso.routes.WebRouter;
 public class Dispatcher implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger logger = LoggerFactory
+	private static final Logger LOGGER = LoggerFactory
 		.getLogger(Dispatcher.class);
 	private final WebRouter<Action> router = new WebRouter<>();
 
@@ -45,7 +45,7 @@ public class Dispatcher implements Serializable {
 	 * @param packageName
 	 */
 	public void registerPackage(final String packageName) {
-		Dispatcher.logger.info("Registering package: {}", packageName);
+		Dispatcher.LOGGER.info("Registering package: {}", packageName);
 		final ClassLoader contextClassLoader = Thread.currentThread()
 			.getContextClassLoader();
 		ImmutableSet<ClassInfo> topLevelClasses;
@@ -63,7 +63,7 @@ public class Dispatcher implements Serializable {
 					.asSubclass(Controller.class);
 				this.registerClass(pagesClass);
 			} else {
-				Dispatcher.logger.info("{} is not a Controller", klass);
+				Dispatcher.LOGGER.info("{} is not a Controller", klass);
 			}
 		}
 	}
@@ -75,14 +75,14 @@ public class Dispatcher implements Serializable {
 	 */
 	public void registerClass(final Class<? extends Controller> klass) {
 		try {
-			Dispatcher.logger.info("Registering class: {}", klass);
+			Dispatcher.LOGGER.info("Registering class: {}", klass);
 			for (final Method method : klass.getMethods()) {
 				{
 					final POST post = method.getAnnotation(POST.class);
 					if (post != null) {
 						final String path = post.value();
 						final Action action = new Action(klass, method);
-						Dispatcher.logger.info("POST {}", path);
+						Dispatcher.LOGGER.info("POST {}", path);
 						this.router.post(path, action);
 					}
 				}
@@ -91,7 +91,7 @@ public class Dispatcher implements Serializable {
 					if (get != null) {
 						final String path = get.value();
 						final Action action = new Action(klass, method);
-						Dispatcher.logger.info("GET {}", path);
+						Dispatcher.LOGGER.info("GET {}", path);
 						this.router.get(path, action);
 					}
 				}
