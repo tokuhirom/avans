@@ -401,8 +401,7 @@ public abstract class ControllerBase implements Controller,
 	private <T> ParameterProcessorResult getParameterValue(
 			final AnnotatedElement parameter, final Class<?> type, final String parameterName)
 			throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, IOException, ServletException,
-			InstantiationException
+			InvocationTargetException, IOException, ServletException
 	{
 		// @ParamProcessor
 		// public ParamProcessorResult paramUpperQ(Parameter parameter);
