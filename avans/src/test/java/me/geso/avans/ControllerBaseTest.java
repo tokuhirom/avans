@@ -52,7 +52,7 @@ public class ControllerBaseTest {
 		// filter scanner should not add same filter twice.
 		try (final Controller2 controller = new Controller2()) {
 			final Filters filters = controller.getFilters();
-			filters.getResponseFilters().forEach(it -> System.out.println(it));
+			filters.getResponseFilters().forEach(System.out::println);
 			assertThat(filters.getResponseFilters().size(), is(1));
 		}
 	}
@@ -64,9 +64,11 @@ public class ControllerBaseTest {
 		// filter scanner should not add same filter twice.
 		try (final ControllerY controller = new ControllerY()) {
 			final Filters filters = controller.getFilters();
-			filters.getResponseFilters().forEach(it -> System.out.println(it));
-			final String methods = filters.getResponseFilters().stream()
-				.map(it -> it.getName()).collect(Collectors.joining(","));
+			filters.getResponseFilters().forEach(System.out::println);
+			final String methods = filters.getResponseFilters()
+				.stream()
+				.map(Method::getName)
+				.collect(Collectors.joining(","));
 			System.out.println(methods);
 			assertThat(filters.getResponseFilters(), is(Arrays.asList(
 				this.method(MixinA.class, "filterA"),

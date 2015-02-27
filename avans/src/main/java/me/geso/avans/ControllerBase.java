@@ -464,9 +464,8 @@ public abstract class ControllerBase implements Controller,
 					}
 				} else if (type == Part[].class) {
 					final Part[] parts = this.servletRequest.getParts()
-						.stream().filter(part -> {
-							return name.equals(part.getName());
-						}).toArray(Part[]::new);
+						.stream().filter(part -> name.equals(part.getName()))
+						.toArray(Part[]::new);
 					return ParameterProcessorResult.fromData(parts);
 				} else if (type == Optional.class) {
 					// It must be Optional<WebRequestUpload>
@@ -673,9 +672,8 @@ public abstract class ControllerBase implements Controller,
 	public URI uriFor(String path, Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
 		URIBuilder builder = this.getRelativePath(path);
 
-		parameters.entrySet().stream().forEach(it -> {
-			builder.setParameter(it.getKey(), it.getValue());
-		});
+		parameters.entrySet().stream()
+			.forEach(it -> builder.setParameter(it.getKey(), it.getValue()));
 		return builder.build();
 	}
 
@@ -701,9 +699,8 @@ public abstract class ControllerBase implements Controller,
 	 */
 	public URI uriWith(final Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
 		URIBuilder builder = new URIBuilder(String.valueOf(this.getCurrentURL()));
-		parameters.entrySet().stream().forEach(it -> {
-			builder.setParameter(it.getKey(), it.getValue());
-		});
+		parameters.entrySet().stream()
+			.forEach(it -> builder.setParameter(it.getKey(), it.getValue()));
 		return builder.build();
 	}
 
