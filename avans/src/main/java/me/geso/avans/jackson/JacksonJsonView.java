@@ -1,13 +1,13 @@
 package me.geso.avans.jackson;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import me.geso.avans.Controller;
 import me.geso.avans.JSONRendererProvider;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.WebResponse;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface JacksonJsonView extends Controller, JSONRendererProvider {
 

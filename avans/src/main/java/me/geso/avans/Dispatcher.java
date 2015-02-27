@@ -11,14 +11,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.ClassPath;
+import com.google.common.reflect.ClassPath.ClassInfo;
+
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ClassInfo;
 
 public class Dispatcher implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -169,6 +169,9 @@ public class Dispatcher implements Serializable {
 	}
 
 	public static class Action {
+		private final Class<? extends Controller> controllerClass;
+		private final Method method;
+
 		public Action(final Class<? extends Controller> controllerClass,
 				final Method method) {
 			this.controllerClass = controllerClass;
@@ -182,9 +185,6 @@ public class Dispatcher implements Serializable {
 		public Method getMethod() {
 			return this.method;
 		}
-
-		private final Class<? extends Controller> controllerClass;
-		private final Method method;
 	}
 
 }

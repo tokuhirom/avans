@@ -9,6 +9,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.Dispatcher;
@@ -16,39 +21,7 @@ import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 public class AnnotationBasedDispatcherTest {
-
-	public static class MyServlet extends HttpServlet {
-		private static final long serialVersionUID = 1L;
-
-		static final Dispatcher dispatcher = new Dispatcher();
-		static {
-			MyServlet.dispatcher
-				.registerPackage("me.geso.avans.annotationbased");
-			System.out.println(MyServlet.dispatcher.getRouter().toString());
-		}
-
-		@Override
-		public void service(final ServletRequest req, final ServletResponse res)
-				throws ServletException, IOException {
-			MyServlet.dispatcher.handler(
-				(HttpServletRequest)req,
-				(HttpServletResponse)res);
-		}
-	}
-
-	@FunctionalInterface
-	public static interface BasicAction {
-		public WebResponse run(final ControllerBase web);
-	}
-
-	public static class MyApplication extends ControllerBase {
-	}
 
 	private MechJettyServlet mech;
 
@@ -80,6 +53,32 @@ public class AnnotationBasedDispatcherTest {
 			.param("name", "John").execute()) {
 			Assert.assertEquals(res.getContentString(), "(postform)name:John");
 		}
+	}
+
+	@FunctionalInterface
+	public static interface BasicAction {
+		public WebResponse run(final ControllerBase web);
+	}
+
+	public static class MyServlet extends HttpServlet {
+		static final Dispatcher dispatcher = new Dispatcher();
+		static {
+			MyServlet.dispatcher
+				.registerPackage("me.geso.avans.annotationbased");
+			System.out.println(MyServlet.dispatcher.getRouter().toString());
+		}
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void service(final ServletRequest req, final ServletResponse res)
+				throws ServletException, IOException {
+			MyServlet.dispatcher.handler(
+				(HttpServletRequest)req,
+				(HttpServletResponse)res);
+		}
+	}
+
+	public static class MyApplication extends ControllerBase {
 	}
 
 }

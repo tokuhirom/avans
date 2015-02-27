@@ -37,6 +37,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.annotation.BeanParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.Param;
@@ -50,9 +52,6 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * You should create this object per HTTP request.
  *
@@ -62,16 +61,17 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
 		ValidatorProvider, TextRendererProvider, JacksonJsonParamReader {
-	private HttpServletResponse servletResponse;
-	private final Map<String, Object> pluginStash = new HashMap<>();
-	private HttpServletRequest servletRequest;
-	private Map<String, String> pathParams;
 	private static final Logger logger = LoggerFactory
 		.getLogger(ControllerBase.class);
 	private static final Logger exceptionRootCauseLogger = LoggerFactory
 		.getLogger("avans.exception.RootCause");
 	private static final Logger exceptionStackTraceLogger = LoggerFactory
 		.getLogger("avans.exception.StackTrace");
+	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
+	private final Map<String, Object> pluginStash = new HashMap<>();
+	private HttpServletResponse servletResponse;
+	private HttpServletRequest servletRequest;
+	private Map<String, String> pathParams;
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
@@ -206,6 +206,7 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private void logException(Throwable e) {
+		@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 		final Throwable root = this.unwrapRuntimeException(e);
 		// Logging root cause in the log.
 		{
@@ -263,8 +264,6 @@ public abstract class ControllerBase implements Controller,
 		}
 		return e;
 	}
-
-	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 
 	Filters getFilters() {
 		return this.filters

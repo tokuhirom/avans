@@ -39,36 +39,12 @@ public class ControllerBaseTest {
 
 	// --------------------------------------------------------------
 
-	@Ignore
-	public static class MyController extends ControllerBase {
-		@ResponseFilter
-		public void filter(WebResponse response) {
-		}
-	}
-
 	@Test
 	public void test() {
 		try (final MyController controller = new MyController()) {
 			final Filters filters = controller.getFilters();
 			assertThat(filters.getResponseFilters().size(), is(1));
 		}
-	}
-
-	// --------------------------------------------------------------
-
-	static interface Mixin {
-		@ResponseFilter
-		public default void filter(WebResponse response) {
-		}
-	}
-
-	@Ignore
-	public static abstract class Controller3 extends ControllerBase implements
-			Mixin {
-	}
-
-	@Ignore
-	public static class Controller2 extends Controller3 implements Mixin {
 	}
 
 	@Test
@@ -82,39 +58,6 @@ public class ControllerBaseTest {
 	}
 
 	// --------------------------------------------------------------
-
-	static interface MixinA {
-		@ResponseFilter
-		public default void filterA(WebResponse repsonse) {
-		}
-
-		@ResponseFilter
-		public default void filterA2(WebResponse repsonse) {
-		}
-	}
-
-	static interface MixinB {
-		@ResponseFilter
-		public default void filterB(WebResponse repsonse) {
-		}
-	}
-
-	@Ignore
-	public static abstract class ControllerX extends ControllerBase implements
-			MixinA {
-		@Override
-		@ResponseFilter
-		public void filterA2(WebResponse repsonse) {
-		}
-	}
-
-	@Ignore
-	public static class ControllerY extends ControllerX implements MixinB {
-		@Override
-		@ResponseFilter
-		public void filterA(WebResponse repsonse) {
-		}
-	}
 
 	@Test
 	public void test3() throws Exception {
@@ -139,17 +82,67 @@ public class ControllerBaseTest {
 		return klass.getMethod(name, WebResponse.class);
 	}
 
+	static interface Mixin {
+		@ResponseFilter
+		public default void filter(WebResponse response) {
+		}
+	}
+
+	static interface MixinA {
+		@ResponseFilter
+		public default void filterA(WebResponse repsonse) {
+		}
+
+		@ResponseFilter
+		public default void filterA2(WebResponse repsonse) {
+		}
+	}
+
+	// --------------------------------------------------------------
+
+	static interface MixinB {
+		@ResponseFilter
+		public default void filterB(WebResponse repsonse) {
+		}
+	}
+
+	@Ignore
+	public static class MyController extends ControllerBase {
+		@ResponseFilter
+		public void filter(WebResponse response) {
+		}
+	}
+
+	@Ignore
+	public static abstract class Controller3 extends ControllerBase implements
+			Mixin {
+	}
+
+	@Ignore
+	public static class Controller2 extends Controller3 implements Mixin {
+	}
+
+	@Ignore
+	public static abstract class ControllerX extends ControllerBase implements
+			MixinA {
+		@Override
+		@ResponseFilter
+		public void filterA2(WebResponse repsonse) {
+		}
+	}
+
+	@Ignore
+	public static class ControllerY extends ControllerX implements MixinB {
+		@Override
+		@ResponseFilter
+		public void filterA(WebResponse repsonse) {
+		}
+	}
+
 	/**
 	 * OptionalLong must be accept empty string as OptionalLong.empty().
 	 */
 	public static class TestOptionalLong {
-		public static class Controller extends ControllerBase {
-			@GET("/")
-			public WebResponse root(@Param("q") OptionalLong q) {
-				return this.renderText("q=" + q.orElse(5963));
-			}
-		}
-
 		@Test
 		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -182,6 +175,13 @@ public class ControllerBaseTest {
 						.execute()
 						.getResponseBodyAsString());
 				});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") OptionalLong q) {
+				return this.renderText("q=" + q.orElse(5963));
+			}
 		}
 	}
 
@@ -189,13 +189,6 @@ public class ControllerBaseTest {
 	 * OptionalInt must be accept empty string as OptionalLong.empty().
 	 */
 	public static class TestOptionalInt {
-		public static class Controller extends ControllerBase {
-			@GET("/")
-			public WebResponse root(@Param("q") OptionalInt q) {
-				return this.renderText("q=" + q.orElse(5963));
-			}
-		}
-
 		@Test
 		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -229,19 +222,19 @@ public class ControllerBaseTest {
 						.getResponseBodyAsString());
 				});
 		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") OptionalInt q) {
+				return this.renderText("q=" + q.orElse(5963));
+			}
+		}
 	}
 
 	/**
 	 * OptionalDouble must be accept empty string as OptionalLong.empty().
 	 */
 	public static class TestOptionalDouble {
-		public static class Controller extends ControllerBase {
-			@GET("/")
-			public WebResponse root(@Param("q") OptionalDouble q) {
-				return this.renderText("q=" + q.orElse(3.14));
-			}
-		}
-
 		@Test
 		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -275,19 +268,19 @@ public class ControllerBaseTest {
 						.getResponseBodyAsString());
 				});
 		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") OptionalDouble q) {
+				return this.renderText("q=" + q.orElse(3.14));
+			}
+		}
 	}
 
 	/**
 	 * OptionalLong must be accept empty string as OptionalLong.empty().
 	 */
 	public static class TestOptionalStringParameter {
-		public static class Controller extends ControllerBase {
-			@GET("/")
-			public WebResponse root(@Param("q") Optional<String> q) {
-				return this.renderText("q=" + q.orElse("Missing"));
-			}
-		}
-
 		@Test
 		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -319,21 +312,16 @@ public class ControllerBaseTest {
 						.getResponseBodyAsString());
 				});
 		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Optional<String> q) {
+				return this.renderText("q=" + q.orElse("Missing"));
+			}
+		}
 	}
 
 	public static class TestRedirect {
-		public static class Controller extends ControllerBase {
-			@GET("/")
-			public WebResponse root() {
-				return this.redirect("/xxx/yyy?foo=bar");
-			}
-
-			@GET("/xxx/yyy")
-			public WebResponse yyy() {
-				return this.renderText("OK");
-			}
-		}
-
 		@Test
 		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -345,9 +333,50 @@ public class ControllerBaseTest {
 					.getResponseBodyAsString());
 			});
 		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root() {
+				return this.redirect("/xxx/yyy?foo=bar");
+			}
+
+			@GET("/xxx/yyy")
+			public WebResponse yyy() {
+				return this.renderText("OK");
+			}
+		}
 	}
 
 	public static class TestRedirectWithQueryParameters {
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+					.build(), baseURI);
+				mech2.disableRedirectHandling();
+
+				assertEquals("/ok", getPathQuery(mech2, "/z"));
+				// Only one parameter
+				assertEquals("/ok?a=1", getPathQuery(mech2, "/a"));
+				// There is two parameters.
+				assertEquals("/ok?a=1&b=2", getPathQuery(mech2, "/b"));
+				// There is three parameters.
+				assertEquals("/ok?a=1&b=2&c=3", getPathQuery(mech2, "/c"));
+			});
+		}
+
+		private String getPathQuery(Mech2WithBase mech2, String path) throws URISyntaxException, IOException {
+			String location = mech2.get(path).execute()
+				.getResponse()
+				.getFirstHeader("Location")
+				.getValue();
+			// Remove scheme, host and port.
+			Pattern pattern = Pattern.compile("^http://[^/]+");
+			return pattern.matcher(location).replaceFirst("");
+		}
+
 		public static class Controller extends ControllerBase {
 			@GET("/a")
 			public WebResponse a() throws IOException, URISyntaxException {
@@ -379,45 +408,9 @@ public class ControllerBaseTest {
 					.build());
 			}
 		}
-
-		@Test
-		public void testX() throws Exception {
-			final AvansServlet servlet = new AvansServlet();
-			servlet.registerClass(Controller.class);
-			JettyServletTester.runServlet(servlet, baseURI -> {
-				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-					.build(), baseURI);
-				mech2.disableRedirectHandling();
-
-				assertEquals("/ok", getPathQuery(mech2, "/z"));
-				// Only one parameter
-				assertEquals("/ok?a=1", getPathQuery(mech2, "/a"));
-				// There is two parameters.
-				assertEquals("/ok?a=1&b=2", getPathQuery(mech2, "/b"));
-				// There is three parameters.
-				assertEquals("/ok?a=1&b=2&c=3", getPathQuery(mech2, "/c"));
-			});
-		}
-
-		private String getPathQuery(Mech2WithBase mech2, String path) throws URISyntaxException, IOException {
-			String location = mech2.get(path).execute()
-				.getResponse()
-				.getFirstHeader("Location")
-				.getValue();
-			// Remove scheme, host and port.
-			Pattern pattern = Pattern.compile("^http://[^/]+");
-			return pattern.matcher(location).replaceFirst("");
-		}
 	}
 
 	public static class TestGetCurrentURL {
-		public static class Controller extends ControllerBase {
-			@GET("/a")
-			public WebResponse a() throws IOException, URISyntaxException {
-				return this.renderText(this.getCurrentURL().toString());
-			}
-		}
-
 		@Test
 		public void testX() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -430,9 +423,9 @@ public class ControllerBaseTest {
 				// With query string
 				{
 					HttpResponse response = mech2.get("/a")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/a\\?x=ok"));
@@ -441,8 +434,8 @@ public class ControllerBaseTest {
 				// Without query string
 				{
 					HttpResponse response = mech2.get("/a")
-							.execute()
-							.getResponse();
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/a"));
@@ -456,15 +449,15 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, "/xxxx/", baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
 				// With query string
 				{
 					HttpResponse response = mech2.get("/xxxx/a")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/xxxx/a\\?x=ok"));
@@ -473,46 +466,24 @@ public class ControllerBaseTest {
 				// Without query string
 				{
 					HttpResponse response = mech2.get("/xxxx/a")
-							.execute()
-							.getResponse();
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/xxxx/a"));
 				}
 			});
 		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/a")
+			public WebResponse a() throws IOException, URISyntaxException {
+				return this.renderText(this.getCurrentURL().toString());
+			}
+		}
 	}
 
 	public static class TestURIFor {
-		public static class Controller extends ControllerBase {
-			@GET("/uriFor1")
-			public WebResponse a() throws IOException, URISyntaxException {
-				return this.renderText(this.uriFor("/o").toString());
-			}
-
-			@GET("/b")
-			public WebResponse b() throws IOException, URISyntaxException {
-				return this.renderText(this.uriFor("/x", ImmutableMap.<String, String>builder()
-					.put("foo", "bar")
-					.build()).toString());
-			}
-
-			@GET("/c/d")
-			public WebResponse cd() throws IOException, URISyntaxException {
-				return this.renderText(this.uriFor("iyan", ImmutableMap.<String, String>builder()
-						.put("foo", "bar")
-						.build()).toString());
-			}
-
-			@GET("/m/d/e")
-			public WebResponse cde() throws IOException, URISyntaxException {
-				return this.renderText(this.uriFor("../upper", ImmutableMap.<String, String>builder()
-						.put("foo", "bar")
-						.put("boo", "wow")
-						.build()).toString());
-			}
-		}
-
 		@Test
 		public void testURIFor() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -549,23 +520,23 @@ public class ControllerBaseTest {
 			servlet.registerClass(Controller.class);
 			JettyServletTester.runServlet(servlet, "/aaaa", baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+					.build(), baseURI);
 				mech2.disableRedirectHandling();
 
 				{
 					HttpResponse response = mech2.get("/aaaa/uriFor1")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/o"));
 				}
 				{
 					HttpResponse response = mech2.get("/aaaa/b")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/x\\?foo=bar"));
@@ -573,9 +544,9 @@ public class ControllerBaseTest {
 
 				{
 					HttpResponse response = mech2.get("/aaaa/c/d")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/c/iyan\\?foo=bar"));
@@ -583,27 +554,47 @@ public class ControllerBaseTest {
 
 				{
 					HttpResponse response = mech2.get("/aaaa/m/d/e")
-							.addQueryParameter("x", "ok")
-							.execute()
-							.getResponse();
+						.addQueryParameter("x", "ok")
+						.execute()
+						.getResponse();
 					String got = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 					System.out.println(got);
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/aaaa/m/upper\\?foo=bar&boo=wow"));
 				}
 			});
 		}
-	}
 
-	public static class TestURIWith {
 		public static class Controller extends ControllerBase {
+			@GET("/uriFor1")
+			public WebResponse a() throws IOException, URISyntaxException {
+				return this.renderText(this.uriFor("/o").toString());
+			}
+
 			@GET("/b")
 			public WebResponse b() throws IOException, URISyntaxException {
-				return this.renderText(this.uriWith(ImmutableMap.<String, String>builder()
+				return this.renderText(this.uriFor("/x", ImmutableMap.<String, String>builder()
 					.put("foo", "bar")
 					.build()).toString());
 			}
-		}
 
+			@GET("/c/d")
+			public WebResponse cd() throws IOException, URISyntaxException {
+				return this.renderText(this.uriFor("iyan", ImmutableMap.<String, String>builder()
+					.put("foo", "bar")
+					.build()).toString());
+			}
+
+			@GET("/m/d/e")
+			public WebResponse cde() throws IOException, URISyntaxException {
+				return this.renderText(this.uriFor("../upper", ImmutableMap.<String, String>builder()
+					.put("foo", "bar")
+					.put("boo", "wow")
+					.build()).toString());
+			}
+		}
+	}
+
+	public static class TestURIWith {
 		@Test
 		public void testURIWith() throws Exception {
 			final AvansServlet servlet = new AvansServlet();
@@ -623,6 +614,15 @@ public class ControllerBaseTest {
 					assertTrue(got.matches("http://127.0.0.1:[0-9]+/b\\?x=ok&foo=bar"));
 				}
 			});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/b")
+			public WebResponse b() throws IOException, URISyntaxException {
+				return this.renderText(this.uriWith(ImmutableMap.<String, String>builder()
+					.put("foo", "bar")
+					.build()).toString());
+			}
 		}
 	}
 
