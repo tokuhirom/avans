@@ -118,6 +118,8 @@ public class ParamProcessorTest {
 
 	@Slf4j
 	public static class MyController extends ControllerBase {
+
+		@SuppressWarnings("UnusedParameters")
 		@ParamProcessor(targetClass = String.class)
 		public ParameterProcessorResult paramUpperQ(Parameter parameter) {
 			log.info("paramUpperQ");
@@ -131,12 +133,14 @@ public class ParamProcessorTest {
 			}
 		}
 
+		@SuppressWarnings("UnusedParameters")
 		@ParamProcessor(targetAnnotation = MyAnnotation.class)
 		public ParameterProcessorResult paramAnnotation(Parameter parameter) {
 			log.info("paramAnnotation");
 			return ParameterProcessorResult.fromData(3.14);
 		}
 
+		@SuppressWarnings("UnusedParameters")
 		@ParamProcessor(targetAnnotation = MyAnnotation2.class)
 		public ParameterProcessorResult paramAnnotation2(Parameter parameter) {
 			log.info("paramAnnotation2");
