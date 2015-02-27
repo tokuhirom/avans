@@ -445,12 +445,12 @@ public abstract class ControllerBase implements Controller,
 				final String name = ((Param)annotation).value();
 				final String value = this.getServletRequest()
 					.getParameter(name);
-				return this.getObjectFromParameterObjectValue(annotation, name,
+				return this.getObjectFromParameterObjectValue(name,
 					type, value);
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam)annotation).value();
 				final String value = this.pathParams.get(name);
-				return this.getObjectFromParameterObjectValue(annotation, name,
+				return this.getObjectFromParameterObjectValue(name,
 					type, value);
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
@@ -508,7 +508,6 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private ParameterProcessorResult getObjectFromParameterObjectValue(
-			final Annotation annotation,
 			final String name,
 			final Class<?> type,
 			final String value) {
