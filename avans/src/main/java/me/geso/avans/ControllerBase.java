@@ -37,6 +37,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.annotation.BeanParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.Param;
@@ -50,9 +52,6 @@ import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * You should create this object per HTTP request.
  *
@@ -62,16 +61,17 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class ControllerBase implements Controller,
 		JacksonJsonView, HTMLFilterProvider, JSONErrorPageRenderer,
 		ValidatorProvider, TextRendererProvider, JacksonJsonParamReader {
-	private HttpServletResponse servletResponse;
+	private static final Logger LOGGER = LoggerFactory
+		.getLogger(ControllerBase.class);
+	private static final Logger EXCEPTION_ROOT_CAUSE_LOGGER = LoggerFactory
+		.getLogger("avans.exception.RootCause");
+	private static final Logger EXCEPTION_STACK_TRACE_LOGGER = LoggerFactory
+		.getLogger("avans.exception.StackTrace");
+	private final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 	private final Map<String, Object> pluginStash = new HashMap<>();
+	private HttpServletResponse servletResponse;
 	private HttpServletRequest servletRequest;
 	private Map<String, String> pathParams;
-	private static final Logger logger = LoggerFactory
-		.getLogger(ControllerBase.class);
-	private static final Logger exceptionRootCauseLogger = LoggerFactory
-		.getLogger("avans.exception.RootCause");
-	private static final Logger exceptionStackTraceLogger = LoggerFactory
-		.getLogger("avans.exception.StackTrace");
 
 	@Override
 	public void init(final HttpServletRequest servletRequest,
@@ -206,13 +206,14 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private void logException(Throwable e) {
+		@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 		final Throwable root = this.unwrapRuntimeException(e);
 		// Logging root cause in the log.
 		{
 			final StackTraceElement[] stackTrace = root.getStackTrace();
 			if (stackTrace.length > 0) {
 				final StackTraceElement ste = stackTrace[0];
-				exceptionRootCauseLogger.error(
+				EXCEPTION_ROOT_CAUSE_LOGGER.error(
 					"{}, {}, {}, {}, {}: {} at {}.{}({}:{})",
 					this.servletRequest.getMethod(),
 					this.servletRequest.getPathInfo(),
@@ -227,7 +228,7 @@ public abstract class ControllerBase implements Controller,
 					ste.getLineNumber()
 					);
 			} else {
-				exceptionRootCauseLogger.error("{}, {}, {}, {}, {}: {}",
+				EXCEPTION_ROOT_CAUSE_LOGGER.error("{}, {}, {}, {}, {}: {}",
 					this.servletRequest.getMethod(),
 					this.servletRequest.getPathInfo(),
 					this.servletRequest.getHeader("User-Agent"),
@@ -245,7 +246,7 @@ public abstract class ControllerBase implements Controller,
 			e.printStackTrace(printWriter);
 			final String s = writer.toString();
 
-			exceptionStackTraceLogger.error("{}: {}\n{}", root.getClass(),
+			EXCEPTION_STACK_TRACE_LOGGER.error("{}: {}\n{}", root.getClass(),
 				root.getMessage(), s);
 		}
 	}
@@ -263,8 +264,6 @@ public abstract class ControllerBase implements Controller,
 		}
 		return e;
 	}
-
-	final ConcurrentHashMap<Class<?>, Filters> filters = new ConcurrentHashMap<>();
 
 	Filters getFilters() {
 		return this.filters
@@ -349,7 +348,7 @@ public abstract class ControllerBase implements Controller,
 		} catch (IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			// It caused by programming error.
-			logger.error("{}: {}: {}, {}", e, this.getServletRequest()
+			LOGGER.error("{}: {}: {}, {}", e, this.getServletRequest()
 				.getPathInfo(),
 				controller, params);
 			throw new RuntimeException(e);
@@ -373,8 +372,7 @@ public abstract class ControllerBase implements Controller,
 					} else if (v instanceof Optional) {
 						final Optional<?> ov = (Optional<?>)v;
 						if (ov.isPresent()) {
-							final WebResponse response = (WebResponse)ov.get();
-							return response;
+							return (WebResponse)ov.get();
 						} else {
 							// Call next response converter.
 							continue;
@@ -393,18 +391,16 @@ public abstract class ControllerBase implements Controller,
 
 	protected WebResponse errorMissingMandatoryParameters(
 			List<String> missingParameters) {
-		final int BAD_REQUEST = 400;
 		final StringBuilder buf = new StringBuilder();
 		buf.append("Missing mandatory parameter: ");
 		buf.append(missingParameters.stream().collect(Collectors.joining(", ")));
-		return this.renderError(BAD_REQUEST, new String(buf));
+		return this.renderError(HttpServletResponse.SC_BAD_REQUEST, new String(buf));
 	}
 
 	private <T> ParameterProcessorResult getParameterValue(
 			final AnnotatedElement parameter, final Class<?> type, final String parameterName)
 			throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, IOException, ServletException,
-			InstantiationException
+			InvocationTargetException, IOException, ServletException
 	{
 		// @ParamProcessor
 		// public ParamProcessorResult paramUpperQ(Parameter parameter);
@@ -447,12 +443,12 @@ public abstract class ControllerBase implements Controller,
 				final String name = ((Param)annotation).value();
 				final String value = this.getServletRequest()
 					.getParameter(name);
-				return this.getObjectFromParameterObjectValue(annotation, name,
+				return this.getObjectFromParameterObjectValue(name,
 					type, value);
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam)annotation).value();
 				final String value = this.pathParams.get(name);
-				return this.getObjectFromParameterObjectValue(annotation, name,
+				return this.getObjectFromParameterObjectValue(name,
 					type, value);
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
@@ -466,9 +462,8 @@ public abstract class ControllerBase implements Controller,
 					}
 				} else if (type == Part[].class) {
 					final Part[] parts = this.servletRequest.getParts()
-						.stream().filter(part -> {
-							return name.equals(part.getName());
-						}).toArray(Part[]::new);
+						.stream().filter(part -> name.equals(part.getName()))
+						.toArray(Part[]::new);
 					return ParameterProcessorResult.fromData(parts);
 				} else if (type == Optional.class) {
 					// It must be Optional<WebRequestUpload>
@@ -511,7 +506,6 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private ParameterProcessorResult getObjectFromParameterObjectValue(
-			final Annotation annotation,
 			final String name,
 			final Class<?> type,
 			final String value) {
@@ -646,21 +640,37 @@ public abstract class ControllerBase implements Controller,
 		return new URL(url.toString());
 	}
 
+	private URIBuilder getRelativePath(@NonNull final String path) throws MalformedURLException, URISyntaxException {
+		if (path.startsWith("/")) {
+			HttpServletRequest req = this.getServletRequest();
+			return new URIBuilder().setScheme(req.getScheme())
+				.setHost(req.getServerName())
+				.setPort(req.getServerPort())
+				.setPath(req.getContextPath() + path);
+		} else {
+			final StringBuffer requestURL = this.getServletRequest().getRequestURL();
+			return new URIBuilder(new URL(new URL(requestURL.toString()), path).toURI());
+		}
+	}
+
 	/**
 	 * [EXPERIMENTAL] Constructs an absolute URI object based on the application root, the provided path, and the additional arguments and query parameters provided.
+	 * This method cares context path. You can use relative path from context root.
 	 *
-	 * @param path
-	 * @param parameters
-	 * @return
+	 * For example, if your context path is {@code http://example.com/xxx/},
+	 * <code>uriFor("/x")</code> returns {@code http://example.com/xxx/x}
+	 *
+	 * @param path Path from the current URL. You can use root relative URL from context root.
+	 * @param parameters Query parameters.
+	 * @return Constructed URI.
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
 	public URI uriFor(String path, Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
-		URIBuilder builder = new URIBuilder(String.valueOf(this.getServletRequest().getRequestURL()));
-		builder.setPath(path);
-		parameters.entrySet().stream().forEach(it -> {
-			builder.setParameter(it.getKey(), it.getValue());
-		});
+		URIBuilder builder = this.getRelativePath(path);
+
+		parameters.entrySet().stream()
+			.forEach(it -> builder.setParameter(it.getKey(), it.getValue()));
 		return builder.build();
 	}
 
@@ -668,7 +678,7 @@ public abstract class ControllerBase implements Controller,
 	 * [EXPERIMENTAL] Short hand for {@code this.uriFor(path, Collections.emptyMap())}.
 	 *
 	 * @param path Path for destination.
-	 * @return
+	 * @return Constructed URL
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
@@ -677,7 +687,10 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	/**
-	 * [EXPERIMENTAL] Returns a rewritten URI object for the current request. Key/value pairs passed in will override existing parameters. You can remove an existing parameter by passing in an undef value. Unmodified pairs will be preserved.
+	 * [EXPERIMENTAL] Returns a rewritten URI object for the current request.
+	 * Key/value pairs passed in will override existing parameters.
+	 * You can remove an existing parameter by passing in an undef value.
+	 * Unmodified pairs will be preserved.
 	 *
 	 * @param parameters
 	 * @return Constructed URI.
@@ -686,9 +699,8 @@ public abstract class ControllerBase implements Controller,
 	 */
 	public URI uriWith(final Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
 		URIBuilder builder = new URIBuilder(String.valueOf(this.getCurrentURL()));
-		parameters.entrySet().stream().forEach(it -> {
-			builder.setParameter(it.getKey(), it.getValue());
-		});
+		parameters.entrySet().stream()
+			.forEach(it -> builder.setParameter(it.getKey(), it.getValue()));
 		return builder.build();
 	}
 

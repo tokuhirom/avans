@@ -11,19 +11,19 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.ClassPath;
+import com.google.common.reflect.ClassPath.ClassInfo;
+
 import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.POST;
 import me.geso.routes.RoutingResult;
 import me.geso.routes.WebRouter;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ClassInfo;
-
 public class Dispatcher implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger logger = LoggerFactory
+	private static final Logger LOGGER = LoggerFactory
 		.getLogger(Dispatcher.class);
 	private final WebRouter<Action> router = new WebRouter<>();
 
@@ -45,7 +45,7 @@ public class Dispatcher implements Serializable {
 	 * @param packageName
 	 */
 	public void registerPackage(final String packageName) {
-		Dispatcher.logger.info("Registering package: {}", packageName);
+		Dispatcher.LOGGER.info("Registering package: {}", packageName);
 		final ClassLoader contextClassLoader = Thread.currentThread()
 			.getContextClassLoader();
 		ImmutableSet<ClassInfo> topLevelClasses;
@@ -63,7 +63,7 @@ public class Dispatcher implements Serializable {
 					.asSubclass(Controller.class);
 				this.registerClass(pagesClass);
 			} else {
-				Dispatcher.logger.info("{} is not a Controller", klass);
+				Dispatcher.LOGGER.info("{} is not a Controller", klass);
 			}
 		}
 	}
@@ -75,14 +75,14 @@ public class Dispatcher implements Serializable {
 	 */
 	public void registerClass(final Class<? extends Controller> klass) {
 		try {
-			Dispatcher.logger.info("Registering class: {}", klass);
+			Dispatcher.LOGGER.info("Registering class: {}", klass);
 			for (final Method method : klass.getMethods()) {
 				{
 					final POST post = method.getAnnotation(POST.class);
 					if (post != null) {
 						final String path = post.value();
 						final Action action = new Action(klass, method);
-						Dispatcher.logger.info("POST {}", path);
+						Dispatcher.LOGGER.info("POST {}", path);
 						this.router.post(path, action);
 					}
 				}
@@ -91,7 +91,7 @@ public class Dispatcher implements Serializable {
 					if (get != null) {
 						final String path = get.value();
 						final Action action = new Action(klass, method);
-						Dispatcher.logger.info("GET {}", path);
+						Dispatcher.LOGGER.info("GET {}", path);
 						this.router.get(path, action);
 					}
 				}
@@ -109,12 +109,12 @@ public class Dispatcher implements Serializable {
 		final RoutingResult<Action> match = this.router.match(
 			method, path);
 		if (match == null) {
-			this.writeNotFoundErrorPage(request, response);
+			this.writeNotFoundErrorPage(response);
 			return;
 		}
 
 		if (!match.methodAllowed()) {
-			this.writeMethodNotAllowedErrorPage(request, response);
+			this.writeMethodNotAllowedErrorPage(response);
 			return;
 		}
 
@@ -138,7 +138,6 @@ public class Dispatcher implements Serializable {
 	}
 
 	private void writeMethodNotAllowedErrorPage(
-			final HttpServletRequest request,
 			final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(405);
@@ -151,8 +150,7 @@ public class Dispatcher implements Serializable {
 		}
 	}
 
-	public void writeNotFoundErrorPage(final HttpServletRequest request,
-			final HttpServletResponse response) {
+	public void writeNotFoundErrorPage(final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(404);
 		response.setContentType("text/html; charset=utf-8");
@@ -169,6 +167,9 @@ public class Dispatcher implements Serializable {
 	}
 
 	public static class Action {
+		private final Class<? extends Controller> controllerClass;
+		private final Method method;
+
 		public Action(final Class<? extends Controller> controllerClass,
 				final Method method) {
 			this.controllerClass = controllerClass;
@@ -182,9 +183,6 @@ public class Dispatcher implements Serializable {
 		public Method getMethod() {
 			return this.method;
 		}
-
-		private final Class<? extends Controller> controllerClass;
-		private final Method method;
 	}
 
 }

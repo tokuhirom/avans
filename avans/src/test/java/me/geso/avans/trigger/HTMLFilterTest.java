@@ -2,8 +2,7 @@ package me.geso.avans.trigger;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import org.junit.Test;
 
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
@@ -14,25 +13,10 @@ import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
 
-import org.apache.http.ParseException;
-import org.junit.Test;
-
 public class HTMLFilterTest {
 
-	public static class MyController extends ControllerBase {
-		@HTMLFilter
-		public String htmlFilter(String src) {
-			return src.toUpperCase();
-		}
-
-		@GET("/")
-		public WebResponse foo() {
-			return this.renderText(this.filterHTML("Hige"));
-		}
-	}
-
 	@Test
-	public void test() throws ParseException, URISyntaxException, IOException,
+	public void test() throws
 			Exception {
 		final AvansServlet servlet = new AvansServlet();
 		servlet.registerClass(MyController.class);
@@ -47,6 +31,18 @@ public class HTMLFilterTest {
 					.getStatusCode());
 				assertEquals("HIGE", res.getResponseBodyAsString());
 			});
+	}
+
+	public static class MyController extends ControllerBase {
+		@HTMLFilter
+		public String htmlFilter(String src) {
+			return src.toUpperCase();
+		}
+
+		@GET("/")
+		public WebResponse foo() {
+			return this.renderText(this.filterHTML("Hige"));
+		}
 	}
 
 }

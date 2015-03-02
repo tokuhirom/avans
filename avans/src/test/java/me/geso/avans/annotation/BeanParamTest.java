@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -17,6 +18,10 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableMap;
+
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.mech2.Mech2;
@@ -25,13 +30,127 @@ import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
 
-import com.google.common.collect.ImmutableMap;
-
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class BeanParamTest {
+
+	@Test
+	public void test() throws Exception {
+		final AvansServlet servlet = new AvansServlet();
+		servlet.registerClass(MyController.class);
+		JettyServletTester
+			.runServlet(
+				servlet,
+				(uri) -> {
+					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+						.builder()
+						.build(), uri);
+					{
+						final Mech2Result res = mech2
+							.get("/")
+							.addQueryParameter("string", "a")
+							.addQueryParameter("primitive_long",
+								"1")
+							.addQueryParameter("object_long", "2")
+							.addQueryParameter("primitive_short",
+								"3")
+							.addQueryParameter("object_short", "4")
+							.addQueryParameter("primitive_int", "5")
+							.addQueryParameter("object_int", "6")
+							.addQueryParameter("primitive_boolean",
+								"false")
+							.addQueryParameter("object_boolean",
+								"true")
+							.execute();
+						log.info("response: {}",
+							res.getResponseBodyAsString());
+						assertEquals(200, res.getResponse()
+							.getStatusLine()
+							.getStatusCode());
+						assertEquals(
+							"{\"string\":\"a\",\"primitive_long\":1,\"object_long\":2,\"object_short\":4,\"primitive_short\":3,\"object_int\":6,\"primitive_int\":5,\"primitive_boolean\":false,\"object_boolean\":true}",
+							res.getResponseBodyAsString());
+					}
+
+					{
+						// no optional values
+						final Mech2Result res = mech2
+							.get("/oBean")
+							.execute();
+						log.info("response: {}",
+							res.getResponseBodyAsString());
+						assertEquals(200, res.getResponse()
+							.getStatusLine()
+							.getStatusCode());
+						assertEquals(
+							"{\"int\":0,\"long\":0,\"string\":\"-\"}",
+							res.getResponseBodyAsString());
+					}
+
+					{
+						// provide optional values
+						final Mech2Result res = mech2
+							.get("/oBean")
+							.addQueryParameter("int", "5963")
+							.addQueryParameter("long", "4949")
+							.addQueryParameter("string", "hello")
+							.execute();
+						log.info("response: {}",
+							res.getResponseBodyAsString());
+						assertEquals(200, res.getResponse()
+							.getStatusLine()
+							.getStatusCode());
+						assertEquals(
+							"{\"int\":0,\"long\":0,\"string\":\"-\"}",
+							res.getResponseBodyAsString());
+					}
+				});
+	}
+
+	@Test
+	public void testFileBean() throws Exception {
+		// all
+		this.test(mech2 -> {
+			// fileBean
+			final Mech2Result res = mech2
+				.postMultipart("/fileBean")
+					.addTextBody("string", "SSS")
+					.addBinaryBody("part", new File("src/test/resources/hello.txt"))
+					.addBinaryBody("parts", new File("src/test/resources/hello.txt"))
+					.addBinaryBody("parts", new File("src/test/resources/hello.txt"))
+					.execute();
+			log.info("response: {}",
+					res.getResponseBodyAsString());
+			assertEquals(200, res.getResponse()
+					.getStatusLine()
+					.getStatusCode());
+			assertEquals(
+					"{\"string\":\"SSS\",\"part\":\"hello\",\"parts\":\"hello,hello\"}",
+					res.getResponseBodyAsString());
+		});
+	}
+
+	private void test(TestCallback cb) throws Exception {
+		final AvansServlet servlet = new AvansServlet();
+		servlet.registerClass(MyController.class);
+		final ServletHolder servletHolder = new ServletHolder(servlet);
+		final String tmpDirName = System.getProperty("java.io.tmpdir");
+		servletHolder.getRegistration().setMultipartConfig(
+			new MultipartConfigElement(tmpDirName));
+		JettyServletTester
+			.runServlet(
+					servletHolder,
+					(uri) -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), uri);
+						cb.call(mech2);
+					});
+	}
+
+	@FunctionalInterface
+	private interface TestCallback {
+		public void call(Mech2WithBase mech) throws IOException, URISyntaxException;
+	}
 
 	public static class MyController extends ControllerBase {
 		@GET("/")
@@ -39,8 +158,8 @@ public class BeanParamTest {
 			return this.renderJSON(bean);
 		}
 
-		@GET("/obean")
-		public WebResponse obean(@BeanParam OBean bean) {
+		@GET("/oBean")
+		public WebResponse oBean(@BeanParam OBean bean) {
 			return this.renderJSON(
 				ImmutableMap.builder()
 					.put("int", bean.getOptional_int().orElse(0))
@@ -50,8 +169,8 @@ public class BeanParamTest {
 					.build());
 		}
 
-		@POST("/filebean")
-		public WebResponse filebean(@BeanParam FileBean bean) throws IOException {
+		@POST("/fileBean")
+		public WebResponse fileBean(@BeanParam FileBean bean) throws IOException {
 			return this.renderJSON(
 				ImmutableMap.builder()
 					.put("string", bean.getString())
@@ -123,125 +242,6 @@ public class BeanParamTest {
 			@UploadFile("parts")
 			private Part[] parts;
 		}
-	}
-
-	@Test
-	public void test() throws Exception {
-		final AvansServlet servlet = new AvansServlet();
-		servlet.registerClass(MyController.class);
-		JettyServletTester
-			.runServlet(
-				servlet,
-				(uri) -> {
-					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-						.builder()
-						.build(), uri);
-					{
-						final Mech2Result res = mech2
-							.get("/")
-							.addQueryParameter("string", "a")
-							.addQueryParameter("primitive_long",
-								"1")
-							.addQueryParameter("object_long", "2")
-							.addQueryParameter("primitive_short",
-								"3")
-							.addQueryParameter("object_short", "4")
-							.addQueryParameter("primitive_int", "5")
-							.addQueryParameter("object_int", "6")
-							.addQueryParameter("primitive_boolean",
-								"false")
-							.addQueryParameter("object_boolean",
-								"true")
-							.execute();
-						log.info("response: {}",
-							res.getResponseBodyAsString());
-						assertEquals(200, res.getResponse()
-							.getStatusLine()
-							.getStatusCode());
-						assertEquals(
-							"{\"string\":\"a\",\"primitive_long\":1,\"object_long\":2,\"object_short\":4,\"primitive_short\":3,\"object_int\":6,\"primitive_int\":5,\"primitive_boolean\":false,\"object_boolean\":true}",
-							res.getResponseBodyAsString());
-					}
-
-					{
-						// no optional values
-						final Mech2Result res = mech2
-							.get("/obean")
-							.execute();
-						log.info("response: {}",
-							res.getResponseBodyAsString());
-						assertEquals(200, res.getResponse()
-							.getStatusLine()
-							.getStatusCode());
-						assertEquals(
-							"{\"int\":0,\"long\":0,\"string\":\"-\"}",
-							res.getResponseBodyAsString());
-					}
-
-					{
-						// provide optional values
-						final Mech2Result res = mech2
-							.get("/obean")
-							.addQueryParameter("int", "5963")
-							.addQueryParameter("long", "4949")
-							.addQueryParameter("string", "hello")
-							.execute();
-						log.info("response: {}",
-							res.getResponseBodyAsString());
-						assertEquals(200, res.getResponse()
-							.getStatusLine()
-							.getStatusCode());
-						assertEquals(
-							"{\"int\":0,\"long\":0,\"string\":\"-\"}",
-							res.getResponseBodyAsString());
-					}
-				});
-	}
-
-	@Test
-	public void testFileBean() throws Exception {
-		// all
-		this.test(mech2 -> {
-			// filebean
-			final Mech2Result res = mech2
-				.postMultipart("/filebean")
-				.addTextBody("string", "SSS")
-				.addBinaryBody("part", new File("src/test/resources/hello.txt"))
-				.addBinaryBody("parts", new File("src/test/resources/hello.txt"))
-				.addBinaryBody("parts", new File("src/test/resources/hello.txt"))
-				.execute();
-			log.info("response: {}",
-				res.getResponseBodyAsString());
-			assertEquals(200, res.getResponse()
-				.getStatusLine()
-				.getStatusCode());
-			assertEquals(
-				"{\"string\":\"SSS\",\"part\":\"hello\",\"parts\":\"hello,hello\"}",
-				res.getResponseBodyAsString());
-		});
-	}
-
-	private void test(TestCallback cb) throws Exception {
-		final AvansServlet servlet = new AvansServlet();
-		servlet.registerClass(MyController.class);
-		final ServletHolder servletHolder = new ServletHolder(servlet);
-		final String tmpDirName = System.getProperty("java.io.tmpdir");
-		servletHolder.getRegistration().setMultipartConfig(
-			new MultipartConfigElement(tmpDirName));
-		JettyServletTester
-			.runServlet(
-				servletHolder,
-				(uri) -> {
-					final Mech2WithBase mech2 = new Mech2WithBase(Mech2
-						.builder()
-						.build(), uri);
-					cb.call(mech2);
-				});
-	}
-
-	@FunctionalInterface
-	private interface TestCallback {
-		public void call(Mech2WithBase mech) throws Exception;
 	}
 
 }

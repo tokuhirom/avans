@@ -1,6 +1,9 @@
 package me.geso.avans.trigger;
 
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.GET;
@@ -10,21 +13,7 @@ import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.webscrew.response.WebResponse;
 
-import org.junit.Test;
-
 public class ResponseFilterTest {
-	public static class MyController extends ControllerBase {
-		@ResponseFilter
-		public void responseFilter(WebResponse resp) {
-			resp.addHeader("x-content-type-options", "nosniff");
-		}
-
-		@GET("/")
-		public WebResponse call() {
-			return this.renderJSON("HOGE");
-		}
-	}
-
 	@Test
 	public void test() throws Exception {
 		final AvansServlet servlet = new AvansServlet();
@@ -45,6 +34,18 @@ public class ResponseFilterTest {
 						.getValue());
 				assertEquals("\"HOGE\"", res.getResponseBodyAsString());
 			});
+	}
+
+	public static class MyController extends ControllerBase {
+		@ResponseFilter
+		public void responseFilter(WebResponse resp) {
+			resp.addHeader("x-content-type-options", "nosniff");
+		}
+
+		@GET("/")
+		public WebResponse call() {
+			return this.renderJSON("HOGE");
+		}
 	}
 
 }

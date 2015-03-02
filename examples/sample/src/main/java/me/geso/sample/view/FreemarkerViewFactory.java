@@ -1,59 +1,68 @@
 package me.geso.sample.view;
 
-import freemarker.template.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+import freemarker.template.Configuration;
+import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateModelException;
+import freemarker.template.Version;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import me.geso.sample.ConfigLoader;
 import me.geso.sample.controller.BaseController;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 
 @Slf4j
 public class FreemarkerViewFactory {
 	private final Configuration configuration;
 
 	public FreemarkerViewFactory() {
-		this.configuration = this.buildFreemarkerConfiguration();
+		this.configuration = new Configuration();
+
+		try {
+			// Do not commify numbers!
+			configuration.setNumberFormat("0.######");
+			configuration.setDefaultEncoding("UTF-8");
+			this.setTemplatePath();
+
+			if (ConfigLoader.getConfig().isDevelopment()) {
+				configuration.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+			} else {
+				configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+			}
+			configuration.setTemplateLoader(new HtmlTemplateLoader(configuration.getTemplateLoader()));
+			configuration.setIncompatibleImprovements(new Version(2, 3, 20)); // FreeMarker
+			configuration.setSharedVariable("isDevelopment", BaseController.isDevelopment());
+		} catch (TemplateModelException | IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public FreemarkerView create(@NonNull String templatePath, @NonNull BaseController controller) {
 		return new FreemarkerView(this.configuration, templatePath, controller);
 	}
 
-	public Configuration buildFreemarkerConfiguration() {
-		try {
-			final Configuration cfg = new Configuration();
-
-			// Do not commify numbers!
-			cfg.setNumberFormat("0.######");
-
-			// Set template file path
-			if (ConfigLoader.getConfig().isDevelopment() && new File("src/main/resources/templates/").exists()) {
+	private void setTemplatePath() throws IOException {
+		// Set template file path
+		if (ConfigLoader.getConfig().isDevelopment()) {
+			String tmplPath = "src/main/resources/templates/";
+			if (new File(tmplPath).exists()) {
 				// Use src/main/resources/templates on development environment.
-				log.info("Load templates from src/main/resources/templates/");
-				cfg.setDirectoryForTemplateLoading(new File("src/main/resources/templates/"));
+				log.info("Load templates from {}", tmplPath);
+				configuration.setDirectoryForTemplateLoading(new File(tmplPath));
+				return;
 			} else {
-				// Use resource files on production environment.
-				URL resource = BaseController.class.getClassLoader().getResource("templates/");
-				assert resource != null;
-				cfg.setDirectoryForTemplateLoading(new File(resource.getFile()));
+				log.info("There is no {}", tmplPath);
 			}
-			cfg.setDefaultEncoding("UTF-8");
-
-			if (ConfigLoader.getConfig().isDevelopment()) {
-				cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-			} else {
-				cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-			}
-			cfg.setTemplateLoader(new HtmlTemplateLoader(cfg.getTemplateLoader()));
-			cfg.setIncompatibleImprovements(new Version(2, 3, 20)); // FreeMarker
-			cfg.setSharedVariable("isDevelopment", BaseController.isDevelopment());
-
-			return cfg;
-		} catch (TemplateModelException | IOException e) {
-			throw new RuntimeException(e);
 		}
+
+		log.info("Load templates from class loader");
+		// Use resource files on production environment.
+		URL resource = BaseController.class.getClassLoader().getResource("templates/");
+		if (resource == null) {
+			throw new RuntimeException("There is no templates/ directory in resources.");
+		}
+		configuration.setDirectoryForTemplateLoading(new File(resource.getFile()));
 	}
 }
