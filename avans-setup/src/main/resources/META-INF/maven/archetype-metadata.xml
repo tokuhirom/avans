@@ -9,6 +9,12 @@
         <include>**/*.java</include>
       </includes>
     </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.ftl</include>
+      </includes>
+    </fileSet>
     <fileSet filtered="true" encoding="UTF-8">
       <directory>src/main/webapp</directory>
       <includes>
