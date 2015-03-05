@@ -16,7 +16,7 @@ pushd $TMP
 
 # Replace sample code by regexp!
 perl -i -pe 's/sample/\${artifactId}/g' README.md bower.json src/main/java/freemarker_implicit.ftl
-rm -rf .idea/ sample.iml
+rm -rf .idea/ *.iml
 
 # generate archetype templates from the code!
 mvn archetype:create-from-project

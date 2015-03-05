@@ -3,22 +3,20 @@
 #set( $symbol_escape = '\' )
 package ${package}.controller;
 
+import javax.inject.Inject;
+
+import freemarker.template.Configuration;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.trigger.ResponseFilter;
-import ${package}.ConfigLoader;
 import ${package}.view.FreemarkerView;
-import ${package}.view.FreemarkerViewFactory;
 import me.geso.webscrew.response.WebResponse;
 
 public abstract class BaseController extends ControllerBase {
-	private static FreemarkerViewFactory freemarkerViewFactory = new FreemarkerViewFactory();
-
-	public static boolean isDevelopment() {
-		return ConfigLoader.getConfig().isDevelopment();
-	}
+	@Inject
+	private Configuration freemarkerConfiguration;
 
 	public FreemarkerView freemarker(String templatePath) {
-		return BaseController.freemarkerViewFactory.create(templatePath, this);
+		return new FreemarkerView(freemarkerConfiguration, templatePath, this);
 	}
 
 	@ResponseFilter
