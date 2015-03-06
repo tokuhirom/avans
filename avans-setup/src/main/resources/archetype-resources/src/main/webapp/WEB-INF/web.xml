@@ -4,13 +4,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<filter>
+		<filter-name>connection-management</filter-name>
+		<filter-class>${package}.filter.ConnectionManagementFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>connection-management</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 	<servlet>
 		<servlet-name>main</servlet-name>
-		<servlet-class>me.geso.avans.AvansServlet</servlet-class>
-		<init-param>
-			<param-name>package</param-name>
-			<param-value>${package}.controller</param-value>
-		</init-param>
+		<servlet-class>${package}.Servlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 		<multipart-config>
 			<max-file-size>5242880</max-file-size>

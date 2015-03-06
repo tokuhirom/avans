@@ -32,8 +32,6 @@ public class Dispatcher implements Serializable {
 
 	/**
 	 * Register classes in the package to dispatcher.
-	 * 
-	 * @param pkg
 	 */
 	public void registerPackage(final Package pkg) {
 		this.registerPackage(pkg.getName());
@@ -41,8 +39,6 @@ public class Dispatcher implements Serializable {
 
 	/**
 	 * Register classes in the package to dispatcher.
-	 * 
-	 * @param packageName
 	 */
 	public void registerPackage(final String packageName) {
 		Dispatcher.LOGGER.info("Registering package: {}", packageName);
@@ -70,8 +66,6 @@ public class Dispatcher implements Serializable {
 
 	/**
 	 * Register class to dispatcher.
-	 * 
-	 * @param klass
 	 */
 	public void registerClass(final Class<? extends Controller> klass) {
 		try {
@@ -130,11 +124,19 @@ public class Dispatcher implements Serializable {
 			final Method method, final HttpServletRequest request,
 			final HttpServletResponse response,
 			final Map<String, String> captured) {
-		try (Controller controller = controllerClass.newInstance()) {
+		try (Controller controller = buildController(controllerClass)) {
 			controller.invoke(method, request, response, captured);
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * You can extend Dispatcher class to build controller class by DI container.
+	 */
+	protected Controller buildController(final Class<? extends Controller> controllerClass)
+			throws InstantiationException, IllegalAccessException {
+		return controllerClass.newInstance();
 	}
 
 	private void writeMethodNotAllowedErrorPage(
