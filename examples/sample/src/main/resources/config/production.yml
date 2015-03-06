@@ -1,3 +1,7 @@
 ---
 development: false
+jdbc:
+  url: jdbc:mysql://localhost/test
+  username: root
+  password:
 
