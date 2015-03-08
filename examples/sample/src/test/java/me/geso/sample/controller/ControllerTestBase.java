@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import org.apache.catalina.Globals;
@@ -25,8 +26,11 @@ public abstract class ControllerTestBase extends TestBase {
         ControllerTestBase.tomcat = new Tomcat();
         tomcat.setPort(0);
         org.apache.catalina.Context webContext = tomcat.addWebapp("/", new File("src/main/webapp").getAbsolutePath());
-        webContext.getServletContext().setAttribute(Globals.ALT_DD_ATTR, "src/main/webapp/WEB-INF/web.xml");
-        tomcat.start();
+		final ServletContext servletContext = webContext.getServletContext();
+		servletContext.setAttribute(Globals.ALT_DD_ATTR, "src/main/webapp/WEB-INF/web.xml");
+		// Inject configuration into servlet context.
+		servletContext.setAttribute("sample.config", config);
+		tomcat.start();
 
         int port = tomcat.getConnector().getLocalPort();
         String url = "http://127.0.0.1:" + port;
