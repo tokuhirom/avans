@@ -7,18 +7,17 @@ import javax.servlet.http.HttpServletRequest;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 
+import me.geso.sample.provider.ConnectionProvider;
 import me.geso.sample.provider.TinyORMProvider;
-import me.geso.sample.provider.web.WebConnectionProvider;
 import me.geso.tinyorm.TinyORM;
 
-/**
- * Created by tokuhirom on 3/6/15.
- */
 public class WebModule extends AbstractModule {
 	private final HttpServletRequest request;
+	private final ConnectionProvider connectionProvider;
 
-	public WebModule(final HttpServletRequest request) {
+	public WebModule(final HttpServletRequest request, final ConnectionProvider connectionProvider) {
 		this.request = request;
+		this.connectionProvider = connectionProvider;
 	}
 
 	@Override
@@ -26,9 +25,9 @@ public class WebModule extends AbstractModule {
 		bind(HttpServletRequest.class)
 			.toInstance(request);
 		bind(Connection.class)
-			.toProvider(WebConnectionProvider.class)
+			.toProvider(connectionProvider)
 			.in(Scopes.SINGLETON);
 		bind(TinyORM.class)
-				.toProvider(TinyORMProvider.class);
+			.toProvider(TinyORMProvider.class);
 	}
 }

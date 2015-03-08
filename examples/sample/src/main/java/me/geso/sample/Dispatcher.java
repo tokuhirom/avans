@@ -10,12 +10,13 @@ import com.google.inject.Injector;
 
 import me.geso.avans.Controller;
 import me.geso.sample.module.WebModule;
+import me.geso.sample.provider.ConnectionProvider;
 
 public class Dispatcher extends me.geso.avans.Dispatcher {
 	private final Injector injector;
 
 	public Dispatcher(final Injector injector) {
-		this.injector=injector;
+		this.injector = injector;
 	}
 
 	@Override
@@ -24,11 +25,15 @@ public class Dispatcher extends me.geso.avans.Dispatcher {
 			final Method method, final HttpServletRequest request,
 			final HttpServletResponse response,
 			final Map<String, String> captured) {
-		final Injector childInjector = injector.createChildInjector(new WebModule(request));
-		try (Controller controller = childInjector.getInstance(controllerClass)) {
-			controller.invoke(method, request, response, captured);
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
+		// Close connection provider after work.
+		try (ConnectionProvider connectionProvider = injector.getInstance(ConnectionProvider.class)) {
+			final WebModule webModule = new WebModule(request, connectionProvider);
+			final Injector childInjector = injector.createChildInjector(webModule);
+			try (Controller controller = childInjector.getInstance(controllerClass)) {
+				controller.invoke(method, request, response, captured);
+			} catch (final Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 }
