@@ -16,6 +16,12 @@
       </includes>
     </fileSet>
     <fileSet filtered="true" encoding="UTF-8">
+      <directory>src/main/resources</directory>
+      <includes>
+        <include>**/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
       <directory>src/main/webapp</directory>
       <includes>
         <include>**/*.xml</include>
@@ -31,7 +37,6 @@
       <directory>src/main/resources</directory>
       <includes>
         <include>**/*.yml</include>
-        <include>**/*.ftl</include>
       </includes>
     </fileSet>
     <fileSet encoding="UTF-8">
@@ -44,6 +49,7 @@
         <include>**/*.eot</include>
         <include>**/*.map</include>
         <include>**/*.woff</include>
+        <include>**/*.ftl</include>
       </includes>
     </fileSet>
     <fileSet filtered="true" packaged="true" encoding="UTF-8">
