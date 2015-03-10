@@ -16,16 +16,18 @@ import com.google.inject.Injector;
 import lombok.extern.slf4j.Slf4j;
 import me.geso.sample.config.Config;
 import me.geso.sample.module.BasicModule;
+import me.geso.sample.module.WebModule;
 
 @Slf4j
 public class Servlet extends HttpServlet {
 	private me.geso.avans.Dispatcher dispatcher;
 
 	@Override
-	public void init(ServletConfig servletConfig) {
+	public void init() {
 		log.info("Initialized Servlet");
 		final Injector injector = Guice.createInjector(
-			this.buildModule(servletConfig));
+			this.buildModule(getServletConfig()),
+			new WebModule(getServletContext()));
 		dispatcher = new Dispatcher(injector);
 		dispatcher.registerPackage(me.geso.sample.controller.RootController.class.getPackage());
 	}

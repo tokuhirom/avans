@@ -2,14 +2,14 @@ package me.geso.sample.provider.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.servlet.ServletContext;
 
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.TemplateLoader;
+import freemarker.cache.WebappTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
@@ -21,10 +21,12 @@ import me.geso.sample.view.HtmlTemplateLoader;
 @Slf4j
 public class FreemarkerConfigurationProvider implements Provider<Configuration> {
 	private final Config config;
+	private final ServletContext servletContext;
 
 	@Inject
-	public FreemarkerConfigurationProvider(Config config) {
+	public FreemarkerConfigurationProvider(final Config config, final ServletContext servletContext) {
 		this.config = config;
+		this.servletContext = servletContext;
 	}
 
 	public Configuration get() {
@@ -34,7 +36,7 @@ public class FreemarkerConfigurationProvider implements Provider<Configuration> 
 			// Do not commify numbers!
 			configuration.setNumberFormat("0.######");
 			configuration.setDefaultEncoding("UTF-8");
-			this.setTemplatePath(configuration);
+			configuration.setTemplateLoader(this.buildTemplateLoader());
 
 			if (config.isDevelopment()) {
 				configuration.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
@@ -45,37 +47,30 @@ public class FreemarkerConfigurationProvider implements Provider<Configuration> 
 			configuration.setIncompatibleImprovements(new Version(2, 3, 20)); // FreeMarker
 			configuration.setSharedVariable("isDevelopment", config.isDevelopment());
 			return configuration;
-		} catch (TemplateModelException | IOException | URISyntaxException e) {
+		} catch (TemplateModelException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void setTemplatePath(Configuration configuration) throws IOException, URISyntaxException {
-		URL resource = getClass().getClassLoader().getResource("templates/");
-
+	private TemplateLoader buildTemplateLoader() throws IOException {
 		// Set template file path
 		if (config.isDevelopment()) {
-			Path path = Paths.get(resource.toURI());
-			while (path.getNameCount() > 1) {
-				if (path.getFileName().toString().equals("target")) {
-					final Path baseDirectory = path.getParent();
-					File file = baseDirectory.resolve("src/main/resources/templates/").toFile();
-					if (file.exists()) {
-						// Use src/main/resources/templates on development environment.
-						log.info("Load templates from {}", file.getAbsolutePath());
-						configuration.setDirectoryForTemplateLoading(file);
-						return;
-					}
+			final String realPath = servletContext.getRealPath("WEB-INF/web.xml");
+			if (realPath != null) {
+				final String s = realPath.replaceFirst("/target/.*", "/");
+				final File file = new File(s, "src/main/webapp/WEB-INF/templates/");
+				if (file.isDirectory()) {
+					// Use src/main/resources/templates on development environment.
+					log.info("Load templates from {}", file.getAbsolutePath());
+					return new FileTemplateLoader(file);
+				} else {
+					log.info("There is no {}", file.getAbsolutePath());
 				}
-				path = path.getParent();
 			}
+		} else {
+			log.info("Production environment");
 		}
 
-		log.info("Load templates from class loader: {}", resource);
-		// Use resource files on production environment.
-		if (resource == null) {
-			throw new RuntimeException("There is no templates/ directory in resources.");
-		}
-		configuration.setDirectoryForTemplateLoading(new File(resource.getFile()));
+		return new WebappTemplateLoader(servletContext, "WEB-INF/templates/");
 	}
 }

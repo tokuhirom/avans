@@ -3,34 +3,22 @@
 #set( $symbol_escape = '\' )
 package ${package}.module;
 
-import java.sql.Connection;
-
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletContext;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
 
-import ${package}.provider.ConnectionProvider;
-import ${package}.provider.TinyORMProvider;
-import me.geso.tinyorm.TinyORM;
+import lombok.NonNull;
 
 public class WebModule extends AbstractModule {
-	private final HttpServletRequest request;
-	private final ConnectionProvider connectionProvider;
+	private final ServletContext servletContext;
 
-	public WebModule(final HttpServletRequest request, final ConnectionProvider connectionProvider) {
-		this.request = request;
-		this.connectionProvider = connectionProvider;
+	public WebModule(@NonNull final ServletContext servletContext) {
+		this.servletContext = servletContext;
 	}
 
 	@Override
 	protected void configure() {
-		bind(HttpServletRequest.class)
-			.toInstance(request);
-		bind(Connection.class)
-			.toProvider(connectionProvider)
-			.in(Scopes.SINGLETON);
-		bind(TinyORM.class)
-			.toProvider(TinyORMProvider.class);
+		bind(ServletContext.class)
+				.toInstance(servletContext);
 	}
 }
