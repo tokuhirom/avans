@@ -66,12 +66,8 @@ public class FreemarkerConfigurationProvider implements Provider<Configuration> 
 					// Use src/main/resources/templates on development environment.
 					log.info("Load templates from {}", file.getAbsolutePath());
 					return new FileTemplateLoader(file);
-				} else {
-					log.info("There is no {}", file.getAbsolutePath());
 				}
 			}
-		} else {
-			log.info("Production environment");
 		}
 
 		return new WebappTemplateLoader(servletContext, "WEB-INF/templates/");
