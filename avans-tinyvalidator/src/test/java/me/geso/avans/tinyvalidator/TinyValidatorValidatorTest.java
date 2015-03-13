@@ -1,6 +1,9 @@
 package me.geso.avans.tinyvalidator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import lombok.Data;
 import lombok.NonNull;
 import me.geso.avans.AvansServlet;
@@ -13,8 +16,6 @@ import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.tinyvalidator.constraints.NotNull;
 import me.geso.webscrew.response.WebResponse;
-
-import org.junit.Test;
 
 public class TinyValidatorValidatorTest {
 
@@ -34,11 +35,12 @@ public class TinyValidatorValidatorTest {
 	}
 
 	@FunctionalInterface
-	public interface SubtestBody {
+	public interface SubTestBody {
+		@SuppressWarnings("RedundantThrows")
 		void run() throws Exception;
 	}
 
-	void subtest(String title, SubtestBody body) throws Exception {
+	void subtest(String title, SubTestBody body) throws Exception {
 		System.out.println("---- " + title + " ----");
 		body.run();
 	}
