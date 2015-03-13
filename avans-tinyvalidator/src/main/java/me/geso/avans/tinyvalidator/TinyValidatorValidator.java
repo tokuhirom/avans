@@ -71,13 +71,12 @@ public interface TinyValidatorValidator extends ValidatorProvider,
 	/**
 	 * Create WebResponse from violation messages.
 	 *
-	 * @param violationMessages
-	 * @return
+	 * @param violationMessages violation messages from tinyvalidator.
+	 * @return new response object.
 	 */
 	public default WebResponse createValidationFailedResponse(
 			List<String> violationMessages) {
 		final Object body = new BasicAPIResponse(403, violationMessages);
-		final WebResponse resp = this.renderJSON(200, body);
-		return resp;
+		return this.renderJSON(200, body);
 	}
 }

@@ -2,7 +2,19 @@
 /.project
 /.settings/
 /target/
-/.idea/
 /avans-all.iml
 /hs_err_pid*.log
 *.iml
+
+# idea
+/.idea/.name
+/.idea/compiler.xml
+/.idea/copyright/profiles_settings.xml
+/.idea/libraries/
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/scopes/scope_settings.xml
+/.idea/uiDesigner.xml
+/.idea/vcs.xml
+/.idea/workspace.xml
+/.idea/codeStyleSettings.xml

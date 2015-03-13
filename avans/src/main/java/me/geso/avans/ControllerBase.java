@@ -306,7 +306,7 @@ public abstract class ControllerBase implements Controller,
 			final Parameter parameter = parameters[i];
 			if (parameter.getAnnotation(BeanParam.class) != null) {
 				// Process parameters annotated by @BeanParam
-				final Field[] declaredFields = parameter.getType().getDeclaredFields();
+				final List<Field> declaredFields = getAllDeclaredFields(parameter.getType());
 				final Object bean = parameter.getType().newInstance();
 				for (final Field field : declaredFields) {
 					final ParameterProcessorResult value = this.getParameterValue(
@@ -387,6 +387,16 @@ public abstract class ControllerBase implements Controller,
 				"Unknown return value from action: %s(%s)", res.getClass(),
 				this.servletRequest.getPathInfo()));
 		}
+	}
+
+	private List<Field> getAllDeclaredFields(final Class<?> type) {
+		final List<Field> fields = new ArrayList<>();
+		Class<?> klass = type;
+		while (klass != null && !klass.equals(Object.class)) {
+			Collections.addAll(fields, klass.getDeclaredFields());
+			klass = klass.getSuperclass();
+		}
+		return fields;
 	}
 
 	protected WebResponse errorMissingMandatoryParameters(

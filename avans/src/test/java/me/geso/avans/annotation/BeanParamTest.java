@@ -1,6 +1,7 @@
 package me.geso.avans.annotation;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +22,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
@@ -28,6 +31,7 @@ import me.geso.mech2.Mech2;
 import me.geso.mech2.Mech2Result;
 import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
+import me.geso.tinyvalidator.constraints.NotNull;
 import me.geso.webscrew.response.WebResponse;
 
 @Slf4j
@@ -242,6 +246,60 @@ public class BeanParamTest {
 			@UploadFile("parts")
 			private Part[] parts;
 		}
+	}
+
+	// -------------------------------------------------
+	// BeanParam with inheritance
+	// -------------------------------------------------
+
+	@Data
+	public static class Parent {
+		@Param("parentName")
+		@NotNull
+		private String parentName;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Data
+	public static class Child extends Parent {
+		@Param("childName")
+		@NotNull
+		private String childName;
+	}
+
+	public static class MyController2 extends ControllerBase {
+		@GET("/")
+		public WebResponse jsonParam(@NonNull @BeanParam Child child) {
+			return this.renderJSON(child);
+		}
+	}
+
+	/*
+	 * @BeanParam should fill the fields in parent classes.
+	 */
+	@Test
+	public void testInheritanceWithBeanParam() throws Exception {
+		final AvansServlet servlet = new AvansServlet();
+		servlet.registerClass(MyController2.class);
+
+		JettyServletTester
+				.runServlet(
+						servlet,
+						(uri) -> {
+							final Mech2 m = Mech2.builder().build();
+							final Mech2WithBase mech2 = new Mech2WithBase(
+									m, uri);
+							final Mech2Result res = mech2.get(
+									"/")
+									.addQueryParameter("childName", "John")
+									.addQueryParameter("parentName", "Nick")
+									.execute();
+							assertThat(res.getStatusCode(), is(200));
+							final Child child = res.parseJSON(Child.class);
+							assertThat(child.getParentName(), is("Nick"));
+							assertThat(child.getChildName(), is("John"));
+						}
+				);
 	}
 
 }

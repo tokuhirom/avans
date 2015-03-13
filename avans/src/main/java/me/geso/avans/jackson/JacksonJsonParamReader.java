@@ -42,9 +42,10 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 			final String json = new String(byteArray,
 				StandardCharsets.UTF_8);
 			final Throwable cause = e.getCause();
-			throw new IOException((cause != null ? cause.getMessage()
+			final String message = ((cause != null ? cause.getMessage()
 				: e.getMessage())
 				+ " : " + json);
+			throw new IOException(message, e);
 		}
 	}
 }

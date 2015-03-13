@@ -1,20 +1,27 @@
 package me.geso.avans.tinyvalidator;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
+import me.geso.avans.annotation.BeanParam;
+import me.geso.avans.annotation.GET;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.avans.annotation.POST;
+import me.geso.avans.annotation.Param;
 import me.geso.mech2.Mech2;
 import me.geso.mech2.Mech2Result;
 import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
 import me.geso.tinyvalidator.constraints.NotNull;
 import me.geso.webscrew.response.WebResponse;
-
-import org.junit.Test;
 
 public class TinyValidatorValidatorTest {
 
@@ -34,11 +41,12 @@ public class TinyValidatorValidatorTest {
 	}
 
 	@FunctionalInterface
-	public interface SubtestBody {
+	public interface SubTestBody {
+		@SuppressWarnings("RedundantThrows")
 		void run() throws Exception;
 	}
 
-	void subtest(String title, SubtestBody body) throws Exception {
+	void subtest(String title, SubTestBody body) throws Exception {
 		System.out.println("---- " + title + " ----");
 		body.run();
 	}
@@ -52,58 +60,109 @@ public class TinyValidatorValidatorTest {
 		servlet.registerClass(MyController.class);
 
 		JettyServletTester
-				.runServlet(
-						servlet,
-						(uri) -> {
-							this.subtest(
-									"PASS validation rules",
-									() -> {
-										final Mech2 m = Mech2.builder().build();
-										final Mech2WithBase mech2 = new Mech2WithBase(
-												m, uri);
-										final Foo foo = new Foo();
-										foo.setName("John");
-										final Mech2Result res = mech2.postJSON(
-												"/jsonParam", foo)
-												.execute();
-										assertEquals(200, res.getResponse()
-												.getStatusLine()
-												.getStatusCode());
-										assertEquals(
-												"application/json; charset=utf-8",
-												res
-												.getResponse()
-														.getFirstHeader(
-																"Content-Type")
-														.getValue());
-										assertEquals("{\"name\":\"JOHN\"}",
-												res.getResponseBodyAsString());
-									});
-							this.subtest(
-									"FAIL",
-									() -> {
-										final Mech2 m = Mech2.builder().build();
-										final Mech2WithBase mech2 = new Mech2WithBase(
-												m, uri);
-										final Foo foo = new Foo();
-										foo.setName(null);
-										final Mech2Result res = mech2.postJSON(
-												"/jsonParam", foo)
-												.execute();
-										assertEquals(200, res.getResponse()
-												.getStatusLine()
-												.getStatusCode());
-										assertEquals(
-												"application/json; charset=utf-8",
-												res
-												.getResponse()
-												.getFirstHeader("Content-Type")
-												.getValue());
-										assertEquals(
-												"{\"code\":403,\"messages\":[\"name may not be null.\"]}",
-												res.getResponseBodyAsString());
-									});
+			.runServlet(
+				servlet,
+				(uri) -> {
+					this.subtest(
+						"PASS validation rules",
+						() -> {
+							final Mech2 m = Mech2.builder().build();
+							final Mech2WithBase mech2 = new Mech2WithBase(
+								m, uri);
+							final Foo foo = new Foo();
+							foo.setName("John");
+							final Mech2Result res = mech2.postJSON(
+								"/jsonParam", foo)
+								.execute();
+							assertEquals(200, res.getResponse()
+								.getStatusLine()
+								.getStatusCode());
+							assertEquals(
+								"application/json; charset=utf-8",
+								res
+									.getResponse()
+									.getFirstHeader(
+										"Content-Type")
+									.getValue());
+							assertEquals("{\"name\":\"JOHN\"}",
+								res.getResponseBodyAsString());
 						});
+					this.subtest(
+						"FAIL",
+						() -> {
+							final Mech2 m = Mech2.builder().build();
+							final Mech2WithBase mech2 = new Mech2WithBase(
+								m, uri);
+							final Foo foo = new Foo();
+							foo.setName(null);
+							final Mech2Result res = mech2.postJSON(
+								"/jsonParam", foo)
+								.execute();
+							assertEquals(200, res.getResponse()
+								.getStatusLine()
+								.getStatusCode());
+							assertEquals(
+								"application/json; charset=utf-8",
+								res
+									.getResponse()
+									.getFirstHeader("Content-Type")
+									.getValue());
+							assertEquals(
+								"{\"code\":403,\"messages\":[\"name may not be null.\"]}",
+								res.getResponseBodyAsString());
+						});
+				});
+	}
+
+	// -------------------------------------------------
+	// inheritance
+	// -------------------------------------------------
+
+	@Data
+	public static class Parent {
+		@Param("parentName")
+		@NotNull
+		private String parentName;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Data
+	public static class Child extends Parent {
+		@Param("childName")
+		@NotNull
+		private String childName;
+	}
+
+	public static class MyController2 extends ControllerBase implements TinyValidatorValidator {
+		@GET("/")
+		public WebResponse jsonParam(@NonNull @BeanParam Child child) {
+			return this.renderJSON(child);
+		}
+	}
+
+	@Test
+	public void testInheritanceWithBeanParam() throws Exception {
+		final AvansServlet servlet = new AvansServlet();
+		servlet.registerClass(MyController2.class);
+
+		JettyServletTester
+			.runServlet(
+				servlet,
+				(uri) -> {
+					final Mech2 m = Mech2.builder().build();
+					final Mech2WithBase mech2 = new Mech2WithBase(
+						m, uri);
+					final Mech2Result res = mech2.get(
+							"/")
+						.addQueryParameter("childName", "John")
+							.addQueryParameter("parentName", "Nick")
+						.execute();
+					Assert.assertThat(res.getStatusCode(), is(200));
+					final Child child = res.parseJSON(Child.class);
+					Assert.assertThat(child.getParentName(), is("Nick"));
+					Assert.assertThat(child.getChildName(), is("John"));
+				}
+			);
 	}
 
 }
