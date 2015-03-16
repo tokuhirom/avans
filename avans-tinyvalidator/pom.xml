@@ -17,13 +17,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
-	<scm>
-		<url>https://github.com/tokuhirom/avans/</url>
-		<connection>scm:git:git://github.com/tokuhirom/avans.git</connection>
-		<developerConnection>scm:git:git@github.com:tokuhirom/avans.git</developerConnection>
-		<tag>avans-project-1.5.2</tag>
-	</scm>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

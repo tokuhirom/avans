@@ -3,12 +3,15 @@ package me.geso.avans.tinyvalidator;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.BeanParam;
@@ -20,9 +23,13 @@ import me.geso.mech2.Mech2;
 import me.geso.mech2.Mech2Result;
 import me.geso.mech2.Mech2WithBase;
 import me.geso.servlettester.jetty.JettyServletTester;
+import me.geso.tinyvalidator.ConstraintViolation;
+import me.geso.tinyvalidator.Validator;
 import me.geso.tinyvalidator.constraints.NotNull;
+import me.geso.tinyvalidator.constraints.Pattern;
 import me.geso.webscrew.response.WebResponse;
 
+@Slf4j
 public class TinyValidatorValidatorTest {
 
 	public static class MyController extends ControllerBase implements
@@ -163,6 +170,52 @@ public class TinyValidatorValidatorTest {
 					Assert.assertThat(child.getChildName(), is("John"));
 				}
 			);
+	}
+
+	// -------------------------------------------------
+	// pattern
+	// -------------------------------------------------
+
+	@Data
+	public static class PatternForm {
+		@Param("childName")
+		@Pattern(regexp=".")
+		@NotNull
+		private String childName;
+	}
+
+	public static class PatternController extends ControllerBase implements TinyValidatorValidator {
+		@GET("/")
+		public WebResponse jsonParam(@NonNull @BeanParam PatternForm child) {
+			return this.renderJSON(child);
+		}
+	}
+
+	@Test
+	public void testPattern() throws Exception {
+		final AvansServlet servlet = new AvansServlet();
+		servlet.registerClass(PatternController.class);
+
+		final PatternForm form = new PatternForm();
+		final List<ConstraintViolation> constraintViolations = new Validator().validate(form);
+		log.info("{}", constraintViolations);
+
+		JettyServletTester
+				.runServlet(
+						servlet,
+						(uri) -> {
+							final Mech2 m = Mech2.builder().build();
+							final Mech2WithBase mech2 = new Mech2WithBase(
+									m, uri);
+							final Mech2Result res = mech2.get(
+									"/")
+									.addQueryParameter("childName", "")
+									.execute();
+							Assert.assertThat(res.getStatusCode(), is(200));
+							log.info("response: {}", res.getResponseBodyAsString());
+							assertThat(res.getResponseBodyAsString(), containsString("\"childName must match .\""));
+						}
+				);
 	}
 
 }
