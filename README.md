@@ -76,6 +76,38 @@ You can pass the controller class list by packages.
           <param-value>my.project.sp,my.project.pc</param-value>
         </init-param>
 
+## How do I write controller code?
+
+### @PathParam
+
+Capture the path parameters.
+
+In following code, `path` will be "foo/bar" when user accessed "/download/foo/bar". `*` rule matches all characters.
+This path pattern is same as `^/download/.*$` in regexp.
+
+	@GET("/download/*")
+	public WebResponse download(@PathParam("*") String path) {
+		return this.renderText(slurp(path));
+	}
+
+In following code, `memberId` will be "59" when user accessed "/member/59". `*` rule matches some characters.
+This path pattern is same as `^/member/[a-zA-Z0-9._-]+$` in regexp.
+
+	@GET("/member/{memberId}")
+	public WebResponse member(@PathParam("*") long memberId) {
+		...
+	}
+
+### @Param(name)
+
+You can get query/form parameters by `@Param` annotation.
+In this case, when user calle `/member/detail?id=3`, `memberId` parameter will be 3.
+
+	@GET("/member/detail")
+	public WebResponse member(@Param("id") long memberId) {
+		...
+	}
+
 ## Controller hooks
 
 ### @BeforeDispatchTrigger
