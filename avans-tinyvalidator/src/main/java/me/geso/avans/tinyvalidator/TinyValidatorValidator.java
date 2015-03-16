@@ -10,6 +10,7 @@ import java.util.Optional;
 import me.geso.avans.BasicAPIResponse;
 import me.geso.avans.JSONRendererProvider;
 import me.geso.avans.ValidatorProvider;
+import me.geso.avans.annotation.BeanParam;
 import me.geso.avans.annotation.JsonParam;
 import me.geso.tinyvalidator.ConstraintViolation;
 import me.geso.tinyvalidator.Validator;
@@ -33,7 +34,7 @@ public interface TinyValidatorValidator extends ValidatorProvider,
 			final Object value = values[i];
 			final Annotation[] annotations = parameter.getAnnotations();
 			for (final Annotation annotation : annotations) {
-				if (annotation instanceof JsonParam) {
+				if (annotation instanceof JsonParam || annotation instanceof BeanParam) {
 					final List<ConstraintViolation> validate = validator
 							.validate(value);
 					validate.stream().forEach(
