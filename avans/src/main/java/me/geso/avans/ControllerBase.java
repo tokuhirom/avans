@@ -48,6 +48,7 @@ import me.geso.avans.jackson.JacksonJsonParamReader;
 import me.geso.avans.jackson.JacksonJsonView;
 import me.geso.avans.trigger.ParamProcessor;
 import me.geso.avans.trigger.ResponseConverter;
+import me.geso.webscrew.HttpServletRequestUtils;
 import me.geso.webscrew.response.ByteArrayResponse;
 import me.geso.webscrew.response.RedirectResponse;
 import me.geso.webscrew.response.WebResponse;
@@ -96,8 +97,8 @@ public abstract class ControllerBase implements Controller,
 	/**
 	 * Create new redirect response. You can use relative url here.
 	 *
-	 * @param location
-	 * @return
+	 * @param location destination URL... relative path is ok.
+	 * @return Created response object.
 	 */
 	public RedirectResponse redirect(@NonNull final String location) {
 		return new RedirectResponse(location);
@@ -106,8 +107,8 @@ public abstract class ControllerBase implements Controller,
 	/**
 	 * Create new redirect response. You can use relative url here.
 	 *
-	 * @param location
-	 * @return
+	 * @param location destination URL... relative path is ok.
+	 * @return Created response object
 	 */
 	public RedirectResponse redirect(@NonNull final String location, @NonNull Map<String, String> parameters)
 			throws URISyntaxException {
@@ -121,7 +122,7 @@ public abstract class ControllerBase implements Controller,
 	/**
 	 * Create new "405 Method Not Allowed" response in JSON.
 	 *
-	 * @return
+	 * @return Created response object
 	 */
 	public WebResponse errorMethodNotAllowed() {
 		return this.renderError(405, "Method Not Allowed");
@@ -130,7 +131,7 @@ public abstract class ControllerBase implements Controller,
 	/**
 	 * Create new "403 Forbidden" response in JSON.
 	 *
-	 * @return
+	 * @return Created response object
 	 */
 	public WebResponse errorForbidden() {
 		return this.errorForbidden("Forbidden");
@@ -642,25 +643,7 @@ public abstract class ControllerBase implements Controller,
 	 * @throws MalformedURLException
 	 */
 	public URL getCurrentURL() throws MalformedURLException {
-		StringBuffer url = this.getServletRequest().getRequestURL();
-		final String queryString = this.getServletRequest().getQueryString();
-		if (queryString != null && !queryString.isEmpty()) {
-			url.append("?").append(this.getServletRequest().getQueryString());
-		}
-		return new URL(url.toString());
-	}
-
-	private URIBuilder getRelativePath(@NonNull final String path) throws MalformedURLException, URISyntaxException {
-		if (path.startsWith("/")) {
-			HttpServletRequest req = this.getServletRequest();
-			return new URIBuilder().setScheme(req.getScheme())
-				.setHost(req.getServerName())
-				.setPort(req.getServerPort())
-				.setPath(req.getContextPath() + path);
-		} else {
-			final StringBuffer requestURL = this.getServletRequest().getRequestURL();
-			return new URIBuilder(new URL(new URL(requestURL.toString()), path).toURI());
-		}
+		return HttpServletRequestUtils.getCurrentURL(getServletRequest());
 	}
 
 	/**
@@ -677,11 +660,7 @@ public abstract class ControllerBase implements Controller,
 	 * @throws MalformedURLException
 	 */
 	public URI uriFor(String path, Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
-		URIBuilder builder = this.getRelativePath(path);
-
-		parameters.entrySet().stream()
-			.forEach(it -> builder.setParameter(it.getKey(), it.getValue()));
-		return builder.build();
+		return HttpServletRequestUtils.uriFor(getServletRequest(), path, parameters);
 	}
 
 	/**
@@ -693,7 +672,7 @@ public abstract class ControllerBase implements Controller,
 	 * @throws MalformedURLException
 	 */
 	public URI uriFor(final String path) throws URISyntaxException, MalformedURLException {
-		return this.uriFor(path, Collections.emptyMap());
+		return HttpServletRequestUtils.uriFor(getServletRequest(), path, Collections.emptyMap());
 	}
 
 	/**
@@ -702,16 +681,13 @@ public abstract class ControllerBase implements Controller,
 	 * You can remove an existing parameter by passing in an undef value.
 	 * Unmodified pairs will be preserved.
 	 *
-	 * @param parameters
+	 * @param parameters Query parameters.
 	 * @return Constructed URI.
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
 	public URI uriWith(final Map<String, String> parameters) throws URISyntaxException, MalformedURLException {
-		URIBuilder builder = new URIBuilder(String.valueOf(this.getCurrentURL()));
-		parameters.entrySet().stream()
-			.forEach(it -> builder.setParameter(it.getKey(), it.getValue()));
-		return builder.build();
+		return HttpServletRequestUtils.uriWith(getServletRequest(), parameters);
 	}
 
 }
