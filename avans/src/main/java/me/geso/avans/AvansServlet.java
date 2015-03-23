@@ -31,6 +31,8 @@ public class AvansServlet extends HttpServlet {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
+		super.init(servletConfig);
+
 		final String pkg = servletConfig.getInitParameter("package");
 		if (pkg != null) {
 			for (final String p : pkg.split(",")) {
