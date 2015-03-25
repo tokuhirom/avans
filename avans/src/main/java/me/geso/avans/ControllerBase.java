@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -583,6 +584,61 @@ public abstract class ControllerBase implements Controller,
 			} else {
 				return ParameterProcessorResult
 					.fromData(OptionalDouble.empty());
+			}
+		} else if (type.equals(String[].class)) {
+			String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				parameterValues = new String[]{};
+			}
+			return ParameterProcessorResult
+				.fromData(parameterValues);
+		} else if (type.equals(Long[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new Long[] { });
+			} else {
+				final Long[] values = Arrays.stream(parameterValues)
+						.map(Long::parseLong)
+						.toArray(Long[]::new);
+				return ParameterProcessorResult
+						.fromData(values);
+			}
+		} else if (type.equals(long[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new long[] { });
+			} else {
+				final long[] values = Arrays.stream(parameterValues)
+						.mapToLong(Long::parseLong)
+						.toArray();
+				return ParameterProcessorResult
+						.fromData(values);
+			}
+		} else if (type.equals(Integer[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new Integer[]{});
+			} else {
+				final Integer[] values = Arrays.stream(parameterValues)
+						.map(Integer::parseInt)
+						.toArray(Integer[]::new);
+				return ParameterProcessorResult
+						.fromData(values);
+			}
+		} else if (type.equals(int[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new int[] { });
+			} else {
+				final int[] values = Arrays.stream(parameterValues)
+						.mapToInt(Integer::parseInt)
+						.toArray();
+				return ParameterProcessorResult
+						.fromData(values);
 			}
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
