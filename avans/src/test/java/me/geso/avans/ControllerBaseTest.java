@@ -280,6 +280,126 @@ public class ControllerBaseTest {
 	}
 
 	/**
+	 * String[] must be accept empty string as OptionalLong.empty().
+	 */
+	public static class TestArrays {
+		@Test
+		public void testArrays() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			// without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/strings").execute()
+						.getResponseBodyAsString());
+			});
+			// with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[hoge, fuga]", mech2.get("/strings")
+						.addQueryParameter("q", "hoge")
+						.addQueryParameter("q", "fuga")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// long, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/longs").execute()
+						.getResponseBodyAsString());
+			});
+			// long, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[5963, 4649]", mech2.get("/longs")
+						.addQueryParameter("q", "5963")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// Long, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/Longs").execute()
+						.getResponseBodyAsString());
+			});
+			// Long, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[5963, 4649]", mech2.get("/Longs")
+						.addQueryParameter("q", "5963")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// Integer, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/Integers").execute()
+						.getResponseBodyAsString());
+			});
+			// Integer, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[5963, 4649]", mech2.get("/Integers")
+						.addQueryParameter("q", "5963")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// int, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/ints").execute()
+						.getResponseBodyAsString());
+			});
+			// int, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[5963, 4649]", mech2.get("/ints")
+						.addQueryParameter("q", "5963")
+						.addQueryParameter("q", "4649")
+						.execute()
+						.getResponseBodyAsString());
+			});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/strings")
+			public WebResponse stringArrays(@Param("q") String[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/Longs")
+			public WebResponse longObjectArrays(@Param("q") Long[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/longs")
+			public WebResponse longArrays(@Param("q") long[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/Integers")
+			public WebResponse integerArrays(@Param("q") Integer[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/ints")
+			public WebResponse intArrays(@Param("q") int[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+		}
+	}
+
+
+	/**
 	 * OptionalLong must be accept empty string as OptionalLong.empty().
 	 */
 	public static class TestOptionalStringParameter {
