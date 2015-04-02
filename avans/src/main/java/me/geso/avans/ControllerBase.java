@@ -528,35 +528,35 @@ public abstract class ControllerBase implements Controller,
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(int.class) || type.equals(Integer.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(Integer
 					.parseInt(value));
 			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(long.class) || type.equals(Long.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult
 					.fromData(Long.parseLong(value));
 			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(short.class) || type.equals(Short.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult
 					.fromData(Short.parseShort(value));
 			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(double.class) || type.equals(Double.class)) {
-			if (value != null) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(Double
 					.parseDouble(value));
 			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-			if (value != null) {
+		if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(
 					Boolean.parseBoolean(value));
 			} else {
