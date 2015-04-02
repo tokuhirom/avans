@@ -141,6 +141,54 @@ public class ControllerBaseTest {
 		}
 	}
 
+	public static class TestLong {
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			// without string parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=5963", mech2.get("/")
+						.addQueryParameter("q", "5963")
+						.execute()
+						.getResponseBodyAsString());
+			});
+
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("{\"code\":400,\"messages\":[\"Missing mandatory parameter: q\"]}", mech2.get("/")
+						.addQueryParameter("q", "")
+						.execute()
+						.getResponseBodyAsString());
+			});
+
+			// with string
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), baseURI);
+
+						assertEquals("q=4649", mech2.get("/")
+								.addQueryParameter("q", "4649")
+								.execute()
+								.getResponseBodyAsString());
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Long q) {
+				return this.renderText("q=" + q);
+			}
+		}
+	}
+
 	/**
 	 * OptionalLong must be accept empty string as OptionalLong.empty().
 	 */
