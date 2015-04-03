@@ -11,27 +11,6 @@ spymemcached is a popular implementation of memcached client library.
         SessionMixin {
       private static final SecretKeySpec signingKey = new SecretKeySpec("My Secret".getBytes(), "HmacSHA1");
 
-      public MemcachedClient buildMemcachedClient() {
-        final InetSocketAddress addr = new InetSocketAddress("127.0.0.1", 11211);
-        return new MemcachedClient(addr);
-      }
-
-      @Override
-      public WebSessionManager buildSessionManager() {
-        try {
-          final SpyMemcachedSessionStore sessionStore = new SpyMemcachedSessionStore(
-              this.buildMemcachedClient(), 1024);
-          final Mac xsrfTokenMac = Mac.getInstance("HmacSHA1");
-          xsrfTokenMac.init(signingKey);
-          return new DefaultWebSessionManager(
-              "avans_session_id",
-              this.getRequest(),
-              sessionStore,
-              xsrfTokenMac);
-        } catch (final NoSuchAlgorithmException | InvalidKeyException e) {
-          throw new RuntimeException(e);
-        }
-      }
       
       @BeforeDispatchTrigger
       public Optional<WebResponse> xsrfDetection() {
@@ -43,6 +22,37 @@ spymemcached is a popular implementation of memcached client library.
               }
           }
           return Optional.empty();
+      }
+
+      @Override
+      public WebSessionManager buildSessionManager() {
+        try {
+          final SpyMemcachedSessionStore sessionStore = new SpyMemcachedSessionStore(
+              memcachedClient, 1024);
+          final Mac xsrfTokenMac = Mac.getInstance("HmacSHA1");
+          xsrfTokenMac.init(signingKey);
+
+          SessionCookieFactory sessionCookieFactory = DefaultSessionCookieFactory
+              .builder()
+              .build();
+
+          XSRFTokenCookieFactory xsrfTokenCookieFactory = DefaultXSRFTokenCookieFactory
+              .builder()
+              .mac(xsrfTokenMac)
+              .build();
+
+          SessionIDGenerator sessionIDGenerator = new SecureRandomSessionIDGenerator(
+              new SecureRandom(), 32);
+
+          return new DefaultWebSessionManager(
+              this.getServletRequest(),
+              sessionStore,
+              sessionIDGenerator,
+              sessionCookieFactory,
+              xsrfTokenCookieFactory);
+        } catch (final NoSuchAlgorithmException | InvalidKeyException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
 
