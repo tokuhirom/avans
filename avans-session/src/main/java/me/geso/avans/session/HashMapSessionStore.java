@@ -8,6 +8,7 @@ import lombok.ToString;
 
 /**
  * In memory hash session storage for testing/debugging.
+ * Do not use in production environment.
  * 
  * @author tokuhirom
  *

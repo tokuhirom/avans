@@ -28,16 +28,8 @@ public class DefaultXSRFTokenCookieFactory implements XSRFTokenCookieFactory {
 	private final int maxAge;
 
 	@Override
-	public Cookie createCookie(final String string) {
-		byte[] token;
-		try {
-			token = this.mac.doFinal(string.getBytes(StandardCharsets.UTF_8));
-		} catch (final IllegalStateException e) {
-			// ARIENAI.
-			throw new RuntimeException(e);
-		}
-
-		final String encoded = Base64.getUrlEncoder().encodeToString(token);
+	public Cookie createCookie(final String src) {
+		final String encoded = createXSRFToken(src);
 		final Cookie cookie = new Cookie(
 				this.name, encoded
 				);
@@ -46,6 +38,19 @@ public class DefaultXSRFTokenCookieFactory implements XSRFTokenCookieFactory {
 		cookie.setSecure(this.secure);
 		cookie.setMaxAge(this.maxAge);
 		return cookie;
+	}
+
+	@Override
+	public String createXSRFToken(final String src) {
+		byte[] token;
+		try {
+			token = this.mac.doFinal(src.getBytes(StandardCharsets.UTF_8));
+		} catch (final IllegalStateException e) {
+			// ARIENAI.
+			throw new RuntimeException(e);
+		}
+
+		return Base64.getUrlEncoder().encodeToString(token);
 	}
 
 	public static DefaultXSRFTokenCookieFactoryBuilder builder() {

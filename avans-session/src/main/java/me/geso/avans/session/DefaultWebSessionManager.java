@@ -81,6 +81,11 @@ public class DefaultWebSessionManager implements
 		return Optional.empty();
 	}
 
+	@Override
+	public String getSessionId() {
+		return getSessionData().getSessionId();
+	}
+
 	private String generateSessionId() {
 		return this.sessionIDGenerator.generate();
 	}
@@ -215,6 +220,11 @@ public class DefaultWebSessionManager implements
 					.createCookie(this.sessionData.sessionId);
 			response.addCookie(xsrfTokenCookie);
 		}
+	}
+
+	@Override
+	public String getXSRFToken() {
+		return this.xsrfTokenCookieFactory.createXSRFToken(this.getSessionData().sessionId);
 	}
 
 	@Override
