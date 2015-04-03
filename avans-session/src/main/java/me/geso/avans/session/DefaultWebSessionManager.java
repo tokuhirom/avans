@@ -81,6 +81,11 @@ public class DefaultWebSessionManager implements
 		return Optional.empty();
 	}
 
+	@Override
+	public String getSessionId() {
+		return getSessionData().getSessionId();
+	}
+
 	private String generateSessionId() {
 		return this.sessionIDGenerator.generate();
 	}
@@ -108,6 +113,26 @@ public class DefaultWebSessionManager implements
 	@Override
 	public void remove(final String key) {
 		this.getSessionData().remove(key);
+	}
+
+	/**
+	 * Validate xsrf token.
+	 * @param xsrfToken xsrf token from http servlet request. This value is nullable.
+	 * @return true if the xsrf token is valid or session doesn't have a previous data.
+	 * false otherwise.
+	 */
+	@Override
+	public boolean validateXSRFToken(final String xsrfToken) {
+		final SessionData sessionData = getSessionData();
+		if (sessionData.isFresh()) {
+			return true; // There is no current session. We don't need to defend user.
+		} else {
+			if (null == xsrfToken) {
+				return false;
+			} else {
+				return xsrfToken.equals(getXSRFToken());
+			}
+		}
 	}
 
 	private static class SessionData {
@@ -215,6 +240,11 @@ public class DefaultWebSessionManager implements
 					.createCookie(this.sessionData.sessionId);
 			response.addCookie(xsrfTokenCookie);
 		}
+	}
+
+	@Override
+	public String getXSRFToken() {
+		return this.xsrfTokenCookieFactory.createXSRFToken(this.getSessionData().sessionId);
 	}
 
 	@Override

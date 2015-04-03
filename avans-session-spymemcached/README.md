@@ -32,6 +32,18 @@ spymemcached is a popular implementation of memcached client library.
           throw new RuntimeException(e);
         }
       }
+      
+      @BeforeDispatchTrigger
+      public Optional<WebResponse> xsrfDetection() {
+          final String method = getServletRequest().getMethod();
+          if (!(method.equals("GET") || method.equals("HEAD"))) {
+              final String xsrfToken = getServletRequest().getHeader("X-XSRF-Token");
+              if (!getSession().validateXSRFToken(xsrfToken)) {
+                  return Optional.of(this.renderError(403, "XSRF Detected"));
+              }
+          }
+          return Optional.empty();
+      }
     }
 
 ## LICENSE

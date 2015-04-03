@@ -8,6 +8,11 @@ import me.geso.webscrew.response.WebResponse;
 public interface WebSessionManager {
 
 	/**
+	 * Get sesion ID
+	 */
+	public String getSessionId();
+
+	/**
 	 * This method may inject Cookie header to the session object.
 	 * 
 	 * @param response
@@ -38,25 +43,27 @@ public interface WebSessionManager {
 	 */
 	public void setLong(final String key, final long value);
 
+	public String getXSRFToken();
+
 	/**
 	 * Set String value to current session.
 	 * 
 	 * @param key
 	 * @param value
 	 */
-	void setString(final String key, final String value);
+	public void setString(final String key, final String value);
 
 	/**
 	 * Expire current session. Session manager impl will remove the data from
 	 * storage.
 	 */
-	void expire();
+	public void expire();
 
 	/**
 	 * Change session ID.<br>
 	 * This method is required for defending from session fixation attack.
 	 */
-	void changeSessionId();
+	public void changeSessionId();
 
 	/**
 	 * Remove data from the storage.
@@ -65,4 +72,5 @@ public interface WebSessionManager {
 	 */
 	public void remove(final String key);
 
+	public boolean validateXSRFToken(String xsrfToken);
 }

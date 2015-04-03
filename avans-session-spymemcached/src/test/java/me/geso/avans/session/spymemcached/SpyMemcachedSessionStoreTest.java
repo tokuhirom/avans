@@ -1,7 +1,7 @@
 package me.geso.avans.session.spymemcached;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -16,6 +16,19 @@ import java.util.OptionalLong;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import net.spy.memcached.MemcachedClient;
+
+import com.thimbleware.jmemcached.CacheImpl;
+import com.thimbleware.jmemcached.Key;
+import com.thimbleware.jmemcached.LocalCacheElement;
+import com.thimbleware.jmemcached.MemCacheDaemon;
+import com.thimbleware.jmemcached.storage.CacheStorage;
+import com.thimbleware.jmemcached.storage.hash.ConcurrentLinkedHashMap;
+
 import me.geso.avans.AvansServlet;
 import me.geso.avans.ControllerBase;
 import me.geso.avans.annotation.GET;
@@ -28,21 +41,10 @@ import me.geso.avans.session.SessionIDGenerator;
 import me.geso.avans.session.SessionMixin;
 import me.geso.avans.session.WebSessionManager;
 import me.geso.avans.session.XSRFTokenCookieFactory;
+import me.geso.avans.trigger.BeforeDispatchTrigger;
 import me.geso.mech.MechJettyServlet;
 import me.geso.mech.MechResponse;
 import me.geso.webscrew.response.WebResponse;
-import net.spy.memcached.MemcachedClient;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.thimbleware.jmemcached.CacheImpl;
-import com.thimbleware.jmemcached.Key;
-import com.thimbleware.jmemcached.LocalCacheElement;
-import com.thimbleware.jmemcached.MemCacheDaemon;
-import com.thimbleware.jmemcached.storage.CacheStorage;
-import com.thimbleware.jmemcached.storage.hash.ConcurrentLinkedHashMap;
 
 public class SpyMemcachedSessionStoreTest {
 	private static MemCacheDaemon<LocalCacheElement> daemon;
@@ -170,6 +172,18 @@ public class SpyMemcachedSessionStoreTest {
 			} catch (final NoSuchAlgorithmException | InvalidKeyException e) {
 				throw new RuntimeException(e);
 			}
+		}
+
+		@BeforeDispatchTrigger
+		public Optional<WebResponse> xsrfDetection() {
+			final String method = getServletRequest().getMethod();
+			if (!(method.equals("GET") || method.equals("HEAD"))) {
+				final String xsrfToken = getServletRequest().getHeader("X-XSRF-Token");
+				if (!getSession().validateXSRFToken(xsrfToken)) {
+					return Optional.of(this.renderError(403, "XSRF Detected"));
+				}
+			}
+			return Optional.empty();
 		}
 	}
 
