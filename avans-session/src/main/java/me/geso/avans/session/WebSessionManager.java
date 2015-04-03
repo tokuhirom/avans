@@ -72,4 +72,5 @@ public interface WebSessionManager {
 	 */
 	public void remove(final String key);
 
+	public boolean validateXSRFToken(String xsrfToken);
 }

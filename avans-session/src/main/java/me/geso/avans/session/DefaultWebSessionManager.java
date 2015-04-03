@@ -115,6 +115,26 @@ public class DefaultWebSessionManager implements
 		this.getSessionData().remove(key);
 	}
 
+	/**
+	 * Validate xsrf token.
+	 * @param xsrfToken xsrf token from http servlet request. This value is nullable.
+	 * @return true if the xsrf token is valid or session doesn't have a previous data.
+	 * false otherwise.
+	 */
+	@Override
+	public boolean validateXSRFToken(final String xsrfToken) {
+		final SessionData sessionData = getSessionData();
+		if (sessionData.isFresh()) {
+			return true; // There is no current session. We don't need to defend user.
+		} else {
+			if (null == xsrfToken) {
+				return false;
+			} else {
+				return xsrfToken.equals(getXSRFToken());
+			}
+		}
+	}
+
 	private static class SessionData {
 		private final String sessionId;
 		private final Map<String, Object> data;
