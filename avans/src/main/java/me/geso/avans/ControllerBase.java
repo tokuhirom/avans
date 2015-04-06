@@ -28,6 +28,7 @@ import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -637,6 +638,32 @@ public abstract class ControllerBase implements Controller,
 				final int[] values = Arrays.stream(parameterValues)
 						.mapToInt(Integer::parseInt)
 						.toArray();
+				return ParameterProcessorResult
+						.fromData(values);
+			}
+		} else if (type.equals(Boolean[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new Boolean[]{});
+			} else {
+				final Boolean[] values = Arrays.stream(parameterValues)
+						.map(Boolean::parseBoolean)
+						.toArray(Boolean[]::new);
+				return ParameterProcessorResult
+						.fromData(values);
+			}
+		} else if (type.equals(boolean[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new boolean[]{});
+			} else {
+				final boolean[] values = new boolean[parameterValues.length];
+				IntStream.range(0, parameterValues.length)
+						.forEach(i -> {
+							values[i] = Boolean.parseBoolean(parameterValues[i]);
+						});
 				return ParameterProcessorResult
 						.fromData(values);
 			}

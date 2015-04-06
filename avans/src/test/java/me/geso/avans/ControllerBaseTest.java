@@ -420,6 +420,42 @@ public class ControllerBaseTest {
 						.execute()
 						.getResponseBodyAsString());
 			});
+			// boolean, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/booleans").execute()
+						.getResponseBodyAsString());
+			});
+			// boolean, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[true, false, true]", mech2.get("/booleans")
+						.addQueryParameter("q", "true")
+						.addQueryParameter("q", "false")
+						.addQueryParameter("q", "true")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// Boolean, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/Booleans").execute()
+						.getResponseBodyAsString());
+			});
+			// Boolean, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[true, false, true]", mech2.get("/Booleans")
+						.addQueryParameter("q", "true")
+						.addQueryParameter("q", "false")
+						.addQueryParameter("q", "true")
+						.execute()
+						.getResponseBodyAsString());
+			});
 		}
 
 		public static class Controller extends ControllerBase {
@@ -441,6 +477,14 @@ public class ControllerBaseTest {
 			}
 			@GET("/ints")
 			public WebResponse intArrays(@Param("q") int[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/Booleans")
+			public WebResponse booleanObjectArrays(@Param("q") Boolean[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/booleans")
+			public WebResponse booleanArrays(@Param("q") boolean[] q) {
 				return this.renderText("q=" + Arrays.toString(q));
 			}
 		}
