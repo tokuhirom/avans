@@ -4,12 +4,9 @@
 package ${package}.module;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
 
-import freemarker.template.Configuration;
 import ${package}.config.Config;
 import ${package}.provider.ConfigProvider;
-import ${package}.provider.web.FreemarkerConfigurationProvider;
 
 public class BasicModule extends AbstractModule {
 	private final Config config;
@@ -32,8 +29,5 @@ public class BasicModule extends AbstractModule {
 				.toProvider(ConfigProvider.class)
 				.asEagerSingleton();
 		}
-		bind(Configuration.class)
-			.toProvider(FreemarkerConfigurationProvider.class)
-			.in(Scopes.SINGLETON);
 	}
 }
