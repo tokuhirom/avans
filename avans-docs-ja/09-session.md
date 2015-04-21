@@ -8,9 +8,9 @@ HTTP はステートレスなプロトコルですから､リクエストをま
 
 ## セッション機能のセットアップ
 
-  public class MyBaseController extends ControllerBase
-    implements SessionMixin {
-  }
+    public class MyBaseController extends ControllerBase
+      implements SessionMixin {
+    }
 
 のようにして､SessionMixin インターフェースを組み込んでください｡
 
@@ -19,16 +19,16 @@ HTTP はステートレスなプロトコルですから､リクエストをま
 
 ## 利用例
 
-  public class MyController extends MyBaseController {
-    @GET("/")
-    public WebResponse add() {
-      Optional<Long> currentCounter = this.getSession().getLong("counter", Long.class);
-      long counter = currentCounter.orElse(1);
-      counter++;
-      this.getSession().setLong("counter", counter);
-      return this.renderTEXT("count:" + counter);
+    public class MyController extends MyBaseController {
+      @GET("/")
+      public WebResponse add() {
+        Optional<Long> currentCounter = this.getSession().getLong("counter", Long.class);
+        long counter = currentCounter.orElse(1);
+        counter++;
+        this.getSession().setLong("counter", counter);
+        return this.renderTEXT("count:" + counter);
+      }
     }
-  }
 
 `this.getSession()` でセッションオブジェクトを取得できます｡
 
