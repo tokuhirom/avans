@@ -41,6 +41,7 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 	public default ObjectMapper createObjectMapper() {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+		mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
 		return mapper;
 	}
 }
