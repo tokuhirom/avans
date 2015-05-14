@@ -3,13 +3,13 @@ package me.geso.avans.jackson;
 import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.CharacterEscapes;
 
-public class CustomCharacterEscapes extends CharacterEscapes {
+public class CharacterEscapesAgainstXSS extends CharacterEscapes {
 
     private static final long serialVersionUID = 1L;
 
     private final int[] asciiEscapes;
 
-    public CustomCharacterEscapes() {
+    public CharacterEscapesAgainstXSS() {
         asciiEscapes = standardAsciiEscapesForJSON();
         // Escape characters for preventing XSS
         // see http://www.cowtowncoder.com/blog/archives/2012/08/entry_476.html
