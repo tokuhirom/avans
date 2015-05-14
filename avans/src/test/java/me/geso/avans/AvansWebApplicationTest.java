@@ -325,6 +325,17 @@ public class AvansWebApplicationTest {
 		}
 	}
 
+	@Test
+	public void testEscapeHTMLCharacters() throws Exception {
+		try (MechResponse res = this.mech
+		.get("/escapeHTML").execute()) {
+			Assert.assertEquals(res.getStatusCode(), 200);
+			Assert.assertEquals(res.getContentString(),
+					"{\"code\":200,\"messages\":[],\"data\":\"\\u003Cscript\\u003Ealert(\\u002B1)\\u003C\\u002Fscript\\u003E\"}");
+		}
+
+	}
+
 	public static class MyServlet extends HttpServlet {
 		private static final long serialVersionUID = 1L;
 		private static final Dispatcher dispatcher = new Dispatcher();
@@ -500,6 +511,13 @@ public class AvansWebApplicationTest {
 				builder.append(",");
 			}
 			return this.renderText(builder.toString());
+		}
+
+		@GET("/escapeHTML")
+		@SneakyThrows
+		public WebResponse escapeHTML() {
+			final StringAPIResponse res = new StringAPIResponse("<script>alert(+1)</script>");
+			return this.renderJSON(res);
 		}
 	}
 
