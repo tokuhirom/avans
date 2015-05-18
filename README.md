@@ -108,6 +108,13 @@ In this case, when user calle `/member/detail?id=3`, `memberId` parameter will b
 		...
 	}
 
+You can get multiple params by string array.
+
+	@GET("/member/list")
+	public WebResponse member(@Param("ids") String[] ids) {
+		...
+	}
+
 ## Controller hooks
 
 ### @BeforeDispatchTrigger
