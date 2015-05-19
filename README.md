@@ -115,6 +115,24 @@ You can get multiple params by string array.
 		...
 	}
 
+### @BeanParam
+
+You can map form parameters to Bean.
+
+    @GET("/")
+    public WebResponse foo(@BeanParam MyBean bean) {
+        return this.renderJSON(bean);
+    }
+
+    @Data
+    public static class MyBean {
+        @Param("string")
+        private String string;
+
+        @Param("object_boolean")
+        private Boolean object_boolean;
+    }
+
 ## Controller hooks
 
 ### @BeforeDispatchTrigger
