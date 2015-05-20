@@ -236,7 +236,33 @@ You can filter the injection target by annotation.
 		}
 	}
 
-Concrete usecase: Inject member object deflated from `X-MY-TOKEN` header.
+Concrete use case: Inject member object deflated from `X-MY-TOKEN` header.
+
+# Supported parameter types
+
+Supported types by `@Param`, `@BeanParam`, and `@PathParam` are followings:
+
+ * `String`
+ * `int`
+ * `short`
+ * `long`
+ * `double`
+ * `boolean`
+ * `OptionalInt`
+ * `OptionalDouble`
+ * `OptionalLong`
+ * `String`
+ * `Long[]`
+ * `long[]`
+ * `Integer[]`
+ * `int[]`
+ * `Boolean[]`
+ * `boolean[]`
+ * `List<String>`
+ * `List<Integer>`
+ * `List<Boolean>`
+ * `List<Double>`
+ * `Optional<String>`
 
 ## FAQ
 

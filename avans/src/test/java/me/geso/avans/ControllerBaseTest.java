@@ -1,15 +1,14 @@
 package me.geso.avans;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -486,6 +485,88 @@ public class ControllerBaseTest {
 			@GET("/booleans")
 			public WebResponse booleanArrays(@Param("q") boolean[] q) {
 				return this.renderText("q=" + Arrays.toString(q));
+			}
+		}
+	}
+
+	/**
+	 * List&gt;String&lt; must be accept empty string as empty list.
+	 */
+	public static class TestList {
+		@Test
+		public void testList() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			// without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/strings").execute()
+						.getResponseBodyAsString());
+			});
+			// with parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[a, b]", mech2.get("/strings")
+						.addQueryParameter("q", "a")
+						.addQueryParameter("q", "b")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// with Longs
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[5, 9, 6, 3]", mech2.get("/Longs")
+						.addQueryParameter("q", "5")
+						.addQueryParameter("q", "9")
+						.addQueryParameter("q", "6")
+						.addQueryParameter("q", "3")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// with Integers
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[5, 9, 6, 3]", mech2.get("/Integers")
+						.addQueryParameter("q", "5")
+						.addQueryParameter("q", "9")
+						.addQueryParameter("q", "6")
+						.addQueryParameter("q", "3")
+						.execute()
+						.getResponseBodyAsString());
+			});
+			// with Booleans
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[true, false, true]", mech2.get("/Booleans")
+						.addQueryParameter("q", "true")
+						.addQueryParameter("q", "false")
+						.addQueryParameter("q", "true")
+						.execute()
+						.getResponseBodyAsString());
+			});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/strings")
+			public WebResponse stringArrays(@Param("q") List<String> q) {
+				return this.renderText("q=" + q.toString());
+			}
+			@GET("/Longs")
+			public WebResponse longObjectArrays(@Param("q") List<Long> q) {
+				return this.renderText("q=" + q.toString());
+			}
+			@GET("/Integers")
+			public WebResponse integerArrays(@Param("q") List<Integer> q) {
+				return this.renderText("q=" + q.toString());
+			}
+			@GET("/Booleans")
+			public WebResponse booleanObjectArrays(@Param("q") List<Boolean> q) {
+				return this.renderText("q=" + q.toString());
 			}
 		}
 	}

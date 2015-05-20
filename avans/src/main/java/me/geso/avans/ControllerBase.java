@@ -10,6 +10,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -313,7 +315,7 @@ public abstract class ControllerBase implements Controller,
 				final Object bean = parameter.getType().newInstance();
 				for (final Field field : declaredFields) {
 					final ParameterProcessorResult value = this.getParameterValue(
-						field, field.getType(), field.getName());
+						field, field.getType(), field.getGenericType(), field.getName());
 					if (value.hasResponse()) {
 						return value.getResponse();
 					} else if (value.hasData()) {
@@ -326,7 +328,7 @@ public abstract class ControllerBase implements Controller,
 				params[i] = bean;
 			} else {
 				final ParameterProcessorResult value = this
-					.getParameterValue(parameter, parameter.getType(), parameter.getName());
+					.getParameterValue(parameter, parameter.getType(), parameter.getParameterizedType(), parameter.getName());
 				if (value.hasResponse()) {
 					return value.getResponse();
 				} else if (value.hasData()) {
@@ -411,7 +413,7 @@ public abstract class ControllerBase implements Controller,
 	}
 
 	private <T> ParameterProcessorResult getParameterValue(
-			final AnnotatedElement parameter, final Class<?> type, final String parameterName)
+			final AnnotatedElement parameter, final Class<?> type, Type parameterizedType, final String parameterName)
 			throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, IOException, ServletException
 	{
@@ -457,12 +459,12 @@ public abstract class ControllerBase implements Controller,
 				final String value = this.getServletRequest()
 					.getParameter(name);
 				return this.getObjectFromParameterObjectValue(name,
-					type, value);
+					type, parameterizedType, value);
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam)annotation).value();
 				final String value = this.pathParams.get(name);
 				return this.getObjectFromParameterObjectValue(name,
-					type, value);
+					type, parameterizedType, value);
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
 				final String name = ((UploadFile)annotation).value();
@@ -521,6 +523,7 @@ public abstract class ControllerBase implements Controller,
 	private ParameterProcessorResult getObjectFromParameterObjectValue(
 			final String name,
 			final Class<?> type,
+			final Type parameterizedType,
 			final String value) {
 		if (type.equals(String.class)) {
 			if (value != null) {
@@ -667,6 +670,57 @@ public abstract class ControllerBase implements Controller,
 				return ParameterProcessorResult
 						.fromData(values);
 			}
+		} else if (type.equals(List.class)) {
+			if (parameterizedType instanceof ParameterizedType) {
+				final Type[] actualTypeArguments = ((ParameterizedType)parameterizedType).getActualTypeArguments();
+				if (actualTypeArguments != null && actualTypeArguments.length == 1) {
+					final Type type1 = actualTypeArguments[0];
+					if (type1 instanceof Class) {
+						final String[] parameterValues = getServletRequest().getParameterValues(name);
+						if (parameterValues == null || parameterValues.length == 0) {
+							return ParameterProcessorResult
+									.fromData(Collections.emptyList());
+						}
+
+						if (((Class)type1).isAssignableFrom(String.class)) {
+							return ParameterProcessorResult
+									.fromData(Collections.unmodifiableList(Arrays.asList(parameterValues)));
+						} else if (((Class)type1).isAssignableFrom(Integer.class)) {
+							return ParameterProcessorResult
+									.fromData(
+											Collections.unmodifiableList(
+													Arrays.stream(parameterValues)
+															.map(Integer::valueOf)
+															.collect(Collectors.toList())));
+						} else if (((Class)type1).isAssignableFrom(Long.class)) {
+							return ParameterProcessorResult
+									.fromData(
+											Collections.unmodifiableList(
+													Arrays.stream(parameterValues)
+															.map(Long::valueOf)
+															.collect(Collectors.toList())));
+						} else if (((Class)type1).isAssignableFrom(Double.class)) {
+							return ParameterProcessorResult
+									.fromData(
+											Collections.unmodifiableList(
+													Arrays.stream(parameterValues)
+															.map(Double::valueOf)
+															.collect(Collectors.toList())));
+						} else if (((Class)type1).isAssignableFrom(Boolean.class)) {
+							return ParameterProcessorResult
+									.fromData(
+											Collections.unmodifiableList(
+													Arrays.stream(parameterValues)
+															.map(Boolean::valueOf)
+															.collect(Collectors.toList())));
+						}
+					}
+				}
+			}
+			// Programming error
+			throw new RuntimeException(String.format(
+					"No valid type parameter for List<E>: '%s', '%s'. Valid types are: List<String>, List<Long>,"
+					+ " List<Integer>, and List<Double>", parameterizedType, name));
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
 			// TODO: type parameter check
