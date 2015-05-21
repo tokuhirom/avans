@@ -260,6 +260,7 @@ Supported types by `@Param`, `@BeanParam`, and `@PathParam` are followings:
  * `boolean[]`
  * `List<String>`
  * `List<Integer>`
+ * `List<Long>`
  * `List<Boolean>`
  * `List<Double>`
  * `Optional<String>`
