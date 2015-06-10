@@ -11,7 +11,7 @@ module.exports = function (grunt) {
           cleanBowerDir: true
         }
       }
-    },
+    }
   });
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.registerTask('default', ['bower:install']);

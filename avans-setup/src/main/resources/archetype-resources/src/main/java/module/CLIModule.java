@@ -6,7 +6,6 @@ package ${package}.module;
 import java.sql.Connection;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
 
 import ${package}.provider.ConnectionProvider;
 import ${package}.provider.TinyORMProvider;
@@ -16,9 +15,8 @@ public class CLIModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		bind(Connection.class)
-			.toProvider(ConnectionProvider.class)
-			.in(Scopes.SINGLETON);
+			.toProvider(ConnectionProvider.class);
 		bind(TinyORM.class)
-				.toProvider(TinyORMProvider.class);
+			.toProvider(TinyORMProvider.class);
 	}
 }

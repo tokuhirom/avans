@@ -5,32 +5,34 @@ package ${package}.module;
 
 import java.sql.Connection;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.sql.DataSource;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.google.inject.servlet.ServletScopes;
 
 import ${package}.provider.ConnectionProvider;
+import ${package}.provider.DataSourceProvider;
 import ${package}.provider.TinyORMProvider;
 import me.geso.tinyorm.TinyORM;
 
 public class WebRequestScopedModule extends AbstractModule {
-	private final HttpServletRequest request;
-	private final ConnectionProvider connectionProvider;
-
-	public WebRequestScopedModule(final HttpServletRequest request, final ConnectionProvider connectionProvider) {
-		this.request = request;
-		this.connectionProvider = connectionProvider;
-	}
 
 	@Override
 	protected void configure() {
-		bind(HttpServletRequest.class)
-			.toInstance(request);
-		bind(Connection.class)
-			.toProvider(connectionProvider)
+
+		bind(DataSource.class)
+			.toProvider(DataSourceProvider.class)
 			.in(Scopes.SINGLETON);
+
+		// TODO If you want to use connection pool, change to PooledConnectionProvider.
+		bind(Connection.class)
+			.toProvider(ConnectionProvider.class)
+		//	.toProvider(PooledConnectionProvider.class)
+			.in(ServletScopes.REQUEST);
+
 		bind(TinyORM.class)
-			.toProvider(TinyORMProvider.class);
+			.toProvider(TinyORMProvider.class)
+			.in(ServletScopes.REQUEST);
 	}
 }

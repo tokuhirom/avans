@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.Part;
 
 import com.google.common.base.Charsets;
@@ -31,8 +30,7 @@ public class UploadController extends BaseController {
 	}
 
 	@POST("/upload")
-	public WebResponse uploadPost(@UploadFile("target") Part file) throws IOException, TemplateException,
-			ServletException {
+	public WebResponse uploadPost(@UploadFile("target") Part file) throws IOException {
 		log.info("FILE {}", file);
 		try (InputStream inputStream = file.getInputStream()) {
 			String value = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
