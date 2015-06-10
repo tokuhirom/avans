@@ -8,6 +8,7 @@ import javax.inject.Provider;
 import me.geso.tinyorm.TinyORM;
 
 public class TinyORMProvider implements Provider<TinyORM> {
+
 	@Inject
 	private Connection connection;
 

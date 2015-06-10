@@ -1,6 +1,8 @@
 package me.geso.sample;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,10 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.inject.Injector;
 
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.Controller;
-import me.geso.sample.module.WebRequestScopedModule;
-import me.geso.sample.provider.ConnectionProvider;
+import me.geso.tinyorm.TinyORM;
 
+@Slf4j
 public class Dispatcher extends me.geso.avans.Dispatcher {
 	private final Injector injector;
 
@@ -25,14 +28,27 @@ public class Dispatcher extends me.geso.avans.Dispatcher {
 			final Method method, final HttpServletRequest request,
 			final HttpServletResponse response,
 			final Map<String, String> captured) {
-		// Close connection provider after work.
-		try (ConnectionProvider connectionProvider = injector.getInstance(ConnectionProvider.class)) {
-			final WebRequestScopedModule webModule = new WebRequestScopedModule(request, connectionProvider);
-			final Injector childInjector = injector.createChildInjector(webModule);
-			try (Controller controller = childInjector.getInstance(controllerClass)) {
-				controller.invoke(method, request, response, captured);
-			} catch (final Exception e) {
-				throw new RuntimeException(e);
+
+		// start session
+		// TODO If you want to use @SessionScoped, enable this.
+		// request.getSession();
+
+		Connection connection = null;
+
+		try (Controller controller = injector.getInstance(controllerClass)) {
+			connection = injector.getInstance(TinyORM.class).getConnection();
+			controller.invoke(method, request, response, captured);
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			log.debug("Close JDBC Connection");
+
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				log.error("JDBC Connection close error!", e);
 			}
 		}
 	}

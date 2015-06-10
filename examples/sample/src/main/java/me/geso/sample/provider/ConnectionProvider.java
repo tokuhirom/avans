@@ -1,6 +1,5 @@
 package me.geso.sample.provider;
 
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -13,11 +12,9 @@ import me.geso.sample.config.Config;
 
 /**
  * This is a JDBC connection provider.
- * This class implements Closeable interface.
- * You can close the connection after work.
  */
 @Slf4j
-public class ConnectionProvider implements Provider<Connection>, Closeable {
+public class ConnectionProvider implements Provider<Connection> {
 
 	static {
 		try {
@@ -27,37 +24,26 @@ public class ConnectionProvider implements Provider<Connection>, Closeable {
 		}
 	}
 
-	private final Config config;
+	@Inject
+	private Config config;
+
 	private Connection connection;
 
-	@Inject
-	public ConnectionProvider(Config config) {
-		this.config = config;
-	}
-
+	@Override
 	public Connection get() {
 		try {
-			log.debug("Creating new JDBC connection: {}", config.getJdbc().getUrl());
-			this.connection = DriverManager.getConnection(
+			if (connection == null) {
+				log.debug("Creating new JDBC connection: {}", config.getJdbc().getUrl());
+
+				connection = DriverManager.getConnection(
 					config.getJdbc().getUrl(),
 					config.getJdbc().getUsername(),
 					config.getJdbc().getPassword());
-			return this.connection;
+			}
+
+			return connection;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
-		}
-	}
-
-	// Close last connection.
-	@Override
-	public void close() {
-		if (connection != null) {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				throw new RuntimeException(e);
-			}
-			log.debug("Closed DB Connection");
 		}
 	}
 }
