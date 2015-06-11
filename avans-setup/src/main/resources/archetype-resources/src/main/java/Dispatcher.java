@@ -39,7 +39,7 @@ public class Dispatcher extends me.geso.avans.Dispatcher {
 		Connection connection = null;
 
 		try (Controller controller = injector.getInstance(controllerClass)) {
-			connection = injector.getInstance(TinyORM.class).getConnection();
+			connection = injector.getInstance(Connection.class);
 			controller.invoke(method, request, response, captured);
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
