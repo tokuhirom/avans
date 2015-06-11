@@ -17,6 +17,7 @@ public class GuiceServletConfig extends GuiceServletContextListener {
 
 	private ServletContext servletContext;
 
+	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
 		servletContext = servletContextEvent.getServletContext();
 		super.contextInitialized(servletContextEvent);
