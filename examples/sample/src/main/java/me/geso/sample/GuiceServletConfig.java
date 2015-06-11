@@ -37,7 +37,7 @@ public class GuiceServletConfig extends GuiceServletContextListener {
 			});
 	}
 
-	BasicModule buildBasicModule() {
+	private BasicModule buildBasicModule() {
 		Object config = servletContext.getAttribute("sample.config");
 		if (config != null && config instanceof Config) {
 			return new BasicModule((Config)config);
