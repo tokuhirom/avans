@@ -5,3 +5,10 @@ jdbc:
   username: root
   password:
 
+# TODO HikariCP has many options. please configure optimum value for your production site.
+# https://github.com/brettwooldridge/HikariCP
+#
+# If you wanto to customize HikariCP's options. you should customize here.
+dataSource:
+  minimumIdle: 8
+  maximumPoolSize: 100

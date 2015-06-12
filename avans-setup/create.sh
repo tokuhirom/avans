@@ -41,6 +41,7 @@ open my $fh, '>', 'src/main/resources/META-INF/maven/archetype-metadata.xml';
 print {$fh} $content;
 EOP
 
+mvn clean package
 mvn archetype:update-local-catalog
 mvn archetype:jar archetype:integration-test -DskipTests
 mvn install -Dgpg.skip=true

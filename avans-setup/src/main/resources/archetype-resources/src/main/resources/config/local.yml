@@ -5,3 +5,6 @@ jdbc:
   username: root
   password:
 
+dataSource:
+  minimumIdle: 8
+  maximumPoolSize: 100

@@ -10,18 +10,9 @@ import javax.sql.DataSource;
 import com.zaxxer.hikari.HikariDataSource;
 
 import ${package}.config.Config;
+import ${package}.config.DataSourceConfig;
 
 public class DataSourceProvider implements Provider<DataSource> {
-
-	private static final int MINIMUM_IDLE =
-			System.getProperty("minimumIdle") != null
-				? Integer.parseInt(System.getProperty("minimumIdle"))
-				: 16;
-
-	private static final int MAXIMUM_POOL_SIZE =
-			System.getProperty("maximumPoolSize") != null
-				? Integer.parseInt(System.getProperty("maximumPoolSize"))
-				: 200;
 
 	private HikariDataSource dataSource;
 
@@ -33,8 +24,14 @@ public class DataSourceProvider implements Provider<DataSource> {
 		dataSource.setUsername(config.getJdbc().getUsername());
 		dataSource.setPassword(config.getJdbc().getPassword());
 		dataSource.setAutoCommit(false);
-		dataSource.setMinimumIdle(MINIMUM_IDLE);
-		dataSource.setMaximumPoolSize(MAXIMUM_POOL_SIZE);
+
+		// connection pool options
+		DataSourceConfig dataSourceConfig = config.getDataSource();
+		if (dataSourceConfig != null) {
+			// TODO If you wanto to customize HikariCP's options. you should customize here.
+			dataSource.setMinimumIdle(dataSourceConfig.getMinimumIdle());
+			dataSource.setMaximumPoolSize(dataSourceConfig.getMaximumPoolSize());
+		}
 	}
 
 	@Override
