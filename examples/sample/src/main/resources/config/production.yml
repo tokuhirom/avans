@@ -8,6 +8,9 @@ jdbc:
 # TODO HikariCP has many options. please configure optimum value for your production site.
 # https://github.com/brettwooldridge/HikariCP
 #
+# this project default value is same as Spring Boot.
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+#
 # If you wanto to customize HikariCP's options. you should customize here.
 dataSource:
   minimumIdle: 8
