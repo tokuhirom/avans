@@ -2,7 +2,12 @@ package me.geso.sample;
 
 import org.junit.BeforeClass;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 import me.geso.sample.config.Config;
+import me.geso.sample.module.BasicModule;
+import me.geso.sample.module.CLIModule;
 import me.geso.sample.provider.ConfigProvider;
 
 public class TestBase {
@@ -21,5 +26,10 @@ public class TestBase {
 
 		config = new ConfigProvider().get();
 	}
-}
 
+	protected Injector getInjector() {
+		return Guice.createInjector(
+			new BasicModule(config),
+			new CLIModule());
+	}
+}
