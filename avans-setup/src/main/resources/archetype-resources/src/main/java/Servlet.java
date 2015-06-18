@@ -5,51 +5,57 @@ package ${package};
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import lombok.extern.slf4j.Slf4j;
-import ${package}.config.Config;
-import ${package}.module.BasicModule;
-import ${package}.module.WebModule;
 
 @Slf4j
+@Singleton
 public class Servlet extends HttpServlet {
-	private me.geso.avans.Dispatcher dispatcher;
+
+	private static final String MULTIPART_CONFIG = "org.eclipse.jetty.multipartConfig";
+
+	private static final String LOCATION = "";
+
+	private static final long MAX_FILE_SIZE = 5_242_880;
+
+	private static final long MAX_REQUEST_SIZE = 27_262_976;
+
+	private static final int FILE_SIZE_THRESHOLD = 32_768;
+
+	private static final MultipartConfigElement MULTIPART_CONFIG_ELEMENT =
+			new MultipartConfigElement(LOCATION, MAX_FILE_SIZE, MAX_REQUEST_SIZE, FILE_SIZE_THRESHOLD);
+
+	@Inject
+	private Injector injector;
+
+	private Dispatcher dispatcher;
 
 	@Override
 	public void init() {
 		log.info("Initialized Servlet");
-		final Injector injector = Guice.createInjector(
-			this.buildModule(getServletConfig()),
-			new WebModule(getServletContext()));
 		dispatcher = new Dispatcher(injector);
 		dispatcher.registerPackage(${package}.controller.RootController.class.getPackage());
 	}
 
-	private BasicModule buildModule(ServletConfig servletConfig) {
-		final Object config = servletConfig.getServletContext().getAttribute("${artifactId}.config");
-		if (config != null && config instanceof Config) {
-			return new BasicModule((Config)config);
-		} else {
-			return new BasicModule();
-		}
-	}
-
 	@Override
-	public void service(final ServletRequest req, final ServletResponse res)
+	public void service(HttpServletRequest req, HttpServletResponse res)
 			throws ServletException, IOException {
-		this.dispatcher.handler(
-			(HttpServletRequest)req,
-			(HttpServletResponse)res);
-	}
 
+		// guice-servlet need this hack.
+		// tomcat config is META-INF/context.xml (allowCasualMultipartParsing="true")
+		if ("POST".equals(req.getMethod())) {
+			req.setAttribute(MULTIPART_CONFIG, MULTIPART_CONFIG_ELEMENT);
+		}
+
+		this.dispatcher.handler(req, res);
+	}
 }

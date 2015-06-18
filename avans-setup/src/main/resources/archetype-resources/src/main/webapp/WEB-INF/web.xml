@@ -2,28 +2,24 @@
 #set( $symbol_dollar = '$' )
 #set( $symbol_escape = '\' )
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-	<servlet>
-		<servlet-name>main</servlet-name>
-		<servlet-class>${package}.Servlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-		<multipart-config>
-			<max-file-size>5242880</max-file-size>
-			<max-request-size>27262976</max-request-size>
-			<file-size-threshold>32768</file-size-threshold>
-		</multipart-config>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>main</servlet-name>
+<web-app
+		version="3.0"
+		xmlns="http://java.sun.com/xml/ns/javaee"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+	<listener>
+		<listener-class>${package}.GuiceServletConfig</listener-class>
+	</listener>
+
+	<!-- Guice Filter -->
+	<filter>
+		<filter-name>guiceFilter</filter-name>
+		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>guiceFilter</filter-name>
 		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>/static/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>/components/*</url-pattern>
-	</servlet-mapping>
+	</filter-mapping>
+
 </web-app>

@@ -19,6 +19,6 @@ public class CLIModule extends AbstractModule {
 			.toProvider(ConnectionProvider.class)
 			.in(Scopes.SINGLETON);
 		bind(TinyORM.class)
-				.toProvider(TinyORMProvider.class);
+			.toProvider(TinyORMProvider.class);
 	}
 }

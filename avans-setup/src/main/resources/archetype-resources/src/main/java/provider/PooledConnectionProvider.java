@@ -4,31 +4,22 @@
 package ${package}.provider;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.sql.DataSource;
 
 import lombok.extern.slf4j.Slf4j;
-import ${package}.config.Config;
 
 /**
  * This is a JDBC connection provider.
  */
 @Slf4j
-public class ConnectionProvider implements Provider<Connection> {
-
-	static {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
+public class PooledConnectionProvider implements Provider<Connection> {
 
 	@Inject
-	private Config config;
+	private DataSource dataSource;
 
 	private Connection connection;
 
@@ -36,14 +27,11 @@ public class ConnectionProvider implements Provider<Connection> {
 	public Connection get() {
 		try {
 			if (connection == null) {
-				log.debug("Creating new JDBC connection: {}", config.getJdbc().getUrl());
+				connection = dataSource.getConnection();
 
-				connection = DriverManager.getConnection(
-					config.getJdbc().getUrl(),
-					config.getJdbc().getUsername(),
-					config.getJdbc().getPassword());
+				log.debug("Get JDBC connection from connection pool: {}",
+					connection.getMetaData().getURL());
 			}
-
 			return connection;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);

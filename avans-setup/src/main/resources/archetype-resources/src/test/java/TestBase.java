@@ -5,7 +5,12 @@ package ${package};
 
 import org.junit.BeforeClass;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 import ${package}.config.Config;
+import ${package}.module.BasicModule;
+import ${package}.module.CLIModule;
 import ${package}.provider.ConfigProvider;
 
 public class TestBase {
@@ -24,5 +29,10 @@ public class TestBase {
 
 		config = new ConfigProvider().get();
 	}
-}
 
+	protected Injector getInjector() {
+		return Guice.createInjector(
+			new BasicModule(config),
+			new CLIModule());
+	}
+}

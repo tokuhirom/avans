@@ -34,4 +34,3 @@ public abstract class BaseController extends ControllerBase {
 		resp.addHeader("Cache-Control", "private");
 	}
 }
-

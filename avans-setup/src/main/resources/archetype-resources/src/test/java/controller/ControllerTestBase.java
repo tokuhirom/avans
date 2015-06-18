@@ -21,35 +21,36 @@ import me.geso.mech2.Mech2WithBase;
 import ${package}.TestBase;
 
 public abstract class ControllerTestBase extends TestBase {
-    private static Tomcat tomcat;
-    private static Mech2WithBase mech;
+	private static Tomcat tomcat;
+	private static Mech2WithBase mech;
 
-    @BeforeClass
-    public static void controllerTestBaseBeforeClass() throws ServletException, LifecycleException, URISyntaxException {
-        ControllerTestBase.tomcat = new Tomcat();
-        tomcat.setPort(0);
-        org.apache.catalina.Context webContext = tomcat.addWebapp("/", new File("src/main/webapp").getAbsolutePath());
+	@BeforeClass
+	public static void controllerTestBaseBeforeClass() throws ServletException, LifecycleException, URISyntaxException {
+		ControllerTestBase.tomcat = new Tomcat();
+		tomcat.setPort(0);
+		org.apache.catalina.Context webContext = tomcat.addWebapp("/", new File("src/main/webapp").getAbsolutePath());
 		final ServletContext servletContext = webContext.getServletContext();
 		servletContext.setAttribute(Globals.ALT_DD_ATTR, "src/main/webapp/WEB-INF/web.xml");
 		// Inject configuration into servlet context.
 		servletContext.setAttribute("${artifactId}.config", config);
 		tomcat.start();
 
-        int port = tomcat.getConnector().getLocalPort();
-        String url = "http://127.0.0.1:" + port;
-        ControllerTestBase.mech = new Mech2WithBase(Mech2.builder().build(), new URI(url));
-    }
+		int port = tomcat.getConnector().getLocalPort();
+		String url = "http://127.0.0.1:" + port;
+		ControllerTestBase.mech = new Mech2WithBase(Mech2.builder().build(), new URI(url));
+	}
 
-    @AfterClass
-    public static void controllerTestBaseAfterClass() throws ServletException, LifecycleException, URISyntaxException {
-        ControllerTestBase.tomcat.stop();
-    }
+	@AfterClass
+	public static void controllerTestBaseAfterClass()
+			throws LifecycleException {
+		ControllerTestBase.tomcat.stop();
+	}
 
 	protected static Mech2WithBase mech() {
 		return mech;
 	}
 
-    public Tomcat getTomcat() {
-        return ControllerTestBase.tomcat;
-    }
+	public Tomcat getTomcat() {
+		return ControllerTestBase.tomcat;
+	}
 }

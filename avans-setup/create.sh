@@ -41,8 +41,10 @@ open my $fh, '>', 'src/main/resources/META-INF/maven/archetype-metadata.xml';
 print {$fh} $content;
 EOP
 
-mvn archetype:jar archetype:integration-test archetype:update-local-catalog install -DskipTests
-mvn archetype:jar archetype:integration-test archetype:update-local-catalog install -DskipTests
+mvn clean package
+mvn archetype:update-local-catalog
+mvn archetype:jar archetype:integration-test -DskipTests
+mvn install -Dgpg.skip=true
 
 echo mvn archetype:generate -DarchetypeCatalog=local -DarchetypeGroupId=me.geso.avans -DarchetypeArtifactId=avans-setup -DgroupId=com.example.myapp -DartifactId=MyWebApp -Dversion=0.0.1-SNAPSHOT -DinteractiveMode=false
 
