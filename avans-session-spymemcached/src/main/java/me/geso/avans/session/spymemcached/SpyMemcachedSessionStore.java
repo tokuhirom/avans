@@ -80,7 +80,7 @@ public class SpyMemcachedSessionStore implements WebSessionStore {
 		try {
 			final byte[] entry = objectMapper.writeValueAsBytes(data);
 			this.memcachedClient.set(sessionId, this.expirationTime,
-					entry);
+					entry).get();
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
