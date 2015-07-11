@@ -1,10 +1,12 @@
 package me.geso.avans.session.spymemcached;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import java.util.Map;
 import java.util.Optional;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.session.WebSessionStore;
 import net.spy.memcached.MemcachedClient;
 
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 
+@Slf4j
 public class SpyMemcachedSessionStore implements WebSessionStore {
 
 	private final MemcachedClient memcachedClient;
@@ -79,8 +82,11 @@ public class SpyMemcachedSessionStore implements WebSessionStore {
 	public void save(String sessionId, Map<String, Object> data) {
 		try {
 			final byte[] entry = objectMapper.writeValueAsBytes(data);
-			this.memcachedClient.set(sessionId, this.expirationTime,
-					entry).get();
+			final Future<Boolean> future = this.memcachedClient.set(sessionId, this.expirationTime,
+					entry);
+			if (!future.get()) {
+				log.warn("cannot set session data to memcached:{}", memcachedClient);
+			}
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
