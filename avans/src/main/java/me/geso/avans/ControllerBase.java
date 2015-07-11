@@ -723,9 +723,25 @@ public abstract class ControllerBase implements Controller,
 					+ " List<Integer>, and List<Double>", parameterizedType, name));
 		} else if (type.equals(Optional.class)) {
 			// avans supports Optional<String> only.
-			// TODO: type parameter check
 			if (value != null && !value.isEmpty()) {
-				return ParameterProcessorResult.fromData(Optional.of(value));
+				if (parameterizedType instanceof ParameterizedType) {
+					final Type[] actualTypeArguments = ((ParameterizedType)parameterizedType).getActualTypeArguments();
+					if (actualTypeArguments != null && actualTypeArguments.length == 1) {
+						final Type type1 = actualTypeArguments[0];
+						if (type1 instanceof Class) {
+							if (((Class)type1).isAssignableFrom(String.class)) {
+								return ParameterProcessorResult.fromData(Optional.of(value));
+							} else if (((Class)type1).isAssignableFrom(Integer.class)) {
+								throw new RuntimeException(String.format(
+										"%s: invalid type for '%s'(%s): Optional<Integer> is not supported. You should use OptionalInt instead.", getServletRequest().getPathInfo(), name, parameterizedType));
+							}
+						}
+					}
+				}
+
+				// Programming error
+				throw new RuntimeException(String.format(
+						"%s: Invalid type parameter for '%s': Valid type is 'Optional<String>' but you specified '%s'.", name, parameterizedType));
 			} else {
 				return ParameterProcessorResult.fromData(Optional.empty());
 			}
