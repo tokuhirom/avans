@@ -139,7 +139,7 @@ public class Dispatcher implements Serializable {
 		return controllerClass.newInstance();
 	}
 
-	private void writeMethodNotAllowedErrorPage(
+	public void writeMethodNotAllowedErrorPage(
 			final HttpServletResponse response) {
 		response.setCharacterEncoding("UTF-8");
 		response.setStatus(405);
