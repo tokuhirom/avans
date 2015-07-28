@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -455,6 +456,24 @@ public class ControllerBaseTest {
 						.execute()
 						.getResponseBodyAsString());
 			});
+			// BigInteger, without parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[]", mech2.get("/BigIntegers").execute()
+						.getResponseBodyAsString());
+			});
+			// BigInteger, with parameters
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[1234567890, 12345678901234567890, 123456789012345678901234567890]", mech2.get("/BigIntegers")
+						.addQueryParameter("q", "1234567890")
+						.addQueryParameter("q", "12345678901234567890")
+						.addQueryParameter("q", "123456789012345678901234567890")
+						.execute()
+						.getResponseBodyAsString());
+			});
 		}
 
 		public static class Controller extends ControllerBase {
@@ -484,6 +503,10 @@ public class ControllerBaseTest {
 			}
 			@GET("/booleans")
 			public WebResponse booleanArrays(@Param("q") boolean[] q) {
+				return this.renderText("q=" + Arrays.toString(q));
+			}
+			@GET("/BigIntegers")
+			public WebResponse bigIntegerArrays(@Param("q") BigInteger[] q) {
 				return this.renderText("q=" + Arrays.toString(q));
 			}
 		}
@@ -549,6 +572,17 @@ public class ControllerBaseTest {
 						.execute()
 						.getResponseBodyAsString());
 			});
+			// with BigIntegers
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("q=[1234567890, 12345678901234567890, 123456789012345678901234567890]", mech2.get("/BigIntegers")
+						.addQueryParameter("q", "1234567890")
+						.addQueryParameter("q", "12345678901234567890")
+						.addQueryParameter("q", "123456789012345678901234567890")
+						.execute()
+						.getResponseBodyAsString());
+			});
 		}
 
 		public static class Controller extends ControllerBase {
@@ -566,6 +600,10 @@ public class ControllerBaseTest {
 			}
 			@GET("/Booleans")
 			public WebResponse booleanObjectArrays(@Param("q") List<Boolean> q) {
+				return this.renderText("q=" + q.toString());
+			}
+			@GET("/BigIntegers")
+			public WebResponse bigIntegerArrays(@Param("q") List<BigInteger> q) {
 				return this.renderText("q=" + q.toString());
 			}
 		}
@@ -921,4 +959,51 @@ public class ControllerBaseTest {
 		}
 	}
 
+	public static class TestForBigIntegerParameters {
+		@Test
+		public void shouldGetBigIntegerParam() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+
+			// without string parameter
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("{\"code\":400,\"messages\":[\"Missing mandatory parameter: q\"]}", mech2.get("/")
+						.execute()
+						.getResponseBodyAsString());
+			});
+
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+						.build(), baseURI);
+				assertEquals("{\"code\":400,\"messages\":[\"Missing mandatory parameter: q\"]}", mech2.get("/")
+						.addQueryParameter("q", "")
+						.execute()
+						.getResponseBodyAsString());
+			});
+
+			// with string
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+								.builder()
+								.build(), baseURI);
+
+						assertEquals("q=123456789012345678901234567890", mech2.get("/")
+								.addQueryParameter("q", "123456789012345678901234567890")
+								.execute()
+								.getResponseBodyAsString());
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") BigInteger q) {
+				return this.renderText("q=" + q.toString());
+			}
+		}
+	}
 }

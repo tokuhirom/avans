@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -560,9 +561,15 @@ public abstract class ControllerBase implements Controller,
 				return ParameterProcessorResult.missingParameter(name);
 			}
 		} else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-		if (value != null && !value.isEmpty()) {
+			if (value != null && !value.isEmpty()) {
 				return ParameterProcessorResult.fromData(
-					Boolean.parseBoolean(value));
+						Boolean.parseBoolean(value));
+			} else {
+				return ParameterProcessorResult.missingParameter(name);
+			}
+		} else if (type.equals(BigInteger.class)) {
+			if (value != null && !value.isEmpty()) {
+				return ParameterProcessorResult.fromData(new BigInteger(value, 10));
 			} else {
 				return ParameterProcessorResult.missingParameter(name);
 			}
@@ -670,6 +677,18 @@ public abstract class ControllerBase implements Controller,
 				return ParameterProcessorResult
 						.fromData(values);
 			}
+		} else if (type.equals(BigInteger[].class)) {
+			final String[] parameterValues = getServletRequest().getParameterValues(name);
+			if (parameterValues == null) {
+				return ParameterProcessorResult
+						.fromData(new BigInteger[]{});
+			} else {
+				final BigInteger[] values = Arrays.stream(parameterValues)
+						.map(v -> new BigInteger(v, 10))
+						.toArray(BigInteger[]::new);
+				return ParameterProcessorResult
+						.fromData(values);
+			}
 		} else if (type.equals(List.class)) {
 			if (parameterizedType instanceof ParameterizedType) {
 				final Type[] actualTypeArguments = ((ParameterizedType)parameterizedType).getActualTypeArguments();
@@ -713,6 +732,13 @@ public abstract class ControllerBase implements Controller,
 													Arrays.stream(parameterValues)
 															.map(Boolean::valueOf)
 															.collect(Collectors.toList())));
+						} else if (((Class)type1).isAssignableFrom(BigInteger.class)) {
+							return ParameterProcessorResult
+									.fromData(
+											Collections.unmodifiableList(
+													Arrays.stream(parameterValues)
+													.map(v -> new BigInteger(v, 10))
+													.collect(Collectors.toList())));
 						}
 					}
 				}
