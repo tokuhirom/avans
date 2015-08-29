@@ -13,7 +13,6 @@
 
 	<modules>
 		<module>avans</module>
-		<module>avans-mustache</module>
 		<module>avans-freemarker</module>
 		<module>avans-tinyvalidator</module>
 		<module>avans-session</module>

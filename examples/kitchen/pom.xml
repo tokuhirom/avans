@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>avans-mustache</artifactId>
-			<version>${avans.version}</version>
+			<version>1.14.0</version>
 		</dependency>
 
 		<dependency>
