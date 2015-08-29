@@ -162,7 +162,7 @@ You can modify every response by this hook point.
 
 ### @HTMLFilter
 
-You can rewrite HTML in hook point. It supported by avans-mustache and avans-freemarker.
+You can rewrite HTML in hook point. It supported by avans-freemarker.
 
 	public static class MyController extends ControllerBase {
 		@HTMLFilter

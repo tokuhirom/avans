@@ -18,7 +18,7 @@ That's all.
 
 ### Core dependencies
 
- * mustache - very fast template engine.
+ * freemarker - very fast template engine.
  * jackson - really fast JSON serializer/deserializer
  * commons-fileupload - multipart/form-data processor
 
