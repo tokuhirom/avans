@@ -4,7 +4,6 @@
     <file url="file://$PROJECT_DIR$/avans" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/avans-annotation" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/avans-freemarker" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/avans-mustache" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/avans-session" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/avans-session-spymemcached" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/avans-setup" charset="UTF-8" />
