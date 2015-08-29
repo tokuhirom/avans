@@ -4,7 +4,7 @@ sample
 Start the server
 ----------------
 
-    mvn tomcat7:run -Dsample.env=local
+    mvn jetty:run -Dsample.env=local
 
 Creating war file
 -----------------
