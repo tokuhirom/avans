@@ -1,15 +1,17 @@
 package me.geso.sample.controller;
 
-import me.geso.mech2.Mech2;
-import me.geso.mech2.Mech2WithBase;
-import me.geso.sample.TestBase;
+import java.net.URI;
+
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import java.net.URI;
+import me.geso.mech2.Mech2;
+import me.geso.mech2.Mech2WithBase;
+import me.geso.sample.TestBase;
 
 public abstract class ControllerTestBase extends TestBase {
 	private static Mech2WithBase mech;
@@ -32,7 +34,8 @@ public abstract class ControllerTestBase extends TestBase {
 		server.setStopAtShutdown(true);
 		server.start();
 
-		int port = server.getConnectors()[0].getLocalPort();
+		ServerConnector connector = (ServerConnector)server.getConnectors()[0];
+		int port = connector.getLocalPort();
 
 		String url = "http://127.0.0.1:" + port;
 		ControllerTestBase.mech = new Mech2WithBase(Mech2.builder().build(), new URI(url));
