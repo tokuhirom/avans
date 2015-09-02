@@ -1,0 +1,70 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'war'
+
+group = 'me.geso.sample'
+version = '0.0.1-SNAPSHOT'
+
+description = """sample"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+    // lombok
+    providedCompile group: 'org.projectlombok', name: 'lombok', version:'1.14.2'
+
+    // avans
+    compile(group: 'me.geso', name: 'avans', version:'1.7.0') {
+        exclude(module: 'commons-logging')
+    }
+
+    // logging
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.1.2'
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.6'
+    compile group: 'org.slf4j', name: 'jul-to-slf4j', version:'1.7.6'
+    compile group: 'org.slf4j', name: 'log4j-over-slf4j', version:'1.7.6'
+
+    compile group: 'org.freemarker', name: 'freemarker', version:'2.3.20'
+
+    // jetty
+    final String JETTY_VERSION = '9.2.3.v20140905'
+    compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version:JETTY_VERSION
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version:JETTY_VERSION
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version:JETTY_VERSION
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version:JETTY_VERSION
+    compile group: 'org.eclipse.jetty', name: 'jetty-jmx', version:JETTY_VERSION
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version:'3.1.0'
+
+    // jackson
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version:'2.4.1'
+
+    // guice
+    compile group: 'com.google.inject', name: 'guice', version:'4.0'
+    compile group: 'com.google.inject.extensions', name: 'guice-grapher', version:'4.0'
+    compile group: 'com.google.inject.extensions', name: 'guice-servlet', version:'4.0'
+    compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.34'
+    compile(group: 'me.geso', name: 'tinyorm', version:'1.0.1') {
+        exclude(module: 'commons-logging')
+    }
+
+    // hikaricp
+    compile group: 'com.zaxxer', name: 'HikariCP', version:'2.3.8'
+
+    // testing
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+    testCompile group: 'me.geso', name: 'mech2', version:'0.2.1'
+}
+
+// run application locally.
+task runLocal(dependsOn: 'classes', type: JavaExec) {
+    main = 'me.geso.sample.Main'
+    systemProperty "sample.env", 'local'
+    classpath = configurations.runtime + sourceSets.main.runtimeClasspath
+    jvmArgs "-Djetty.webapp=${project.projectDir}/src/main/webapp/"
+}
+

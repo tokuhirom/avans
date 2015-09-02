@@ -1,13 +1,14 @@
 sample
 ======
 
-Start the server
-----------------
+Start the server in your machine
+--------------------------------
 
-    mvn jetty:run -Dsample.env=local
+    ./gradlew runLocal
 
 Creating war file
 -----------------
 
-    mvn package
+    ./gradlew build
 
+Generated code will appear in `build/libs/` directory.
