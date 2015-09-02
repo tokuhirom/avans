@@ -27,17 +27,16 @@ class Ho {
     }
 
     method process-file(IO::Path $file) {
-        # mkpath
         my $rel = $file.relative($.srcdir);
         if ($rel ~~ /^(build|\.gradle|\.idea|node_modules)\//) {
             return;
         }
-        self._copy($file, $rel.IO);
+        self.copy($file, $rel.IO);
     }
 
-    method _copy(IO::Path $file, IO::Path $rel) {
+    method copy(IO::Path $file, IO::Path $rel) {
         my $dst = $!dstdir.child($rel.subst(/me\/geso/, '__groupId__', :g));
-        self._mkpath($dst.dirname.IO);
+        self.mkpath($dst.dirname.IO);
 
         {
             say "cp $rel $dst";
@@ -61,7 +60,7 @@ class Ho {
         @.files.push($dst);
     }
 
-    method _mkpath(IO::Path $dir) {
+    method mkpath(IO::Path $dir) {
         return if %!created_dirs{$dir}++;
         dbg("mkdir -p $dir");
         mkpath($dir);
