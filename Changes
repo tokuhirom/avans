@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - [bug fix] In previous version, avans try to set static fields.
+      it cause exception. This version ignore the static fields in @BenParam annotated class.
     - split avans-mustache repo from main repo.
       see https://github.com/tokuhirom/avans-mustache/.
 
