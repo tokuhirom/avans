@@ -4,7 +4,7 @@ ${artifactId}
 Start the server
 ----------------
 
-    mvn tomcat7:run -D${artifactId}.env=local
+    mvn jetty:run -D${artifactId}.env=local
 
 Creating war file
 -----------------

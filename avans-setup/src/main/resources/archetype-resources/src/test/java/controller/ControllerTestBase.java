@@ -3,16 +3,12 @@
 #set( $symbol_escape = '\' )
 package ${package}.controller;
 
-import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
-import org.apache.catalina.Globals;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.startup.Tomcat;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.StatisticsHandler;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -21,36 +17,39 @@ import me.geso.mech2.Mech2WithBase;
 import ${package}.TestBase;
 
 public abstract class ControllerTestBase extends TestBase {
-	private static Tomcat tomcat;
 	private static Mech2WithBase mech;
+	private static Server server;
 
 	@BeforeClass
-	public static void controllerTestBaseBeforeClass() throws ServletException, LifecycleException, URISyntaxException {
-		ControllerTestBase.tomcat = new Tomcat();
-		tomcat.setPort(0);
-		org.apache.catalina.Context webContext = tomcat.addWebapp("/", new File("src/main/webapp").getAbsolutePath());
-		final ServletContext servletContext = webContext.getServletContext();
-		servletContext.setAttribute(Globals.ALT_DD_ATTR, "src/main/webapp/WEB-INF/web.xml");
-		// Inject configuration into servlet context.
-		servletContext.setAttribute("${artifactId}.config", config);
-		tomcat.start();
+	public static void controllerTestBaseBeforeClass() throws Exception {
+		ControllerTestBase.server = new Server(0);
 
-		int port = tomcat.getConnector().getLocalPort();
+		WebAppContext webapp = new WebAppContext("", "/");
+		webapp.setResourceBase("src/main/webapp/");
+		webapp.setHandler(new StatisticsHandler());
+		webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+		server.setHandler(webapp);
+
+		// servletContext.setAttribute(Globals.ALT_DD_ATTR, "src/main/webapp/WEB-INF/web.xml");
+		// Inject configuration into servlet context.
+		// servletContext.setAttribute("${artifactId}.config", config);
+		// tomcat.start();
+		server.setStopAtShutdown(true);
+		server.start();
+
+		ServerConnector connector = (ServerConnector)server.getConnectors()[0];
+		int port = connector.getLocalPort();
+
 		String url = "http://127.0.0.1:" + port;
 		ControllerTestBase.mech = new Mech2WithBase(Mech2.builder().build(), new URI(url));
 	}
 
 	@AfterClass
-	public static void controllerTestBaseAfterClass()
-			throws LifecycleException {
-		ControllerTestBase.tomcat.stop();
+	public static void controllerTestBaseAfterClass() throws Exception {
+		server.stop();
 	}
 
 	protected static Mech2WithBase mech() {
 		return mech;
-	}
-
-	public Tomcat getTomcat() {
-		return ControllerTestBase.tomcat;
 	}
 }
