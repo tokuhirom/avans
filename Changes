@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+2.0.2
+
+    - avans-setup: use embedded jetty instead of embedded tomcat.
+
 2.0.1
 
     - [bug fix] In previous version, avans try to set static fields.
