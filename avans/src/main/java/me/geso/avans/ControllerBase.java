@@ -9,6 +9,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -315,6 +316,10 @@ public abstract class ControllerBase implements Controller,
 				final List<Field> declaredFields = getAllDeclaredFields(parameter.getType());
 				final Object bean = parameter.getType().newInstance();
 				for (final Field field : declaredFields) {
+					if (Modifier.isStatic(field.getModifiers())) {
+						// skip static field.
+						continue;
+					}
 					final ParameterProcessorResult value = this.getParameterValue(
 						field, field.getType(), field.getGenericType(), field.getName());
 					if (value.hasResponse()) {

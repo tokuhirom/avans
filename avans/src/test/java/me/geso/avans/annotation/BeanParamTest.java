@@ -1,7 +1,9 @@
 package me.geso.avans.annotation;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.servlet.MultipartConfigElement;
@@ -298,6 +301,49 @@ public class BeanParamTest {
 							final Child child = res.parseJSON(Child.class);
 							assertThat(child.getParentName(), is("Nick"));
 							assertThat(child.getChildName(), is("John"));
+						}
+				);
+	}
+
+	// ----------------------------------------------------------------------------
+	// MyController3
+	// ----------------------------------------------------------------------------
+
+	@Data
+	public static class BeanHasStaticField {
+		public static final Logger log = Logger.getAnonymousLogger();
+		@Param("n")
+		private int n;
+	}
+
+	public static class MyController3 extends ControllerBase {
+		@GET("/")
+		public WebResponse jsonParam(@NonNull @BeanParam BeanHasStaticField b) {
+			assertNotNull(b.log);
+			return this.renderJSON(b);
+		}
+	}
+
+	// @BeanParam annotation should ignore static fields
+	@Test
+	public void testInheritanceShouldIgnoreStaticFields() throws Exception {
+		final AvansServlet servlet = new AvansServlet();
+		servlet.registerClass(MyController3.class);
+
+		JettyServletTester
+				.runServlet(
+						servlet,
+						(uri) -> {
+							final Mech2 m = Mech2.builder().build();
+							final Mech2WithBase mech2 = new Mech2WithBase(
+									m, uri);
+							final Mech2Result res = mech2.get(
+									"/")
+														 .addQueryParameter("n", "3")
+														 .execute();
+							assertThat(res.getStatusCode(), is(200));
+							final BeanHasStaticField child = res.parseJSON(BeanHasStaticField.class);
+							assertThat(child.getN(), is(3));
 						}
 				);
 	}
