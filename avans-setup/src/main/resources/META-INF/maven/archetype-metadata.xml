@@ -1,66 +1,168 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <archetype-descriptor xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0 http://maven.apache.org/xsd/archetype-descriptor-1.0.0.xsd" name="sample"
-	xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<fileSets>
-		<fileSet filtered="true" packaged="true" encoding="UTF-8">
-			<directory>src/main/java</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet encoding="UTF-8">
-			<directory>src/main/java</directory>
-			<includes>
-				<include>**/*.ftl</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" encoding="UTF-8">
-			<directory>src/main/resources</directory>
-			<includes>
-				<include>**/*.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" encoding="UTF-8">
-			<directory>src/main/webapp</directory>
-			<includes>
-				<include>**/*.xml</include>
-			</includes>
-		</fileSet>
-		<fileSet encoding="UTF-8">
-			<directory>src/main/resources</directory>
-			<includes>
-				<include>**/*.yml</include>
-			</includes>
-		</fileSet>
-		<fileSet encoding="UTF-8">
-			<directory>src/main/webapp</directory>
-			<includes>
-				<include>**/*.css</include>
-				<include>**/*.svg</include>
-				<include>**/*.ttf</include>
-				<include>**/*.js</include>
-				<include>**/*.eot</include>
-				<include>**/*.map</include>
-				<include>**/*.woff</include>
-				<include>**/*.ftl</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="true" encoding="UTF-8">
-			<directory>src/test/java</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" encoding="UTF-8">
-			<directory></directory>
-			<includes>
-				<include>.gitignore</include>
-				<include>bower.json</include>
-				<include>Gruntfile.js</include>
-				<include>package.json</include>
-				<include>README.md</include>
-			</includes>
-		</fileSet>
-	</fileSets>
+    xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <fileSets>
+    <fileSet filtered="true" packaged="true" encoding="UTF-8">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.ftl</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
+      <directory>src/main/resources</directory>
+      <includes>
+        <include>**/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>**/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/resources</directory>
+      <includes>
+        <include>**/*.yml</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>**/*.css</include>
+        <include>**/*.svg</include>
+        <include>**/*.ttf</include>
+        <include>**/*.js</include>
+        <include>**/*.eot</include>
+        <include>**/*.map</include>
+        <include>**/*.woff</include>
+        <include>**/*.ftl</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" packaged="true" encoding="UTF-8">
+      <directory>src/test/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
+      <directory>node_modules/grunt-bower-task</directory>
+      <includes>
+        <include>**/*.txt</include>
+        <include>**/*.xml</include>
+        <include>**/*.html</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
+      <directory>node_modules/grunt</directory>
+      <includes>
+        <include>**/*.txt</include>
+        <include>**/*.html</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>node_modules/grunt-bower-task</directory>
+      <includes>
+        <include>**/*.</include>
+        <include>**/*.css</include>
+        <include>**/*.npmignore</include>
+        <include>**/*.csr</include>
+        <include>**/*.data</include>
+        <include>**/*.scss</include>
+        <include>**/*.conf</include>
+        <include>**/*.swp</include>
+        <include>**/*.patch</include>
+        <include>**/*.BSD</include>
+        <include>**/*.ico</include>
+        <include>**/*.opts</include>
+        <include>**/*.md</include>
+        <include>**/*.editorconfig</include>
+        <include>**/*.jshintrc</include>
+        <include>**/*.npmrc</include>
+        <include>**/*.zip</include>
+        <include>**/*.mdown</include>
+        <include>**/*.bowerrc</include>
+        <include>**/*.tap</include>
+        <include>**/*.old</include>
+        <include>**/*.el</include>
+        <include>**/*.png</include>
+        <include>**/*.eslintrc</include>
+        <include>**/*.index</include>
+        <include>**/*.pack</include>
+        <include>**/*.1</include>
+        <include>**/*.2</include>
+        <include>**/*.name</include>
+        <include>**/*.gitmodules</include>
+        <include>**/*.eslintignore</include>
+        <include>**/*.idx</include>
+        <include>**/*.js</include>
+        <include>**/*.iml</include>
+        <include>**/*.mustache</include>
+        <include>**/*.sh</include>
+        <include>**/*.markdown</include>
+        <include>**/*.yml</include>
+        <include>**/*.json</include>
+        <include>**/*.cnf</include>
+        <include>**/*.crl</include>
+        <include>**/*.map</include>
+        <include>**/*.sublime-project</include>
+        <include>**/*.key</include>
+        <include>**/*.jpg</include>
+        <include>**/*.types</include>
+        <include>**/*.c</include>
+        <include>**/*.crt</include>
+        <include>**/*.ini</include>
+        <include>**/*.cfg</include>
+        <include>**/*.tgz</include>
+        <include>**/*.casey</include>
+        <include>**/*.gzip</include>
+        <include>**/*.srl</include>
+        <include>**/*.sample</include>
+        <include>**/*.gnu</include>
+        <include>**/*.gz</include>
+        <include>**/*.sublime-workspace</include>
+        <include>**/*.3ctype</include>
+        <include>**/*.vimrc</include>
+        <include>**/*.git_ignore</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>node_modules/grunt</directory>
+      <includes>
+        <include>**/*.</include>
+        <include>**/*.css</include>
+        <include>**/*.npmignore</include>
+        <include>**/*.log</include>
+        <include>**/*.js</include>
+        <include>**/*.conf</include>
+        <include>**/*.sh</include>
+        <include>**/*.md</include>
+        <include>**/*.markdown</include>
+        <include>**/*.yml</include>
+        <include>**/*.json</include>
+        <include>**/*.lock</include>
+        <include>**/*.gitmodules</include>
+        <include>**/*.cmd</include>
+        <include>**/*.jshintrc</include>
+        <include>**/*.yaml</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
+      <directory></directory>
+      <includes>
+        <include>.gitignore</include>
+        <include>bower.json</include>
+        <include>Gruntfile.js</include>
+        <include>package.json</include>
+        <include>README.md</include>
+      </includes>
+    </fileSet>
+  </fileSets>
 </archetype-descriptor>
