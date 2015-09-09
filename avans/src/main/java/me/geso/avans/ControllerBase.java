@@ -795,7 +795,8 @@ public abstract class ControllerBase implements Controller,
 
 				// Programming error
 				throw new RuntimeException(String.format(
-						"%s: Invalid type parameter for '%s': Valid type is 'Optional<String>' but you specified '%s'.", name, parameterizedType));
+						"Invalid type parameter for '%s': Valid type is 'Optional<String>' but you specified '%s'.",
+						name, parameterizedType));
 			} else {
 				return ParameterProcessorResult.fromData(Optional.empty());
 			}
