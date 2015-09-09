@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+2.1.1
+
+    - fixed string format error in error message.
+
 2.1.0
 
     - catch NumberFormatException and return 400 bad request #53
