@@ -275,12 +275,12 @@ public abstract class ControllerBase implements Controller,
 	Filters getFilters() {
 		return this.filters
 			.computeIfAbsent(
-				this.getClass(),
-				(klass) -> {
-					final FilterScanner scanner = new FilterScanner();
-					scanner.scan(klass);
-					return scanner.build();
-				});
+					this.getClass(),
+					(klass) -> {
+						final FilterScanner scanner = new FilterScanner();
+						scanner.scan(klass);
+						return scanner.build();
+					});
 	}
 
 	private WebResponse makeResponse(final Controller controller,
@@ -309,6 +309,7 @@ public abstract class ControllerBase implements Controller,
 		final Parameter[] parameters = method.getParameters();
 		final Object[] params = new Object[parameters.length];
 		final List<String> missingParameters = new ArrayList<>();
+		final List<String> illegalParameters = new ArrayList<>();
 		for (int i = 0; i < parameters.length; ++i) {
 			final Parameter parameter = parameters[i];
 			if (parameter.getAnnotation(BeanParam.class) != null) {
@@ -327,6 +328,8 @@ public abstract class ControllerBase implements Controller,
 					} else if (value.hasData()) {
 						field.setAccessible(true);
 						field.set(bean, value.getData());
+					} else if (value.hasIllegalParameter()) {
+						illegalParameters.add(value.getIllegalParameter());
 					} else {
 						missingParameters.add(value.getMissingParameter());
 					}
@@ -339,10 +342,15 @@ public abstract class ControllerBase implements Controller,
 					return value.getResponse();
 				} else if (value.hasData()) {
 					params[i] = value.getData();
+				} else if (value.hasIllegalParameter()) {
+					illegalParameters.add(value.getIllegalParameter());
 				} else {
 					missingParameters.add(value.getMissingParameter());
 				}
 			}
+		}
+		if (!illegalParameters.isEmpty()) {
+			return this.errorIllegalParameters(illegalParameters);
 		}
 		if (!missingParameters.isEmpty()) {
 			return this.errorMissingMandatoryParameters(missingParameters);
@@ -398,6 +406,13 @@ public abstract class ControllerBase implements Controller,
 				"Unknown return value from action: %s(%s)", res.getClass(),
 				this.servletRequest.getPathInfo()));
 		}
+	}
+
+	private WebResponse errorIllegalParameters(List<String> badNumberFormatParameters) {
+		final StringBuilder buf = new StringBuilder();
+		buf.append("Illegal parameter: ");
+		buf.append(badNumberFormatParameters.stream().collect(Collectors.joining(", ")));
+		return this.renderError(HttpServletResponse.SC_BAD_REQUEST, new String(buf));
 	}
 
 	private List<Field> getAllDeclaredFields(final Class<?> type) {
@@ -464,13 +479,21 @@ public abstract class ControllerBase implements Controller,
 				final String name = ((Param)annotation).value();
 				final String value = this.getServletRequest()
 					.getParameter(name);
-				return this.getObjectFromParameterObjectValue(name,
-					type, parameterizedType, value);
+				try {
+					return this.getObjectFromParameterObjectValue(name,
+																  type, parameterizedType, value);
+				} catch (NumberFormatException ignored) {
+					return ParameterProcessorResult.illegalParameter(name);
+				}
 			} else if (annotation instanceof PathParam) {
 				final String name = ((PathParam)annotation).value();
 				final String value = this.pathParams.get(name);
-				return this.getObjectFromParameterObjectValue(name,
-					type, parameterizedType, value);
+				try {
+					return this.getObjectFromParameterObjectValue(name,
+																  type, parameterizedType, value);
+				} catch (NumberFormatException ignored) {
+					return ParameterProcessorResult.illegalParameter(name);
+				}
 			} else if (annotation instanceof UploadFile) {
 				// @UploadFile
 				final String name = ((UploadFile)annotation).value();

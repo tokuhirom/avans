@@ -7,6 +7,7 @@ public class ParameterProcessorResult {
 	private WebResponse webResponse;
 	private Object data;
 	private String missingParameter;
+	private String illegalParameter;
 
 	/**
 	 * Creating parameter processor result from WebResponse object.
@@ -47,6 +48,12 @@ public class ParameterProcessorResult {
 		return p;
 	}
 
+	public static ParameterProcessorResult illegalParameter(@NonNull String name) {
+		final ParameterProcessorResult p = new ParameterProcessorResult();
+		p.illegalParameter = name;
+		return p;
+	}
+
 	/**
 	 * Return true if the result contains WebResponse object.
 	 * 
@@ -72,6 +79,14 @@ public class ParameterProcessorResult {
 			throw new NullPointerException();
 		}
 		return this.data;
+	}
+
+	public boolean hasIllegalParameter() {
+		return this.illegalParameter != null;
+	}
+
+	public String getIllegalParameter() {
+		return this.illegalParameter;
 	}
 
 	public boolean hasMissingParameter() {

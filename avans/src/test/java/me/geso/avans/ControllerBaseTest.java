@@ -1,7 +1,9 @@
 package me.geso.avans;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -738,7 +740,7 @@ public class ControllerBaseTest {
 			@GET("/z")
 			public WebResponse z() throws IOException, URISyntaxException {
 				return this.redirect("/ok", ImmutableMap.<String, String>builder()
-					.build());
+														.build());
 			}
 		}
 	}
@@ -920,9 +922,9 @@ public class ControllerBaseTest {
 			@GET("/m/d/e")
 			public WebResponse cde() throws IOException, URISyntaxException {
 				return this.renderText(this.uriFor("../upper", ImmutableMap.<String, String>builder()
-					.put("foo", "bar")
-					.put("boo", "wow")
-					.build()).toString());
+																		   .put("foo", "bar")
+																		   .put("boo", "wow")
+																		   .build()).toString());
 			}
 		}
 	}
@@ -953,8 +955,8 @@ public class ControllerBaseTest {
 			@GET("/b")
 			public WebResponse b() throws IOException, URISyntaxException {
 				return this.renderText(this.uriWith(ImmutableMap.<String, String>builder()
-					.put("foo", "bar")
-					.build()).toString());
+																.put("foo", "bar")
+																.build()).toString());
 			}
 		}
 	}
@@ -977,11 +979,12 @@ public class ControllerBaseTest {
 			// with empty string
 			JettyServletTester.runServlet(servlet, baseURI -> {
 				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
-						.build(), baseURI);
+																   .build(), baseURI);
 				assertEquals("{\"code\":400,\"messages\":[\"Missing mandatory parameter: q\"]}", mech2.get("/")
-						.addQueryParameter("q", "")
-						.execute()
-						.getResponseBodyAsString());
+																									  .addQueryParameter(
+																											  "q", "")
+																									  .execute()
+																									  .getResponseBodyAsString());
 			});
 
 			// with string
@@ -993,9 +996,10 @@ public class ControllerBaseTest {
 								.build(), baseURI);
 
 						assertEquals("q=123456789012345678901234567890", mech2.get("/")
-								.addQueryParameter("q", "123456789012345678901234567890")
-								.execute()
-								.getResponseBodyAsString());
+																			  .addQueryParameter("q",
+																								 "123456789012345678901234567890")
+																			  .execute()
+																			  .getResponseBodyAsString());
 					});
 		}
 
@@ -1003,6 +1007,36 @@ public class ControllerBaseTest {
 			@GET("/")
 			public WebResponse root(@Param("q") BigInteger q) {
 				return this.renderText("q=" + q.toString());
+			}
+		}
+	}
+
+	public static class TestForBadNumberFormatExeption {
+		@Test
+		public void shouldGetBigIntegerParam() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+
+			// with illegal code
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+
+						assertEquals("q=123456789012345678901234567890", mech2.get("/")
+																			  .addQueryParameter("q",
+																								 "12345678901555555555555555555555555555555555555555555555555555555555555555555555555555555555234567")
+																			  .execute()
+																			  .getResponseBodyAsString());
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") long q) {
+				return this.renderText("q=" + q);
 			}
 		}
 	}
