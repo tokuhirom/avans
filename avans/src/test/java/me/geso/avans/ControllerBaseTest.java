@@ -1025,7 +1025,7 @@ public class ControllerBaseTest {
 																			  .builder()
 																			  .build(), baseURI);
 
-						assertEquals("q=123456789012345678901234567890", mech2.get("/")
+						assertEquals("{\"code\":400,\"messages\":[\"Illegal parameter: q\"]}", mech2.get("/")
 																			  .addQueryParameter("q",
 																								 "12345678901555555555555555555555555555555555555555555555555555555555555555555555555555555555234567")
 																			  .execute()
