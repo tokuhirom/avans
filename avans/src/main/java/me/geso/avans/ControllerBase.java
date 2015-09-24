@@ -19,6 +19,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -787,6 +791,24 @@ public abstract class ControllerBase implements Controller,
 								return ParameterProcessorResult.fromData(Optional.of(value));
 							} else if (((Class) type1).isAssignableFrom(Boolean.class)) {
 								return ParameterProcessorResult.fromData(Optional.of(Boolean.parseBoolean(value)));
+							} else if (((Class) type1).isAssignableFrom(LocalDateTime.class)) {
+								try {
+									return ParameterProcessorResult.fromData(Optional.of(LocalDateTime.parse(value)));
+								} catch (DateTimeParseException e) {
+									return ParameterProcessorResult.illegalParameter(name);
+								}
+							} else if (((Class) type1).isAssignableFrom(LocalTime.class)) {
+								try {
+									return ParameterProcessorResult.fromData(Optional.of(LocalTime.parse(value)));
+								} catch (DateTimeParseException e) {
+									return ParameterProcessorResult.illegalParameter(name);
+								}
+							} else if (((Class) type1).isAssignableFrom(LocalDate.class)) {
+								try {
+									return ParameterProcessorResult.fromData(Optional.of(LocalDate.parse(value)));
+								} catch (DateTimeParseException e) {
+									return ParameterProcessorResult.illegalParameter(name);
+								}
 							} else if (((Class)type1).isAssignableFrom(Integer.class)) {
 								throw new RuntimeException(String.format(
 										"%s: invalid type for '%s'(%s): Optional<Integer> is not supported. You should use OptionalInt instead.", getServletRequest().getPathInfo(), name, parameterizedType));
