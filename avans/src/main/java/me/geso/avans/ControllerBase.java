@@ -785,6 +785,8 @@ public abstract class ControllerBase implements Controller,
 						if (type1 instanceof Class) {
 							if (((Class)type1).isAssignableFrom(String.class)) {
 								return ParameterProcessorResult.fromData(Optional.of(value));
+							} else if (((Class) type1).isAssignableFrom(Boolean.class)) {
+								return ParameterProcessorResult.fromData(Optional.of(Boolean.parseBoolean(value)));
 							} else if (((Class)type1).isAssignableFrom(Integer.class)) {
 								throw new RuntimeException(String.format(
 										"%s: invalid type for '%s'(%s): Optional<Integer> is not supported. You should use OptionalInt instead.", getServletRequest().getPathInfo(), name, parameterizedType));

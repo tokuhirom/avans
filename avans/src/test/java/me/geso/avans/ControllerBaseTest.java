@@ -611,10 +611,7 @@ public class ControllerBaseTest {
 		}
 	}
 
-
-	/**
-	 * OptionalLong must be accept empty string as OptionalLong.empty().
-	 */
+	// Optional<String>
 	public static class TestOptionalStringParameter {
 		@Test
 		public void testX() throws Exception {
@@ -652,6 +649,52 @@ public class ControllerBaseTest {
 			@GET("/")
 			public WebResponse root(@Param("q") Optional<String> q) {
 				return this.renderText("q=" + q.orElse("Missing"));
+			}
+		}
+	}
+
+	// Optional<Boolean>
+	public static class TestOptionalBooleanParameter {
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/").execute()
+											   .getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/")
+											   .addQueryParameter("q", "")
+											   .execute()
+											   .getResponseBodyAsString());
+			});
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertEquals("q=true", mech2.get("/")
+													.addQueryParameter("q", "true")
+													.execute()
+													.getResponseBodyAsString());
+						assertEquals("q=false", mech2.get("/")
+													 .addQueryParameter("q", "false")
+													 .execute()
+													 .getResponseBodyAsString());
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Optional<Boolean> q) {
+				return this.renderText("q=" + (q.isPresent() ? q.get() : "Missing"));
 			}
 		}
 	}
