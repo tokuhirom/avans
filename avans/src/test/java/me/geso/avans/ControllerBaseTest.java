@@ -1,5 +1,6 @@
 package me.geso.avans;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -10,6 +11,9 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -694,6 +698,168 @@ public class ControllerBaseTest {
 		public static class Controller extends ControllerBase {
 			@GET("/")
 			public WebResponse root(@Param("q") Optional<Boolean> q) {
+				return this.renderText("q=" + (q.isPresent() ? q.get() : "Missing"));
+			}
+		}
+	}
+
+	// Optional<LocalDate>
+	public static class TestOptionalLocalDateParameter {
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/").execute()
+											   .getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/")
+											   .addQueryParameter("q", "")
+											   .execute()
+											   .getResponseBodyAsString());
+			});
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertEquals("q=2015-01-03", mech2.get("/")
+														  .addQueryParameter("q", "2015-01-03")
+														  .execute()
+														  .getResponseBodyAsString());
+					});
+			// illegal parameter
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertThat(mech2.get("/")
+										.addQueryParameter("q", "2015-00-00")
+										.execute()
+										.getResponseBodyAsString(), containsString("Illegal parameter"));
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Optional<LocalDate> q) {
+				return this.renderText("q=" + (q.isPresent() ? q.get() : "Missing"));
+			}
+		}
+	}
+
+	// Optional<LocalTime>
+	public static class TestOptionalLocalTimeParameter {
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/").execute()
+											   .getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/")
+											   .addQueryParameter("q", "")
+											   .execute()
+											   .getResponseBodyAsString());
+			});
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertEquals("q=03:04", mech2.get("/")
+													 .addQueryParameter("q", "03:04")
+													 .execute()
+													 .getResponseBodyAsString());
+					});
+			// illegal parameter
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertThat(mech2.get("/")
+										.addQueryParameter("q", "2015-00-00")
+										.execute()
+										.getResponseBodyAsString(), containsString("Illegal parameter"));
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Optional<LocalTime> q) {
+				return this.renderText("q=" + (q.isPresent() ? q.get() : "Missing"));
+			}
+		}
+	}
+
+	// Optional<LocalDateTime>
+	public static class TestOptionalLocalDateTimeParameter {
+		@Test
+		public void testX() throws Exception {
+			final AvansServlet servlet = new AvansServlet();
+			servlet.registerClass(Controller.class);
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/").execute()
+											   .getResponseBodyAsString());
+			});
+			// with empty string
+			JettyServletTester.runServlet(servlet, baseURI -> {
+				final Mech2WithBase mech2 = new Mech2WithBase(Mech2.builder()
+																   .build(), baseURI);
+				assertEquals("q=Missing", mech2.get("/")
+											   .addQueryParameter("q", "")
+											   .execute()
+											   .getResponseBodyAsString());
+			});
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertEquals("q=2015-02-05T03:04:04", mech2.get("/")
+																   .addQueryParameter("q", "2015-02-05T03:04:04")
+																   .execute()
+																   .getResponseBodyAsString());
+					});
+			// illegal parameter
+			JettyServletTester.runServlet(
+					servlet,
+					baseURI -> {
+						final Mech2WithBase mech2 = new Mech2WithBase(Mech2
+																			  .builder()
+																			  .build(), baseURI);
+						assertThat(mech2.get("/")
+										.addQueryParameter("q", "2015-00-00")
+										.execute()
+										.getResponseBodyAsString(), containsString("Illegal parameter"));
+					});
+		}
+
+		public static class Controller extends ControllerBase {
+			@GET("/")
+			public WebResponse root(@Param("q") Optional<LocalDateTime> q) {
 				return this.renderText("q=" + (q.isPresent() ? q.get() : "Missing"));
 			}
 		}
