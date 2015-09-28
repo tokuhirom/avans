@@ -514,8 +514,7 @@ public abstract class ControllerBase implements Controller,
 						.toArray(Part[]::new);
 					return ParameterProcessorResult.fromData(parts);
 				} else if (type == Optional.class) {
-					// It must be Optional<WebRequestUpload>
-					// TODO: support Optional<Part>
+					// It must be `Optional<Part>`
 					try {
 						final Part part = this.servletRequest.getPart(name);
 						if (part != null) {
