@@ -279,13 +279,13 @@ public abstract class ControllerBase implements Controller,
 	Filters getFilters() {
 		return this.filters
 			.computeIfAbsent(
-					this.getClass(),
-					(klass) -> {
-						final FilterScanner scanner = new FilterScanner();
-						scanner.scan(klass);
-						return scanner.build();
-					});
-	}
+                    this.getClass(),
+                    (klass) -> {
+                        final FilterScanner scanner = new FilterScanner();
+                        scanner.scan(klass);
+                        return scanner.build();
+                    });
+    }
 
 	private WebResponse makeResponse(final Controller controller,
 			final Method method) throws IllegalAccessException,
@@ -341,29 +341,30 @@ public abstract class ControllerBase implements Controller,
 				params[i] = bean;
 			} else {
 				final ParameterProcessorResult value = this
-					.getParameterValue(parameter, parameter.getType(), parameter.getParameterizedType(), parameter.getName());
-				if (value.hasResponse()) {
-					return value.getResponse();
-				} else if (value.hasData()) {
-					params[i] = value.getData();
-				} else if (value.hasIllegalParameter()) {
-					illegalParameters.add(value.getIllegalParameter());
-				} else {
-					missingParameters.add(value.getMissingParameter());
-				}
-			}
-		}
-		if (!illegalParameters.isEmpty()) {
-			return this.errorIllegalParameters(illegalParameters);
-		}
-		if (!missingParameters.isEmpty()) {
-			return this.errorMissingMandatoryParameters(missingParameters);
-		}
-		final Optional<WebResponse> validationResult = this
-			.validateParameters(method, params);
-		if (validationResult.isPresent()) {
-			return validationResult.get();
-		}
+                        .getParameterValue(parameter, parameter.getType(), parameter.getParameterizedType(),
+                                           parameter.getName());
+                if (value.hasResponse()) {
+                    return value.getResponse();
+                } else if (value.hasData()) {
+                    params[i] = value.getData();
+                } else if (value.hasIllegalParameter()) {
+                    illegalParameters.add(value.getIllegalParameter());
+                } else {
+                    missingParameters.add(value.getMissingParameter());
+                }
+            }
+        }
+        if (!illegalParameters.isEmpty()) {
+            return this.errorIllegalParameters(illegalParameters);
+        }
+        if (!missingParameters.isEmpty()) {
+            return this.errorMissingMandatoryParameters(missingParameters);
+        }
+        final Optional<WebResponse> validationResult = this
+                .validateParameters(method, params);
+        if (validationResult.isPresent()) {
+            return validationResult.get();
+        }
 
 		Object res;
 		try {
@@ -520,29 +521,29 @@ public abstract class ControllerBase implements Controller,
 						if (part != null) {
 							return ParameterProcessorResult
 								.fromData(
-								Optional.of(part));
-						} else {
-							return ParameterProcessorResult.fromData(Optional
-								.empty());
-						}
-					} catch (final IOException e) {
-						// We must catch this exception.
-						// Since jetty throws exception if the request doesn't
-						// have a part.
-						// See
-						// org.eclipse.jetty.util.MultiPartInputStreamParser.parse.
-						log.info("{}: {}", e.getClass(), e.getMessage());
-						return ParameterProcessorResult.fromData(Optional
-							.empty());
-					}
-				} else {
-					throw new RuntimeException(
-						String.format(
-							"You shouldn't use @UploadFile annotation with %s. You must use Part or Part[]",
-							type));
-				}
-			}
-		}
+                                        Optional.of(part));
+                        } else {
+                            return ParameterProcessorResult.fromData(Optional
+                                                                             .empty());
+                        }
+                    } catch (final IOException e) {
+                        // We must catch this exception.
+                        // Since jetty throws exception if the request doesn't
+                        // have a part.
+                        // See
+                        // org.eclipse.jetty.util.MultiPartInputStreamParser.parse.
+                        log.info("{}: {}", e.getClass(), e.getMessage());
+                        return ParameterProcessorResult.fromData(Optional
+                                                                         .empty());
+                    }
+                } else {
+                    throw new RuntimeException(
+                            String.format(
+                                    "You shouldn't use @UploadFile annotation with %s. You must use Part or Part[]",
+                                    type));
+                }
+            }
+        }
 
 		// Programming error. You may forget to specify the annotation.
 		throw new RuntimeException(String.format(
@@ -778,43 +779,75 @@ public abstract class ControllerBase implements Controller,
 			throw new RuntimeException(String.format(
 					"No valid type parameter for List<E>: '%s', '%s'. Valid types are: List<String>, List<Long>,"
 					+ " List<Integer>, and List<Double>", parameterizedType, name));
-		} else if (type.equals(Optional.class)) {
-			// avans supports Optional<String> only.
-			if (value != null && !value.isEmpty()) {
-				if (parameterizedType instanceof ParameterizedType) {
-					final Type[] actualTypeArguments = ((ParameterizedType)parameterizedType).getActualTypeArguments();
-					if (actualTypeArguments != null && actualTypeArguments.length == 1) {
-						final Type type1 = actualTypeArguments[0];
-						if (type1 instanceof Class) {
-							if (((Class)type1).isAssignableFrom(String.class)) {
-								return ParameterProcessorResult.fromData(Optional.of(value));
-							} else if (((Class) type1).isAssignableFrom(Boolean.class)) {
-								return ParameterProcessorResult.fromData(Optional.of(Boolean.parseBoolean(value)));
-							} else if (((Class) type1).isAssignableFrom(LocalDateTime.class)) {
-								try {
-									return ParameterProcessorResult.fromData(Optional.of(LocalDateTime.parse(value)));
-								} catch (DateTimeParseException e) {
-									return ParameterProcessorResult.illegalParameter(name);
-								}
-							} else if (((Class) type1).isAssignableFrom(LocalTime.class)) {
-								try {
-									return ParameterProcessorResult.fromData(Optional.of(LocalTime.parse(value)));
-								} catch (DateTimeParseException e) {
-									return ParameterProcessorResult.illegalParameter(name);
-								}
-							} else if (((Class) type1).isAssignableFrom(LocalDate.class)) {
-								try {
-									return ParameterProcessorResult.fromData(Optional.of(LocalDate.parse(value)));
-								} catch (DateTimeParseException e) {
-									return ParameterProcessorResult.illegalParameter(name);
-								}
-							} else if (((Class)type1).isAssignableFrom(Integer.class)) {
-								throw new RuntimeException(String.format(
-										"%s: invalid type for '%s'(%s): Optional<Integer> is not supported. You should use OptionalInt instead.", getServletRequest().getPathInfo(), name, parameterizedType));
-							}
-						}
-					}
-				}
+        } else if (type.isAssignableFrom(LocalDateTime.class)) {
+            if (value != null && !value.isEmpty()) {
+                try {
+                    return ParameterProcessorResult.fromData(LocalDateTime.parse(value));
+                } catch (DateTimeParseException e) {
+                    return ParameterProcessorResult.illegalParameter(name);
+                }
+            } else {
+                return ParameterProcessorResult.missingParameter(name);
+            }
+        } else if (type.isAssignableFrom(LocalTime.class)) {
+            if (value != null && !value.isEmpty()) {
+                try {
+                    return ParameterProcessorResult.fromData(LocalTime.parse(value));
+                } catch (DateTimeParseException e) {
+                    return ParameterProcessorResult.illegalParameter(name);
+                }
+            } else {
+                return ParameterProcessorResult.missingParameter(name);
+            }
+        } else if (type.isAssignableFrom(LocalDate.class)) {
+            if (value != null && !value.isEmpty()) {
+                try {
+                    return ParameterProcessorResult.fromData(LocalDate.parse(value));
+                } catch (DateTimeParseException e) {
+                    return ParameterProcessorResult.illegalParameter(name);
+                }
+            } else {
+                return ParameterProcessorResult.missingParameter(name);
+            }
+        } else if (type.equals(Optional.class)) {
+            // avans supports Optional<String> only.
+            if (value != null && !value.isEmpty()) {
+                if (parameterizedType instanceof ParameterizedType) {
+                    final Type[] actualTypeArguments = ((ParameterizedType) parameterizedType).getActualTypeArguments();
+                    if (actualTypeArguments != null && actualTypeArguments.length == 1) {
+                        final Type type1 = actualTypeArguments[0];
+                        if (type1 instanceof Class) {
+                            if (((Class) type1).isAssignableFrom(String.class)) {
+                                return ParameterProcessorResult.fromData(Optional.of(value));
+                            } else if (((Class) type1).isAssignableFrom(Boolean.class)) {
+                                return ParameterProcessorResult.fromData(Optional.of(Boolean.parseBoolean(value)));
+                            } else if (((Class) type1).isAssignableFrom(LocalDateTime.class)) {
+                                try {
+                                    return ParameterProcessorResult.fromData(Optional.of(LocalDateTime.parse(value)));
+                                } catch (DateTimeParseException e) {
+                                    return ParameterProcessorResult.illegalParameter(name);
+                                }
+                            } else if (((Class) type1).isAssignableFrom(LocalTime.class)) {
+                                try {
+                                    return ParameterProcessorResult.fromData(Optional.of(LocalTime.parse(value)));
+                                } catch (DateTimeParseException e) {
+                                    return ParameterProcessorResult.illegalParameter(name);
+                                }
+                            } else if (((Class) type1).isAssignableFrom(LocalDate.class)) {
+                                try {
+                                    return ParameterProcessorResult.fromData(Optional.of(LocalDate.parse(value)));
+                                } catch (DateTimeParseException e) {
+                                    return ParameterProcessorResult.illegalParameter(name);
+                                }
+                            } else if (((Class) type1).isAssignableFrom(Integer.class)) {
+                                throw new RuntimeException(String.format(
+                                        "%s: invalid type for '%s'(%s): Optional<Integer> is not supported. You " +
+                                        "should use OptionalInt instead.",
+                                        getServletRequest().getPathInfo(), name, parameterizedType));
+                            }
+                        }
+                    }
+                }
 
 				// Programming error
 				throw new RuntimeException(String.format(
