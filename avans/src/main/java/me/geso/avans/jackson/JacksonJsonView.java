@@ -11,9 +11,17 @@ import me.geso.webscrew.response.WebResponse;
 
 public interface JacksonJsonView extends Controller, JSONRendererProvider {
 
+	ObjectMapper mapper = new ObjectMapper();
+
 	@Override
 	public default WebResponse renderJSON(final int statusCode, final Object obj) {
-		final ObjectMapper mapper = this.createObjectMapper();
+
+		// Don't initialized yet?
+		if (mapper.getFactory().getCharacterEscapes() == null) {
+			mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+			mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
+		}
+
 		byte[] json;
 		try {
 			json = mapper.writeValueAsBytes(obj);
@@ -36,12 +44,5 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 	 */
 	public default WebResponse renderJSON(final Object obj) {
 		return this.renderJSON(200, obj);
-	}
-
-	public default ObjectMapper createObjectMapper() {
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
-		mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
-		return mapper;
 	}
 }

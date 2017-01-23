@@ -1,0 +1,32 @@
+{
+  "list0": [ "a1", "b1" ],
+  "list1": [ 1, 2, 3 ],
+  "list2": [
+    {
+      "name": "aa",
+      "value": "bb"
+    },
+    {
+      "name": "cc",
+      "value": "dd"
+    }
+  ],
+  "map0": {
+    "ee": "ff",
+    "gg": "hh"
+  },
+  "map1": {
+    "ii": 10,
+    "jj": 20
+  },
+  "map2": {
+    "x": {
+      "name": "x1",
+      "value": "x2"
+    },
+    "y": {
+      "name": "y1",
+      "value": "y2"
+    }
+  }
+}

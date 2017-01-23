@@ -14,6 +14,8 @@ import me.geso.avans.JSONParamReader;
 
 public interface JacksonJsonParamReader extends JSONParamReader {
 
+	ObjectMapper mapper = new ObjectMapper();
+
 	/**
 	 * If you want to customize this behavior, you can copy and paste this code
 	 * into your code.
@@ -21,7 +23,6 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 	@Override
 	public default Object readJsonParam(InputStream is, Class<?> valueType)
 			throws IOException {
-		final ObjectMapper mapper = new ObjectMapper();
 		// Ignore unknown properties.
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
 			false);
