@@ -4,8 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -20,7 +20,7 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 	class _PrivateStaticFields {
 		// only accessible in this interface.
 		private static ObjectReader _reader = createObjectReader();
-		private static Map<Class<?>, ObjectReader> _readerMap = new HashMap<>();
+		private static Map<Class<?>, ObjectReader> _readerMap = new ConcurrentHashMap<>();
 
 		private static ObjectReader createObjectReader() {
 			return new ObjectMapper()
