@@ -11,20 +11,23 @@ import me.geso.webscrew.response.WebResponse;
 
 public interface JacksonJsonView extends Controller, JSONRendererProvider {
 
-	ObjectMapper mapper = new ObjectMapper();
+	class _PrivateStaticFields {
+		// only accessible in this interface.
+		private static ObjectMapper _mapper = createObjectMapper();
+
+		private static ObjectMapper createObjectMapper() {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+			mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
+			return mapper;
+		}
+	}
 
 	@Override
 	public default WebResponse renderJSON(final int statusCode, final Object obj) {
-
-		// Don't initialized yet?
-		if (mapper.getFactory().getCharacterEscapes() == null) {
-			mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
-			mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
-		}
-
 		byte[] json;
 		try {
-			json = mapper.writeValueAsBytes(obj);
+			json = _PrivateStaticFields._mapper.writeValueAsBytes(obj);
 		} catch (final JsonProcessingException e) {
 			// It caused by programming error.
 			throw new RuntimeException(e);
