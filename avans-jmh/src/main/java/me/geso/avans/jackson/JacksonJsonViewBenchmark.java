@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.infra.Blackhole;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -84,7 +85,7 @@ public class JacksonJsonViewBenchmark {
     }
 
     @Benchmark
-    public void bench() {
+    public void bench(Blackhole blackhole) {
 
         IntStream.rangeClosed(0, 10_000)
                  .forEach(i -> {
@@ -114,7 +115,7 @@ public class JacksonJsonViewBenchmark {
 
                               JacksonJsonView sut = new JacksonJsonViewMock();
 
-                              sut.renderJSON(jsonTest0);
+                              blackhole.consume(sut.renderJSON(jsonTest0));
                           }
                  );
     }

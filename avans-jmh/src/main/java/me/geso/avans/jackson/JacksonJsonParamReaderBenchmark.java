@@ -9,11 +9,12 @@ import java.nio.file.Paths;
 import java.util.stream.IntStream;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.infra.Blackhole;
 
 public class JacksonJsonParamReaderBenchmark {
 
     @Benchmark
-    public void bench() throws Exception {
+    public void bench(Blackhole blackhole) throws Exception {
         // resolve testdata file
         String classFileName = "/" + getClass().getName().replaceAll("\\.", "/") + ".class";
         String classFilePath = getClass().getResource(classFileName).getFile().replaceAll("file:", "");
@@ -26,7 +27,8 @@ public class JacksonJsonParamReaderBenchmark {
                  .forEach(i -> {
                               try (FileInputStream path = new FileInputStream(dataFile)) {
                                   JacksonJsonParamReader sut = new JacksonJsonParamReader() {};
-                                  sut.readJsonParam(path, JacksonJsonViewBenchmark.JsonTest0.class);
+                                  blackhole.consume(
+                                          sut.readJsonParam(path, JacksonJsonViewBenchmark.JsonTest0.class));
                               } catch (IOException e) {
                                   throw new UncheckedIOException(e);
                               }
