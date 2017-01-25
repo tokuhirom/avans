@@ -47,6 +47,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import me.geso.avans.annotation.BeanParam;
@@ -93,6 +95,9 @@ public abstract class ControllerBase implements Controller,
 		this.setDefaultCharacterEncoding();
 
 		this.pathParams = Collections.unmodifiableMap(captured);
+
+		ObjectMapper objectMapper = createObjectMapper();
+		setObjectWriter(objectMapper.writer());
 	}
 
 	private void setDefaultCharacterEncoding() {

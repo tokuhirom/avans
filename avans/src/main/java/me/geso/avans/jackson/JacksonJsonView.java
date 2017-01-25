@@ -14,13 +14,13 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 
 	class _PrivateStaticFields {
 		// only accessible in this interface.
-		private static ObjectWriter _writer = createObjectWriter();
+		private static ObjectWriter _writer = createObjectMapper().writer();
 
-		private static ObjectWriter createObjectWriter() {
+		private static ObjectMapper createObjectMapper() {
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
 			mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
-			return mapper.writer();
+			return mapper;
 		}
 	}
 
@@ -48,5 +48,16 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 	 */
 	public default WebResponse renderJSON(final Object obj) {
 		return this.renderJSON(200, obj);
+	}
+
+	public default ObjectMapper createObjectMapper() {
+		return _PrivateStaticFields.createObjectMapper();
+	}
+
+	/**
+	 * called by me.geso.avans.ControllerBase#init
+	 */
+	public default void setObjectWriter(ObjectWriter writer) {
+		_PrivateStaticFields._writer = writer;
 	}
 }
