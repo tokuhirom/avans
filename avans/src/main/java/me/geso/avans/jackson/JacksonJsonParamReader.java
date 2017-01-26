@@ -4,15 +4,30 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 import me.geso.avans.JSONParamReader;
 
 public interface JacksonJsonParamReader extends JSONParamReader {
+
+	class _PrivateStaticFields {
+		// only accessible in this interface.
+		private static ObjectReader _reader = createObjectReader();
+		private static Map<Class<?>, ObjectReader> _readerMap = new ConcurrentHashMap<>();
+
+		private static ObjectReader createObjectReader() {
+			return new ObjectMapper()
+					.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+					.reader();
+		}
+	}
 
 	/**
 	 * If you want to customize this behavior, you can copy and paste this code
@@ -21,11 +36,6 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 	@Override
 	public default Object readJsonParam(InputStream is, Class<?> valueType)
 			throws IOException {
-		final ObjectMapper mapper = new ObjectMapper();
-		// Ignore unknown properties.
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-			false);
-
 		// Read bytes into byte array.
 		// It needs for better logging, error introspection.
 		final ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -37,7 +47,9 @@ public interface JacksonJsonParamReader extends JSONParamReader {
 		final byte[] byteArray = output.toByteArray();
 
 		try {
-			return mapper.readValue(byteArray, valueType);
+			ObjectReader reader = _PrivateStaticFields._readerMap
+					.computeIfAbsent(valueType, key -> _PrivateStaticFields._reader.withType(key));
+			return reader.readValue(byteArray);
 		} catch (JsonParseException | JsonMappingException e) {
 			final String json = new String(byteArray,
 				StandardCharsets.UTF_8);

@@ -3,6 +3,7 @@ package me.geso.avans.jackson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import me.geso.avans.Controller;
 import me.geso.avans.JSONRendererProvider;
@@ -11,12 +12,23 @@ import me.geso.webscrew.response.WebResponse;
 
 public interface JacksonJsonView extends Controller, JSONRendererProvider {
 
+	class _PrivateStaticFields {
+		// only accessible in this interface.
+		private static ObjectWriter _writer = createObjectMapper().writer();
+
+		private static ObjectMapper createObjectMapper() {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+			mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
+			return mapper;
+		}
+	}
+
 	@Override
 	public default WebResponse renderJSON(final int statusCode, final Object obj) {
-		final ObjectMapper mapper = this.createObjectMapper();
 		byte[] json;
 		try {
-			json = mapper.writeValueAsBytes(obj);
+			json = _PrivateStaticFields._writer.writeValueAsBytes(obj);
 		} catch (final JsonProcessingException e) {
 			// It caused by programming error.
 			throw new RuntimeException(e);
@@ -39,9 +51,13 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 	}
 
 	public default ObjectMapper createObjectMapper() {
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
-		mapper.getFactory().setCharacterEscapes(new CharacterEscapesAgainstXSS());
-		return mapper;
+		return _PrivateStaticFields.createObjectMapper();
+	}
+
+	/**
+	 * called by me.geso.avans.ControllerBase#init
+	 */
+	public default void setObjectWriter(ObjectWriter writer) {
+		_PrivateStaticFields._writer = writer;
 	}
 }
