@@ -95,9 +95,6 @@ public abstract class ControllerBase implements Controller,
 		this.setDefaultCharacterEncoding();
 
 		this.pathParams = Collections.unmodifiableMap(captured);
-
-		ObjectMapper objectMapper = createObjectMapper();
-		setObjectWriter(objectMapper.writer());
 	}
 
 	private void setDefaultCharacterEncoding() {

@@ -743,7 +743,6 @@ public class JacksonJsonViewTest {
 
     @Test
     public void testOverridableObjectMapper() throws Exception {
-        ControllerMock sut = new ControllerMock();
 
         _PrivateStaticFields privateStaticFields = new _PrivateStaticFields();
         Class<?> clazz = privateStaticFields.getClass();
@@ -751,22 +750,43 @@ public class JacksonJsonViewTest {
         filed.setAccessible(true);
 
         {
+            // default ObjectMapper
+            ControllerBase sut = new ControllerBase() {};
+            sut.init(new HttpServletRequestMock(), new HttpServletResponseMock(), new HashMap<>());
+            sut.renderJSON(new HashMap<>());
+
+            // The ObjectWriter is default?
             ObjectWriter writer = (ObjectWriter) filed.get(privateStaticFields);
             JsonFactory factory = writer.getFactory();
             boolean actual = factory.isEnabled(JsonGenerator.Feature.ESCAPE_NON_ASCII);
-
             assertThat(actual, is(true));
+
+            // Same ObjectWriter after re-construct the instance?
+            sut = new ControllerBase() {};
+            sut.init(new HttpServletRequestMock(), new HttpServletResponseMock(), new HashMap<>());
+            sut.renderJSON(new HashMap<>());
+            ObjectWriter newWriter = (ObjectWriter) filed.get(privateStaticFields);
+            assertThat(newWriter, is(writer));
         }
 
-        // The ObjectWriter will override after call `init`
-        sut.init(new HttpServletRequestMock(), new HttpServletResponseMock(), new HashMap<>());
-
         {
+            // customized ObjectMapper
+            ControllerMock sut = new ControllerMock();
+            sut.init(new HttpServletRequestMock(), new HttpServletResponseMock(), new HashMap<>());
+            sut.renderJSON(new HashMap<>());
+
+            // The ObjectWriter was Overrided?
             ObjectWriter writer = (ObjectWriter) filed.get(privateStaticFields);
             JsonFactory factory = writer.getFactory();
-            boolean actual = factory.isEnabled(JsonGenerator.Feature.ESCAPE_NON_ASCII);
+            boolean isEnabled = factory.isEnabled(JsonGenerator.Feature.ESCAPE_NON_ASCII);
+            assertThat(isEnabled, is(false));
 
-            assertThat(actual, is(false));
+            // Same ObjectWriter after re-construct the instance?
+            sut = new ControllerMock();
+            sut.init(new HttpServletRequestMock(), new HttpServletResponseMock(), new HashMap<>());
+            sut.renderJSON(new HashMap<>());
+            ObjectWriter newWriter = (ObjectWriter) filed.get(privateStaticFields);
+            assertThat(newWriter, is(writer));
         }
     }
 }
