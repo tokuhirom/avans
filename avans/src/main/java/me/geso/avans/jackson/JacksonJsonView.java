@@ -37,7 +37,8 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 	public default WebResponse renderJSON(final int statusCode, final Object obj) {
 		// If overrided createObjectMapper method, replace the writer only once
 		ObjectMapper objectMapper = createObjectMapper();
-		if (objectMapper != null && _PrivateStaticFields._mapper == _PrivateStaticFields._defaultMapper) {
+		if (objectMapper != _PrivateStaticFields._defaultMapper &&
+			_PrivateStaticFields._mapper == _PrivateStaticFields._defaultMapper) {
 			_PrivateStaticFields._mapper = objectMapper;
 			_PrivateStaticFields._writer = objectMapper.writer();
 		}
@@ -67,6 +68,6 @@ public interface JacksonJsonView extends Controller, JSONRendererProvider {
 	}
 
 	public default ObjectMapper createObjectMapper() {
-		return null;
+		return _PrivateStaticFields._defaultMapper;
 	}
 }
