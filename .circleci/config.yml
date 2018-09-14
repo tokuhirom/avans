@@ -32,5 +32,5 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      - run: mvn test
+      - run: mvn install javadoc:javadoc -DskipTests=true -Dgpg.skip=true
 
