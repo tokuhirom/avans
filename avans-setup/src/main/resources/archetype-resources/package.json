@@ -9,7 +9,7 @@
   "author": "Unknown",
   "license": "MIT",
   "devDependencies": {
-    "grunt": "0.4.5",
+    "grunt": "1.5.3",
     "grunt-bower-task": "0.2.3"
   }
 }
