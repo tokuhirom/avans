@@ -10,5 +10,6 @@
       "platformAutomerge": true,
       "addLabels": ["dependencies"]
     }
-  ]
+  ],
+  "automerge": true
 }
