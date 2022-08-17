@@ -14,7 +14,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<avans.version>1.7.0</avans.version>
 		<freemarker.version>2.3.31</freemarker.version>
-		<jetty.version>8.1.17.v20150415</jetty.version>
+		<jetty.version>8.2.0.v20160908</jetty.version>
 	</properties>
 
 	<dependencies>
