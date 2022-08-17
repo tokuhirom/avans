@@ -17,7 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11', '17' ] # We want to test on LTSs.
+        java: [ '8' ] # At this time, we test this project on Java 8. Once we update dependencies, we can use latest Java.
+#        java: [ '8', '11', '17' ] # We want to test on LTSs.
 
     steps:
     - uses: actions/checkout@v3
