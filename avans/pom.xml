@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>mech2</artifactId>
-			<version>0.3.0</version>
+			<version>0.7.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -142,7 +142,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
+				<version>3.2.2</version>
 				<configuration>
 					<archive>
 						<manifest>

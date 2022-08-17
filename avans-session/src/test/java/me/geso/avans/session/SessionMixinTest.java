@@ -122,7 +122,7 @@ public class SessionMixinTest {
 			final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
 				.setDefaultCookieStore(cookieStore);
 			final Mech2 rawMech2 = Mech2.builder()
-				.httpClientBuilder(httpClientBuilder)
+				.setHttpClientBuilder(httpClientBuilder)
 				.build();
 			final Mech2WithBase mech2 = new Mech2WithBase(rawMech2, new URI(mechJettyServlet.getBaseURL()));
 			mechJettyServlet.addRequestListener(new PrintRequestListener(System.out));
