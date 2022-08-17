@@ -10,6 +10,6 @@
   "license": "MIT",
   "devDependencies": {
     "grunt": "1.5.3",
-    "grunt-bower-task": "0.2.3"
+    "grunt-bower-task": "0.6.2"
   }
 }
