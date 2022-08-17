@@ -3,5 +3,12 @@
   "extends": [
     "config:base"
   ],
-  "automerge": true
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest", "pinDigest", "lockFileMaintenance", "rollback", "bump"],
+      "automerge": true,
+      "platformAutomerge": true,
+      "addLabels": ["dependencies"]
+    }
+  ]
 }
