@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<avans.version>2.6.0</avans.version>
-		<freemarker.version>2.3.31</freemarker.version>
+		<freemarker.version>2.3.32</freemarker.version>
 		<jetty.version>11.0.14</jetty.version>
 	</properties>
 
