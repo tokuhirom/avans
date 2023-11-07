@@ -95,7 +95,7 @@
 		<dependency>
 			<groupId>me.geso</groupId>
 			<artifactId>servlettester-jetty</artifactId>
-			<version>0.1.0</version>
+			<version>0.2.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
